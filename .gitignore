@@ -1,0 +1,31 @@
+# Dependencies
+frontend/node_modules/
+backend/gitshow
+
+# Build outputs
+frontend/.nuxt/
+frontend/.output/
+frontend/dist/
+
+# Logs
+*.log
+backend.log
+frontend.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment
+.env
+.env.local
+
+# Config files with secrets
+backend/config.json
+backend/settings.json

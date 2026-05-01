@@ -1,0 +1,91 @@
+<template>
+  <div class="min-h-screen flex flex-col" style="background-color: #000;">
+    <!-- Capsule Nav -->
+    <div class="sticky top-4 z-50 px-4">
+      <div class="nav-capsule max-w-5xl mx-auto flex items-center justify-between px-2 py-2" style="background-color: rgba(0,0,0,0.85); border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(12px);">
+        <!-- Logo -->
+        <NuxtLink to="/" class="flex items-center gap-2 px-4 py-2" style="color: #16a34a; font-size: 18px; font-weight: 700;">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+          </svg>
+          GitShow
+        </NuxtLink>
+
+        <!-- Nav Links -->
+        <div class="hidden sm:flex items-center gap-1">
+          <NuxtLink
+            v-for="link in navLinks" :key="link.path"
+            :to="link.path"
+            class="nav-pill flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors"
+            :style="route.path === link.path ? 'color: #16a34a; background-color: rgba(22,163,74,0.1);' : 'color: #a1a1aa;'"
+            onmouseover="if(!this.classList.contains('active')) this.style.color='#16a34a'"
+            onmouseout="if(!this.classList.contains('active')) this.style.color='#a1a1aa'"
+          >
+            <i :class="link.icon" class="text-xs"></i>
+            {{ link.label }}
+          </NuxtLink>
+        </div>
+
+        <!-- Contact Button -->
+        <a
+          :href="contactUrl" target="_blank"
+          class="nav-btn flex items-center gap-1.5 px-5 py-2 text-sm font-semibold transition-colors"
+          style="background-color: #16a34a; color: #000;"
+          onmouseover="this.style.backgroundColor='#15803d'"
+          onmouseout="this.style.backgroundColor='#16a34a'"
+        >
+          <i class="fas fa-paper-plane text-xs"></i>
+          联系
+        </a>
+      </div>
+    </div>
+
+    <main class="flex-1 max-w-5xl mx-auto px-4 py-8 w-full">
+      <slot />
+    </main>
+
+    <!-- Footer -->
+    <footer style="border-top: 1px solid rgba(255,255,255,0.06);">
+      <div class="max-w-5xl mx-auto px-4 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div class="text-sm" style="color: #52525b;">
+          © {{ new Date().getFullYear() }} {{ siteTitle }} · Built with GitShow
+        </div>
+        <div v-if="socials.length" class="flex items-center gap-2">
+          <a
+            v-for="(link, i) in socials" :key="i"
+            :href="link.url" target="_blank"
+            class="w-8 h-8 flex items-center justify-center text-sm transition-colors"
+            style="color: #52525b;"
+            onmouseover="this.style.color='#16a34a'"
+            onmouseout="this.style.color='#52525b'"
+          >
+            <i :class="link.icon"></i>
+          </a>
+        </div>
+      </div>
+    </footer>
+  </div>
+</template>
+
+<script setup>
+const route = useRoute()
+const api = useApi()
+
+const navLinks = [
+  { path: '/', label: '主页', icon: 'fas fa-house' },
+  { path: '/projects', label: '项目', icon: 'fas fa-folder' },
+  { path: '/following', label: '关注', icon: 'fas fa-user-plus' },
+  { path: '/feed', label: '动态', icon: 'fas fa-bolt' },
+  { path: '/admin', label: '管理', icon: 'fas fa-gear' },
+]
+
+const { data: me } = useAsyncData('layoutMe', () => api.getMe())
+const { data: settings } = useAsyncData('layoutSettings', () => api.getSettings())
+
+const siteTitle = computed(() => settings.value?.title || 'GitShow')
+const socials = computed(() => settings.value?.social_links || [])
+const contactUrl = computed(() => {
+  if (me.value?.user?.html_url) return me.value.user.html_url
+  return 'https://github.com'
+})
+</script>
