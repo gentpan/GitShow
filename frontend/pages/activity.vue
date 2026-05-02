@@ -11,7 +11,6 @@
         >
           <i :class="t.icon" class="mr-1"></i>
           {{ t.label }}
-          <span v-if="counts[t.type]" class="ml-1 opacity-70">({{ counts[t.type] }})</span>
         </button>
       </div>
     </div>
