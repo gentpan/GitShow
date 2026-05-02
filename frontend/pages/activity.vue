@@ -56,7 +56,7 @@
 const api = useApi()
 const { timeAgo } = useUtils()
 
-const { data: activity, pending } = useAsyncData('activityBoard', () => api.getActivity(undefined, 200))
+const { data: activity, pending } = useAsyncData('activityBoard', () => api.getActivity(undefined, 50))
 
 const selectedType = ref('all')
 
