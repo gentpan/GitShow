@@ -1,44 +1,77 @@
 <template>
   <div class="space-y-6">
-    <h1 class="text-2xl font-bold" style="color: #fafafa;">管理设置</h1>
+    <div class="flex items-center justify-between">
+      <h1 class="text-2xl font-bold" style="color: #fafafa;">管理设置</h1>
+      <div class="flex items-center gap-3">
+        <button
+          v-if="!isUnlocked"
+          class="px-4 py-2 text-sm font-semibold transition-colors"
+          :style="{ backgroundColor: '#16a34a', color: '#000' }"
+          @click="showLogin = true"
+        >
+          登录
+        </button>
+        <button
+          v-else
+          class="px-4 py-2 text-sm font-medium transition-colors"
+          style="background-color: #111; color: #a1a1aa; border: 1px solid rgba(255,255,255,0.1);"
+          @click="logout"
+        >
+          登出
+        </button>
+      </div>
+    </div>
 
     <div v-if="settingsPending || reposPending" class="flex items-center justify-center py-20">
       <div class="w-8 h-8 border-2 border-green-600 border-t-transparent animate-spin" />
     </div>
 
     <div v-else class="space-y-6">
-      <!-- Refresh -->
-      <div class="p-4 flex items-center justify-between" style="background-color: #111; border: 1px solid rgba(255,255,255,0.08);">
-        <div class="flex items-center gap-2">
-          <span class="text-sm" style="color: #a1a1aa;">最后刷新</span>
-          <span class="text-sm" style="color: #52525b;">{{ lastUpdated ? timeAgo(lastUpdated) : '—' }}</span>
+      <!-- Login Modal -->
+      <div v-if="showLogin" class="p-8 text-center" style="background-color: #111; border: 1px solid rgba(255,255,255,0.08);">
+        <div class="text-lg font-medium mb-6" style="color: #fafafa;">登录管理后台</div>
+        <div class="max-w-sm mx-auto space-y-4">
+          <div v-if="loginError" class="text-sm mb-2" style="color: #ef4444;">{{ loginError }}</div>
+          <input
+            v-model="loginUsername"
+            type="text"
+            class="w-full px-4 py-3 text-center text-base outline-none"
+            style="background-color: #111; color: #fafafa; border: 1px solid rgba(255,255,255,0.1);"
+            placeholder="用户名"
+            @focus="$event.target.style.borderColor='#16a34a'"
+            @blur="$event.target.style.borderColor='rgba(255,255,255,0.1)'"
+          />
+          <input
+            v-model="loginPassword"
+            type="password"
+            class="w-full px-4 py-3 text-center text-base outline-none"
+            style="background-color: #111; color: #fafafa; border: 1px solid rgba(255,255,255,0.1);"
+            placeholder="密码"
+            @keyup.enter="doLogin"
+            @focus="$event.target.style.borderColor='#16a34a'"
+            @blur="$event.target.style.borderColor='rgba(255,255,255,0.1)'"
+          />
+          <button
+            class="w-full px-6 py-3 text-sm font-semibold transition-colors"
+            :style="{ backgroundColor: '#16a34a', color: '#000' }"
+            @click="doLogin"
+          >
+            确认
+          </button>
+          <button class="text-xs mt-2" style="color: #52525b;" @click="showLogin = false">取消</button>
         </div>
-        <button
-          class="px-4 py-2 text-sm font-medium transition-colors"
-          :style="{ backgroundColor: '#111', color: '#a1a1aa', border: '1px solid rgba(255,255,255,0.1)' }"
-          :disabled="refreshing"
-          @click="triggerRefresh"
-        >
-          {{ refreshing ? '刷新中...' : '刷新数据' }}
-        </button>
       </div>
 
-      <!-- Password Gate -->
-      <div v-if="showPasswordInput" class="p-8 text-center" style="background-color: #111; border: 1px solid rgba(255,255,255,0.08);">
-        <div class="text-lg font-medium mb-6" style="color: #fafafa;">管理后台</div>
+      <!-- Password Gate (setup / no password configured) -->
+      <div v-else-if="showPasswordInput" class="p-8 text-center" style="background-color: #111; border: 1px solid rgba(255,255,255,0.08);">
+        <div class="text-lg font-medium mb-6" style="color: #fafafa;">设置管理密码</div>
         <div class="max-w-sm mx-auto space-y-4">
-          <div v-if="!form.admin_password" class="text-sm mb-4" style="color: #a1a1aa;">
-            首次设置，请设置管理密码
-          </div>
-          <div v-else-if="passwordError" class="text-sm mb-2" style="color: #ef4444;">
-            密码错误
-          </div>
           <input
             v-model="passwordInput"
             type="password"
             class="w-full px-4 py-3 text-center text-base outline-none"
             style="background-color: #111; color: #fafafa; border: 1px solid rgba(255,255,255,0.1);"
-            :placeholder="form.admin_password ? '请输入密码' : '设置管理密码'"
+            placeholder="设置管理密码"
             @keyup.enter="checkPassword"
             @focus="$event.target.style.borderColor='#16a34a'"
             @blur="$event.target.style.borderColor='rgba(255,255,255,0.1)'"
@@ -48,7 +81,7 @@
             :style="{ backgroundColor: '#16a34a', color: '#000' }"
             @click="checkPassword"
           >
-            {{ form.admin_password ? '登录' : '确认' }}
+            确认
           </button>
         </div>
       </div>
@@ -270,7 +303,12 @@ const showPasswordInput = ref(false)
 const passwordInput = ref('')
 const passwordError = ref(false)
 
-const isUnlocked = ref(false)
+const showLogin = ref(false)
+const loginUsername = ref('')
+const loginPassword = ref('')
+const loginError = ref('')
+
+const isUnlocked = ref(localStorage.getItem('admin_logged_in') === '1')
 
 const { data: settings, pending: settingsPending } = useAsyncData('settings', () => api.getSettings())
 const { data: repos, pending: reposPending } = useAsyncData('adminRepos', () => api.getRepos())
@@ -283,10 +321,29 @@ const refreshing = ref(false)
 function checkPassword() {
   if (passwordInput.value === form.value.admin_password) {
     isUnlocked.value = true
+    localStorage.setItem('admin_logged_in', '1')
     passwordError.value = false
   } else {
     passwordError.value = true
   }
+}
+
+function doLogin() {
+  loginError.value = ''
+  if (loginUsername.value === 'admin' && loginPassword.value === form.value.admin_password) {
+    isUnlocked.value = true
+    localStorage.setItem('admin_logged_in', '1')
+    showLogin.value = false
+    loginPassword.value = ''
+    loginUsername.value = ''
+  } else {
+    loginError.value = '用户名或密码错误'
+  }
+}
+
+function logout() {
+  isUnlocked.value = false
+  localStorage.removeItem('admin_logged_in')
 }
 
 watchEffect(() => {
