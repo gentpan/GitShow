@@ -32,15 +32,20 @@
           <p v-if="repo.description" class="text-sm mt-1 line-clamp-2 h-10" style="color: #a1a1aa;">{{ repo.description }}</p>
           <div class="text-xs mt-2" style="color: #a1a1aa;">{{ timeAgo(repo.updated_at) }}</div>
         </div>
-        <div v-if="repo.lang_pct && Object.keys(repo.lang_pct).length > 0" class="flex h-[8px] w-full mt-auto">
+        <div class="flex h-[8px] w-full mt-auto relative" style="min-width: 0;">
           <div
             v-for="([lang, pct], i) in sortLangPct(repo.lang_pct)" :key="i"
-            class="lang-bar-segment h-full"
-            :style="{ width: pct + '%', backgroundColor: langColor(lang) }"
-            :data-lang="`${lang} ${pct.toFixed(1)}%`"
-          />
+            class="h-full relative group/lang"
+            :style="{ width: Math.max(pct, 1) + '%', backgroundColor: langColor(lang), zIndex: i + 1 }"
+          >
+            <div
+              class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-1.5 py-0.5 text-[10px] whitespace-nowrap opacity-0 group-hover/lang:opacity-100 transition-opacity"
+              style="background-color: rgba(0,0,0,0.85); color: #fafafa; z-index: 100;"
+            >
+              {{ lang }} {{ pct.toFixed(1) }}%
+            </div>
+          </div>
         </div>
-        <div v-else-if="repo.language" class="h-[8px] w-full mt-auto" :style="{ backgroundColor: langColor(repo.language) }"></div>
       </a>
     </div>
   </div>
