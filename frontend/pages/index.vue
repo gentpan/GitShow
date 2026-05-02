@@ -153,7 +153,7 @@
                   </span>
                 </div>
               </div>
-              <p class="text-sm mt-1 line-clamp-2 h-10" style="color: #a1a1aa;">{{ repo.description || 'No description' }}</p>
+              <p v-if="repo.description" class="text-sm mt-1 line-clamp-2 h-10" style="color: #a1a1aa;">{{ repo.description }}</p>
               <div class="text-xs mt-2" style="color: #a1a1aa;">{{ timeAgo(repo.updated_at) }}</div>
             </div>
             <!-- 语言横条 -->
