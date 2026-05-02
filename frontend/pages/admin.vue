@@ -96,6 +96,18 @@
                 @blur="$event.target.style.borderColor='rgba(255,255,255,0.1)'"
               />
             </div>
+            <div>
+              <label class="block text-xs mb-1" style="color: #52525b;">GitHub Token (ghp_xxx)</label>
+              <input
+                v-model="form.github_token"
+                type="password"
+                class="w-full px-4 py-3 text-sm outline-none"
+                style="background-color: #111; color: #fafafa; border: 1px solid rgba(255,255,255,0.1);"
+                placeholder="ghp_xxx"
+                @focus="$event.target.style.borderColor='#16a34a'"
+                @blur="$event.target.style.borderColor='rgba(255,255,255,0.1)'"
+              />
+            </div>
           </div>
         </div>
 
@@ -246,6 +258,7 @@ const form = ref({
   title: 'GitShow',
   github_username: '',
   github_url: '',
+  github_token: '',
   homepage_repo_count: 6,
   homepage_repos: [],
   social_links: [],
@@ -281,6 +294,7 @@ watchEffect(() => {
     form.value.title = settings.value.title || 'GitShow'
     form.value.github_username = settings.value.github_username || ''
     form.value.github_url = settings.value.github_url || ''
+    form.value.github_token = settings.value.github_token || ''
     form.value.homepage_repo_count = settings.value.homepage_repo_count || 6
     form.value.homepage_repos = settings.value.homepage_repos || []
     form.value.social_links = settings.value.social_links || []
@@ -351,6 +365,7 @@ async function save() {
       title: form.value.title,
       github_username: form.value.github_username,
       github_url: form.value.github_url,
+      github_token: form.value.github_token,
       homepage_repo_count: form.value.homepage_repo_count,
       homepage_repos: form.value.homepage_repos,
       social_links: form.value.social_links,

@@ -37,6 +37,7 @@ type Settings struct {
 	Title             string       `json:"title"`
 	GitHubUsername    string       `json:"github_username"`
 	GitHubURL         string       `json:"github_url"`
+	GitHubToken       string       `json:"github_token"`
 	HomepageRepoCount int          `json:"homepage_repo_count"`
 	HomepageRepos     []string     `json:"homepage_repos"`
 	SocialLinks       []SocialLink `json:"social_links"`
@@ -305,6 +306,16 @@ func (s *Server) getGitHubURL() string {
 	return u
 }
 
+func (s *Server) getToken() string {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	t := s.settings.GitHubToken
+	if t != "" {
+		return t
+	}
+	return s.config.Token
+}
+
 func (s *Server) saveSettings(st Settings) error {
 	data, err := json.MarshalIndent(st, "", "  ")
 	if err != nil {
@@ -333,7 +344,7 @@ func (s *Server) githubRequest(method, url string, body []byte) ([]byte, error) 
 		return nil, err
 	}
 	if s.config.Token != "" && s.config.Token != "ghp_your_token_here" {
-		req.Header.Set("Authorization", "Bearer "+s.config.Token)
+		req.Header.Set("Authorization", "Bearer "+s.getToken())
 	}
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
