@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6">
+  <div class="max-w-5xl mx-auto space-y-6">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <h1 class="text-2xl font-bold" style="color: #fafafa;">活动看板</h1>
       <div class="flex items-center gap-2 flex-wrap">
@@ -56,7 +56,7 @@
 const api = useApi()
 const { timeAgo } = useUtils()
 
-const { data: feed, pending } = useAsyncData('feedBoard', () => api.getFeed(200))
+const { data: activity, pending } = useAsyncData('activityBoard', () => api.getActivity(undefined, 200))
 
 const selectedType = ref('all')
 
@@ -72,9 +72,9 @@ const eventTypes = [
 ]
 
 const filteredFeed = computed(() => {
-  if (!feed.value) return []
-  if (selectedType.value === 'all') return feed.value
-  return feed.value.filter(i => i.type === selectedType.value)
+  if (!activity.value) return []
+  if (selectedType.value === 'all') return activity.value
+  return activity.value.filter(i => i.type === selectedType.value)
 })
 </script>
 
