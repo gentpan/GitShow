@@ -426,19 +426,16 @@ func (s *Server) getUserRepos(username string) ([]GitHubRepo, error) {
 }
 
 func (s *Server) getUserOrgRepos(username string) ([]GitHubRepo, error) {
-	// list orgs where user is owner
-	orgsUrl := fmt.Sprintf("https://api.github.com/user/memberships?per_page=100&state=active")
+	// list orgs the user belongs to
+	orgsUrl := fmt.Sprintf("https://api.github.com/user/orgs?per_page=100")
 	data, err := s.githubRequest("GET", orgsUrl, nil)
 	if err != nil {
 		return nil, err
 	}
-	var memberships []struct {
-		Organization struct {
-			Login string `json:"login"`
-		} `json:"organization"`
-		Role string `json:"role_name"`
+	var orgs []struct {
+		Login string `json:"login"`
 	}
-	if err := json.Unmarshal(data, &memberships); err != nil {
+	if err := json.Unmarshal(data, &orgs); err != nil {
 		return nil, err
 	}
 
@@ -446,16 +443,12 @@ func (s *Server) getUserOrgRepos(username string) ([]GitHubRepo, error) {
 	var mu sync.Mutex
 	var wg sync.WaitGroup
 
-	for _, m := range memberships {
-		role := m.Role
-		if role != "owner" {
-			continue
-		}
-		org := m.Organization.Login
+	for _, o := range orgs {
+		login := o.Login
 		wg.Add(1)
-		go func(org string) {
+		go func(login string) {
 			defer wg.Done()
-			url := fmt.Sprintf("https://api.github.com/orgs/%s/repos?sort=updated&per_page=100", org)
+			url := fmt.Sprintf("https://api.github.com/orgs/%s/repos?sort=updated&per_page=100", login)
 			data, err := s.githubRequest("GET", url, nil)
 			if err != nil {
 				return
@@ -471,7 +464,7 @@ func (s *Server) getUserOrgRepos(username string) ([]GitHubRepo, error) {
 				}
 			}
 			mu.Unlock()
-		}(org)
+		}(login)
 	}
 	wg.Wait()
 	return allRepos, nil
