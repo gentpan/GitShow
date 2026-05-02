@@ -39,6 +39,7 @@ type Settings struct {
 	HomepageRepos     []string     `json:"homepage_repos"`
 	SocialLinks       []SocialLink `json:"social_links"`
 	Theme             string       `json:"theme"`
+	AdminPassword     string       `json:"admin_password"`
 }
 
 // ========== GitHub Models ==========
