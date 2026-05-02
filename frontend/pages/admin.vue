@@ -7,6 +7,22 @@
     </div>
 
     <div v-else class="space-y-6">
+      <!-- Refresh -->
+      <div class="p-4 flex items-center justify-between" style="background-color: #111; border: 1px solid rgba(255,255,255,0.08);">
+        <div class="flex items-center gap-2">
+          <span class="text-sm" style="color: #a1a1aa;">最后刷新</span>
+          <span class="text-sm" style="color: #52525b;">{{ lastUpdated ? timeAgo(lastUpdated) : '—' }}</span>
+        </div>
+        <button
+          class="px-4 py-2 text-sm font-medium transition-colors"
+          :style="{ backgroundColor: '#111', color: '#a1a1aa', border: '1px solid rgba(255,255,255,0.1)' }"
+          :disabled="refreshing"
+          @click="triggerRefresh"
+        >
+          {{ refreshing ? '刷新中...' : '刷新数据' }}
+        </button>
+      </div>
+
       <!-- Password Gate -->
       <div v-if="showPasswordInput" class="p-8 text-center" style="background-color: #111; border: 1px solid rgba(255,255,255,0.08);">
         <div class="text-lg font-medium mb-6" style="color: #fafafa;">管理后台</div>
@@ -255,6 +271,11 @@ const isUnlocked = ref(false)
 
 const { data: settings, pending: settingsPending } = useAsyncData('settings', () => api.getSettings())
 const { data: repos, pending: reposPending } = useAsyncData('adminRepos', () => api.getRepos())
+const { data: health } = useAsyncData('health', () => api.getHealth())
+const { timeAgo } = useUtils()
+
+const lastUpdated = computed(() => health.value?.last_updated)
+const refreshing = ref(false)
 
 function checkPassword() {
   if (passwordInput.value === form.value.admin_password) {
@@ -309,6 +330,23 @@ function toggleAll() {
     form.value.homepage_repos = []
   } else {
     form.value.homepage_repos = repos.value.map(r => r.name)
+  }
+}
+
+async function triggerRefresh() {
+  refreshing.value = true
+  try {
+    await api.refreshCache()
+    await refreshNuxtData('health')
+    await refreshNuxtData('repos')
+    await refreshNuxtData('me')
+    await refreshNuxtData('activity')
+    await refreshNuxtData('heatmap')
+    await refreshNuxtData('starHistory')
+    await refreshNuxtData('settings')
+    await refreshNuxtData('adminRepos')
+  } finally {
+    refreshing.value = false
   }
 }
 

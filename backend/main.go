@@ -1273,6 +1273,10 @@ func main() {
 	mux.HandleFunc("/api/health", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 200, map[string]interface{}{"ok": true, "last_updated": srv.getCache().LastUpdated})
 	})
+	mux.HandleFunc("/api/refresh", func(w http.ResponseWriter, r *http.Request) {
+		go srv.refreshCache()
+		writeJSON(w, 200, map[string]string{"status": "refreshing"})
+	})
 	mux.HandleFunc("/rss", srv.handleRSS)
 
 	handler := cors.New(cors.Options{

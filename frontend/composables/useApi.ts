@@ -42,5 +42,6 @@ export const useApi = () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(settings),
     }),
+    refreshCache: () => fetchJson<any>('/api/refresh'),
   }
 }
