@@ -18,10 +18,7 @@
         onmouseover="this.style.borderColor='rgba(255,255,255,0.12)'"
         onmouseout="this.style.borderColor='rgba(255,255,255,0.06)'"
       >
-        <img :src="item.avatar_url" class="w-8 h-8 shrink-0" />
-        <a :href="`https://github.com/${item.actor}`" target="_blank" class="shrink-0 font-medium hover:text-[#16a34a] transition-colors" style="color: #fafafa;">
-          {{ item.actor }}
-        </a>
+        <img :src="item.avatar_url" class="w-8 h-8 rounded-full shrink-0" />
         <span class="text-sm shrink-0" style="color: #a1a1aa;">
           <template v-if="item.type === 'PushEvent'">pushed to</template>
           <template v-else-if="item.type === 'CreateEvent'">{{ item.action }} in</template>
