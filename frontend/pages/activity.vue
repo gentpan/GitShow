@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-5xl mx-auto space-y-6">
+  <div class="max-w-[960px] mx-auto space-y-6">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <h1 class="text-2xl font-bold" style="color: #fafafa;">活动看板</h1>
       <div class="flex items-center gap-2 flex-wrap">
@@ -23,7 +23,7 @@
       该类型暂无动态
     </div>
 
-    <div v-else class="max-w-3xl mx-auto space-y-2">
+    <div v-else class="max-w-[960px] mx-auto space-y-2">
       <div
         v-for="item in filteredFeed" :key="item.id"
         class="flex items-center gap-3 px-4 py-2.5 transition-colors"
