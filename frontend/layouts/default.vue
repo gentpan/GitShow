@@ -21,7 +21,7 @@
             onmouseover="if(!this.classList.contains('active')) this.style.color='var(--theme-primary)'"
             onmouseout="if(!this.classList.contains('active')) this.style.color='#a1a1aa'"
           >
-            <i :class="link.icon" class="text-xs"></i>
+            <i :class="[link.icon, 'text-xs']"></i>
             {{ link.label }}
           </NuxtLink>
         </div>
@@ -62,7 +62,7 @@
         :style="route.path === link.path ? 'color: var(--theme-primary); background-color: rgba(var(--theme-primary-rgb),0.1);' : 'color: #a1a1aa;'"
         @click="mobileMenuOpen = false"
       >
-        <i :class="link.icon" class="text-xs w-4 text-center"></i>
+        <i :class="[link.icon, 'text-xs', 'w-4', 'text-center']"></i>
         {{ link.label }}
       </NuxtLink>
       <a

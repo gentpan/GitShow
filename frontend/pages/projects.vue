@@ -6,7 +6,7 @@
     </div>
 
     <div v-if="pending" class="flex items-center justify-center py-20">
-      <div class="w-8 h-8 border-2" :style="{ borderColor: c, borderTopColor: 'transparent' }" class="animate-spin" />
+      <div class="w-8 h-8 border-2 animate-spin" :style="{ borderColor: c, borderTopColor: 'transparent' }" />
     </div>
 
     <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -9,14 +9,14 @@
           :class="selectedType === t.type ? 'active-filter' : 'inactive-filter'"
           @click="selectedType = t.type"
         >
-          <i :class="t.icon" class="mr-1"></i>
+          <i :class="[t.icon, 'mr-1']"></i>
           {{ t.label }}
         </button>
       </div>
     </div>
 
     <div v-if="pending" class="flex items-center justify-center py-20">
-      <div class="w-8 h-8 border-2" :style="{ borderColor: c, borderTopColor: 'transparent' }" class="animate-spin" />
+      <div class="w-8 h-8 border-2 animate-spin" :style="{ borderColor: c, borderTopColor: 'transparent' }" />
     </div>
 
     <div v-else-if="!filteredFeed?.length" class="text-center py-20" style="color: #a1a1aa;">
