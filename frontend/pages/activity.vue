@@ -16,17 +16,6 @@
       </div>
     </div>
 
-    <!-- Stats Cards -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-      <div v-for="t in statTypes" :key="t.type" class="p-4" style="background-color: #111; border: 1px solid rgba(255,255,255,0.08);">
-        <div class="flex items-center gap-2 mb-2">
-          <i :class="t.icon" style="color: #16a34a;"></i>
-          <span class="text-xs" style="color: #a1a1aa;">{{ t.label }}</span>
-        </div>
-        <div class="text-2xl font-bold" style="color: #fafafa;">{{ counts[t.type] || 0 }}</div>
-      </div>
-    </div>
-
     <div v-if="pending" class="flex items-center justify-center py-20">
       <div class="w-8 h-8 border-2 border-[#16a34a] border-t-transparent animate-spin" />
     </div>
@@ -82,17 +71,6 @@ const eventTypes = [
   { type: 'ForkEvent', label: 'Fork', icon: 'fas fa-code-branch' },
   { type: 'ReleaseEvent', label: '发布', icon: 'fas fa-tag' },
 ]
-
-const statTypes = eventTypes.filter(t => t.type !== 'all')
-
-const counts = computed(() => {
-  const map = {}
-  if (!feed.value) return map
-  for (const t of statTypes) {
-    map[t.type] = feed.value.filter(i => i.type === t.type).length
-  }
-  return map
-})
 
 const filteredFeed = computed(() => {
   if (!feed.value) return []
