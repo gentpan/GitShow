@@ -179,21 +179,6 @@ GitShow/
 └── start.sh               # Local build-and-run helper
 ```
 
-## Runtime Files
-
-These files are intentionally ignored by git because they can contain secrets or machine-local data:
-
-- `config.json`
-- `settings.json`
-- `.env`
-- `star-history.json`
-- `node_modules/`
-- `.nuxt/`
-- `.output/`
-- `dist`
-- `gitshow`
-- `.claude/`
-
 ## License
 
 MIT
