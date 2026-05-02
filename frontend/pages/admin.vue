@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-[960px] mx-auto px-4 space-y-6">
+  <div class="space-y-6">
     <h1 class="text-2xl font-bold" style="color: #fafafa;">管理设置</h1>
 
     <div v-if="settingsPending || reposPending" class="flex items-center justify-center py-20">
