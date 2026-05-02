@@ -16,7 +16,7 @@
     </div>
 
     <div v-if="pending" class="flex items-center justify-center py-20">
-      <div class="w-8 h-8 border-2 border-[#16a34a] border-t-transparent animate-spin" />
+      <div class="w-8 h-8 border-2" :style="{ borderColor: c, borderTopColor: 'transparent' }" class="animate-spin" />
     </div>
 
     <div v-else-if="!filteredFeed?.length" class="text-center py-20" style="color: #a1a1aa;">
@@ -42,7 +42,7 @@
           <template v-else-if="item.type === 'ReleaseEvent'">{{ item.action }} in</template>
           <template v-else>{{ item.action || item.type }}</template>
         </span>
-        <a :href="item.repo_url" target="_blank" class="hover:underline text-sm truncate" style="color: #16a34a;">
+        <a :href="item.repo_url" target="_blank" class="hover:underline text-sm truncate" :style="{ color: c }">
           {{ item.repo }}
         </a>
         <span v-if="item.message" class="text-sm truncate max-w-xs" style="color: #a1a1aa;">{{ item.message }}</span>
@@ -55,6 +55,7 @@
 <script setup>
 const api = useApi()
 const { timeAgo } = useUtils()
+const { c } = useTheme()
 
 const { data: activity, pending } = useAsyncData('activityBoard', () => api.getActivity(undefined, 50))
 
@@ -80,9 +81,9 @@ const filteredFeed = computed(() => {
 
 <style scoped>
 .active-filter {
-  background-color: rgba(22,163,74,0.15);
-  color: #16a34a;
-  border: 1px solid rgba(22,163,74,0.3);
+  background-color: rgba(var(--theme-primary-rgb), 0.15);
+  color: var(--theme-primary);
+  border: 1px solid rgba(var(--theme-primary-rgb), 0.3);
 }
 .inactive-filter {
   background-color: #111;

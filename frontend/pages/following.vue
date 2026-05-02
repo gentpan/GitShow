@@ -3,7 +3,7 @@
     <h1 class="text-2xl font-bold" style="color: #fafafa;">关注的人</h1>
 
     <div v-if="pending" class="flex items-center justify-center py-20">
-      <div class="w-8 h-8 border-2 border-[#16a34a] border-t-transparent animate-spin" />
+      <div class="w-8 h-8 border-2" :style="{ borderColor: c, borderTopColor: 'transparent' }" class="animate-spin" />
     </div>
 
     <div v-else-if="!following?.length" class="text-center py-20" style="color: #a1a1aa;">
@@ -21,7 +21,7 @@
         <div class="flex items-center gap-3">
           <img :src="user.avatar_url" class="w-12 h-12" />
           <div class="min-w-0">
-            <a :href="`https://github.com/${user.username}`" target="_blank" class="font-semibold hover:text-[#16a34a] truncate block transition-colors" style="color: #fafafa;">
+              <a :href="`https://github.com/${user.username}`" target="_blank" class="font-semibold truncate block hover:text-[var(--theme-primary)] transition-colors" style="color: #fafafa;">
               {{ user.username }}
             </a>
             <p v-if="user.bio" class="text-xs truncate" style="color: #a1a1aa;">{{ user.bio }}</p>
@@ -76,6 +76,7 @@
 <script setup>
 const api = useApi()
 const { timeAgo, langColor } = useUtils()
+const { c } = useTheme()
 const { data: following, pending } = useAsyncData('following', () => api.getFollowing())
 
 

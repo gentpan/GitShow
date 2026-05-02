@@ -15,7 +15,7 @@
         >
           <div
             class="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap px-1.5 py-0.5"
-            style="background-color: #16a34a; color: #000;"
+            style="background-color: var(--theme-primary); color: #000;"
           >
             {{ day.count }}
           </div>
@@ -34,6 +34,7 @@
 const props = defineProps({
   heatmap: { type: Array, default: () => [] }
 })
+const { c, rgb } = useTheme()
 
 const chartData = computed(() => {
   if (!props.heatmap || props.heatmap.length === 0) return []
@@ -50,7 +51,7 @@ function barStyle(count) {
   const height = maxCount.value ? Math.round((count / maxCount.value) * maxPx) : 0
   return {
     height: Math.max(height, 4) + 'px',
-    backgroundColor: count > 0 ? 'rgba(22,163,74,0.7)' : '#1a1a1a',
+    backgroundColor: count > 0 ? `rgba(${rgb.value}, 0.7)` : '#1a1a1a',
     minHeight: '4px',
   }
 }

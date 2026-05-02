@@ -15,7 +15,7 @@
         <template v-else-if="item.type === 'ReleaseEvent'">{{ item.action }} in</template>
         <template v-else>{{ item.action || item.type }}</template>
       </span>
-      <a :href="item.repo_url" target="_blank" class="hover:underline text-sm" style="color: #16a34a;">
+      <a :href="item.repo_url" target="_blank" class="hover:underline text-sm" :style="{ color: c }">
         {{ item.repo }}
       </a>
       <span v-if="item.message" class="text-sm truncate max-w-xs" style="color: #a1a1aa;">{{ item.message }}</span>

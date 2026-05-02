@@ -22,7 +22,7 @@
         >
           <div
             class="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap px-1.5 py-0.5"
-            style="background-color: #16a34a; color: #000;"
+            style="background-color: var(--theme-primary); color: #000;"
           >
             {{ point.stars }}
           </div>
@@ -39,6 +39,7 @@
 const props = defineProps({
   history: { type: Array, default: () => [] }
 })
+const { rgb } = useTheme()
 
 const displayData = computed(() => {
   if (!props.history || props.history.length === 0) return []
@@ -63,7 +64,7 @@ function barStyle(stars) {
   const height = Math.max(pct, 4)
   return {
     height: height + '%',
-    backgroundColor: 'rgba(22,163,74,0.7)',
+    backgroundColor: `rgba(${rgb.value}, 0.7)`,
     minHeight: '4px',
   }
 }

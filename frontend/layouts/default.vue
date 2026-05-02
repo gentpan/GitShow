@@ -18,7 +18,7 @@
             :to="link.path"
             class="nav-pill flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors"
             :style="route.path === link.path ? 'color: var(--theme-primary); background-color: rgba(var(--theme-primary-rgb), 0.1);' : 'color: #a1a1aa;'"
-            onmouseover="if(!this.classList.contains('active')) this.style.color='#16a34a'"
+            onmouseover="if(!this.classList.contains('active')) this.style.color='var(--theme-primary)'"
             onmouseout="if(!this.classList.contains('active')) this.style.color='#a1a1aa'"
           >
             <i :class="link.icon" class="text-xs"></i>
@@ -30,9 +30,9 @@
         <a
           :href="contactUrl" target="_blank"
           class="nav-pill flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition-colors"
-          style="background-color: #16a34a; color: #000;"
-          onmouseover="this.style.backgroundColor='#15803d'"
-          onmouseout="this.style.backgroundColor='#16a34a'"
+          style="background-color: var(--theme-primary); color: #000;"
+          onmouseover="this.style.backgroundColor='var(--theme-primary-dark)'"
+          onmouseout="this.style.backgroundColor='var(--theme-primary)'"
         >
           <i class="fas fa-paper-plane text-xs"></i>
           联系
@@ -59,7 +59,7 @@
         v-for="link in navLinks" :key="link.path"
         :to="link.path"
         class="flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors"
-        :style="route.path === link.path ? 'color: #16a34a; background-color: rgba(22,163,74,0.1);' : 'color: #a1a1aa;'"
+        :style="route.path === link.path ? 'color: var(--theme-primary); background-color: rgba(var(--theme-primary-rgb),0.1);' : 'color: #a1a1aa;'"
         @click="mobileMenuOpen = false"
       >
         <i :class="link.icon" class="text-xs w-4 text-center"></i>
@@ -68,7 +68,7 @@
       <a
         :href="contactUrl" target="_blank"
         class="flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors"
-        style="background-color: #16a34a; color: #000;"
+        :style="route.path === link.path ? 'color: var(--theme-primary); background-color: rgba(var(--theme-primary-rgb),0.1);' : 'color: #a1a1aa;'"
         @click="mobileMenuOpen = false"
       >
         <i class="fas fa-paper-plane text-xs w-4 text-center"></i>
@@ -136,6 +136,14 @@ const themeMap = {
   orange: { primary: '#ea580c', rgb: '234, 88, 12' },
 }
 
+const darkenColor = (hex) => {
+  const n = parseInt(hex.slice(1), 16)
+  const r = Math.max(0, (n >> 16) - 24)
+  const g = Math.max(0, ((n >> 8) & 0xff) - 24)
+  const b = Math.max(0, (n & 0xff) - 24)
+  return `rgb(${r}, ${g}, ${b})`
+}
+
 const currentTheme = computed(() => {
   const t = settings.value?.theme || 'green'
   return themeMap[t] || themeMap.green
@@ -145,7 +153,7 @@ const rootStyle = computed(() => ({
   backgroundColor: '#000',
   '--theme-primary': currentTheme.value.primary,
   '--theme-primary-rgb': currentTheme.value.rgb,
-  '--theme-primary-dark': currentTheme.value.primary,
+  '--theme-primary-dark': darkenColor(currentTheme.value.primary),
 }))
 
 const siteTitle = computed(() => settings.value?.title || 'GitShow')

@@ -6,7 +6,7 @@
     </div>
 
     <div v-if="pending" class="flex items-center justify-center py-20">
-      <div class="w-8 h-8 border-2 border-[#16a34a] border-t-transparent animate-spin" />
+      <div class="w-8 h-8 border-2" :style="{ borderColor: c, borderTopColor: 'transparent' }" class="animate-spin" />
     </div>
 
     <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -17,9 +17,9 @@
       >
         <div class="p-4 pb-3">
           <div class="flex items-start justify-between gap-2">
-              <h3 class="font-medium truncate flex items-center gap-2" style="color: #16a34a;">
+              <h3 class="font-medium truncate flex items-center gap-2" :style="{ color: c }">
                 {{ repo.name }}
-                <span v-if="repo.latest_version" class="text-[10px] px-1 py-0.5 rounded shrink-0" style="background-color: #16a34a; color: #111;">{{ repo.latest_version }}</span>
+                <span v-if="repo.latest_version" class="text-[10px] px-1 py-0.5 rounded shrink-0" :style="{ backgroundColor: c, color: '#111' }">{{ repo.latest_version }}</span>
               </h3>
             <div class="flex items-center gap-3 text-xs shrink-0" style="color: #a1a1aa;">
               <span class="flex items-center gap-1">
@@ -57,6 +57,7 @@
 <script setup>
 const api = useApi()
 const { timeAgo, sortLangPct, langColor } = useUtils()
+const { c } = useTheme()
 const { data: repos, pending } = useAsyncData('allRepos', () => api.getRepos())
 const { data: settings } = useAsyncData('projectsSettings', () => api.getSettings())
 

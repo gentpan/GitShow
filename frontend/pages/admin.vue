@@ -377,9 +377,9 @@ async function save() {
 
 <style scoped>
 .active-count {
-  background-color: #16a34a;
+  background-color: var(--theme-primary);
   color: #000;
-  border: 1px solid #16a34a;
+  border: 1px solid var(--theme-primary);
 }
 .inactive-count {
   background-color: #111;
@@ -400,7 +400,7 @@ async function save() {
   transition: background-color 0.2s ease;
 }
 .toggle-on {
-  background-color: #16a34a;
+  background-color: var(--theme-primary);
 }
 .toggle-off {
   background-color: rgba(255,255,255,0.1);
@@ -417,11 +417,11 @@ async function save() {
   background-color: #a1a1aa;
 }
 .btn-save {
-  background-color: #16a34a;
+  background-color: var(--theme-primary);
   color: #000;
 }
 .btn-save:hover {
-  background-color: #15803d;
+  background-color: var(--theme-primary-dark);
 }
 .btn-save:disabled {
   opacity: 0.5;

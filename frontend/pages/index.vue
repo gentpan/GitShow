@@ -2,7 +2,7 @@
   <div class="space-y-8">
     <!-- Loading -->
     <div v-if="pending" class="flex items-center justify-center py-20">
-      <div class="w-8 h-8 border-2 border-[#16a34a] border-t-transparent animate-spin" />
+      <div class="w-8 h-8 border-2" :style="{ borderColor: c, borderTopColor: 'transparent' }" class="animate-spin" />
     </div>
 
     <template v-else>
@@ -33,8 +33,8 @@
                   :href="link.url" target="_blank"
                   class="w-9 h-9 flex items-center justify-center text-sm transition-colors"
                   style="background-color: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: #a1a1aa;"
-                  onmouseover="this.style.borderColor='rgba(22,163,74,0.5)';this.style.color='#16a34a'"
-                  onmouseout="this.style.borderColor='rgba(255,255,255,0.1)';this.style.color='#a1a1aa'"
+                  @mouseover="e => { e.currentTarget.style.borderColor=`rgba(${rgb},0.5)`; e.currentTarget.style.color=c }"
+                  @mouseout="e => { e.currentTarget.style.borderColor='rgba(255,255,255,0.1)'; e.currentTarget.style.color='#a1a1aa' }"
                 >
                   <i :class="link.icon"></i>
                 </a>
@@ -49,14 +49,14 @@
               <a
                 :href="me?.user?.html_url" target="_blank"
                 class="inline-flex items-center gap-2 px-5 h-10 text-sm font-semibold transition-colors"
-                style="background-color: #16a34a; color: #000;"
-                onmouseover="this.style.backgroundColor='#15803d'"
-                onmouseout="this.style.backgroundColor='#16a34a'"
+                :style="{ backgroundColor: c, color: '#000' }"
+                @mouseover="e => e.currentTarget.style.backgroundColor = 'var(--theme-primary-dark)'"
+                @mouseout="e => e.currentTarget.style.backgroundColor = c"
               >
                 <i class="fab fa-github text-base"></i>
                 GitHub
               </a>
-              <a v-if="me?.user?.blog" :href="me.user.blog" target="_blank" class="inline-flex items-center gap-1.5 text-sm transition-colors" style="color: #a1a1aa;" onmouseover="this.style.color='#16a34a'" onmouseout="this.style.color='#a1a1aa'">
+              <a v-if="me?.user?.blog" :href="me.user.blog" target="_blank" class="inline-flex items-center gap-1.5 text-sm transition-colors" style="color: #a1a1aa;" @mouseover="e => e.currentTarget.style.color = c" @mouseout="e => e.currentTarget.style.color = '#a1a1aa'">
                 <i class="fas fa-link text-xs"></i>
                 {{ me.user.blog.replace(/^https?:\/\//, '') }}
               </a>
@@ -65,33 +65,33 @@
         </div>
 
         <!-- Stats 5 cards -->
-        <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-6">
-          <div class="stat-card">
-            <i class="fas fa-folder text-sm mb-2" style="color: #16a34a;"></i>
-            <div class="text-2xl font-bold" style="color: #fafafa;">{{ formatNumber(me?.stats?.total_repos || 0) }}</div>
-            <div class="text-xs mt-0.5" style="color: #a1a1aa;">Repositories</div>
+          <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-6">
+            <div class="stat-card">
+              <i class="fas fa-folder text-sm mb-2" :style="{ color: c }"></i>
+              <div class="text-2xl font-bold" style="color: #fafafa;">{{ formatNumber(me?.stats?.total_repos || 0) }}</div>
+              <div class="text-xs mt-0.5" style="color: #a1a1aa;">Repositories</div>
+            </div>
+            <div class="stat-card">
+              <i class="fas fa-star text-sm mb-2" :style="{ color: c }"></i>
+              <div class="text-2xl font-bold" :style="{ color: c }">{{ formatNumber(me?.stats?.total_stars || 0) }}</div>
+              <div class="text-xs mt-0.5" style="color: #a1a1aa;">Stars</div>
+            </div>
+            <div class="stat-card">
+              <i class="fas fa-code-commit text-sm mb-2" :style="{ color: c }"></i>
+              <div class="text-2xl font-bold" :style="{ color: c }">{{ formatNumber(me?.stats?.total_commits || 0) }}</div>
+              <div class="text-xs mt-0.5" style="color: #a1a1aa;">Commits</div>
+            </div>
+            <div class="stat-card">
+              <i class="fas fa-user-plus text-sm mb-2" :style="{ color: c }"></i>
+              <div class="text-2xl font-bold" style="color: #fafafa;">{{ formatNumber(me?.following_count || 0) }}</div>
+              <div class="text-xs mt-0.5" style="color: #a1a1aa;">Following</div>
+            </div>
+            <div class="stat-card">
+              <i class="fas fa-users text-sm mb-2" :style="{ color: c }"></i>
+              <div class="text-2xl font-bold" style="color: #fafafa;">{{ formatNumber(me?.user?.followers || 0) }}</div>
+              <div class="text-xs mt-0.5" style="color: #a1a1aa;">Followers</div>
+            </div>
           </div>
-          <div class="stat-card">
-            <i class="fas fa-star text-sm mb-2" style="color: #16a34a;"></i>
-            <div class="text-2xl font-bold" style="color: #16a34a;">{{ formatNumber(me?.stats?.total_stars || 0) }}</div>
-            <div class="text-xs mt-0.5" style="color: #a1a1aa;">Stars</div>
-          </div>
-          <div class="stat-card">
-            <i class="fas fa-code-commit text-sm mb-2" style="color: #16a34a;"></i>
-            <div class="text-2xl font-bold" style="color: #16a34a;">{{ formatNumber(me?.stats?.total_commits || 0) }}</div>
-            <div class="text-xs mt-0.5" style="color: #a1a1aa;">Commits</div>
-          </div>
-          <div class="stat-card">
-            <i class="fas fa-user-plus text-sm mb-2" style="color: #16a34a;"></i>
-            <div class="text-2xl font-bold" style="color: #fafafa;">{{ formatNumber(me?.following_count || 0) }}</div>
-            <div class="text-xs mt-0.5" style="color: #a1a1aa;">Following</div>
-          </div>
-          <div class="stat-card">
-            <i class="fas fa-users text-sm mb-2" style="color: #16a34a;"></i>
-            <div class="text-2xl font-bold" style="color: #fafafa;">{{ formatNumber(me?.user?.followers || 0) }}</div>
-            <div class="text-xs mt-0.5" style="color: #a1a1aa;">Followers</div>
-          </div>
-        </div>
       </div>
 
       <!-- Heatmap -->
@@ -138,10 +138,10 @@
           >
             <div class="p-4 pb-3">
               <div class="flex items-start justify-between gap-2">
-                <h3 class="font-medium truncate flex items-center gap-2" style="color: #16a34a;">
-                  <i :class="repoIcon(repo.language)" class="text-xs" style="color: #16a34a;"></i>
+                <h3 class="font-medium truncate flex items-center gap-2" :style="{ color: c }">
+                  <i :class="repoIcon(repo.language)" class="text-xs" :style="{ color: c }"></i>
                   {{ repo.name }}
-                  <span v-if="repo.latest_version" class="text-[10px] px-1 py-0.5 rounded shrink-0" style="background-color: #16a34a; color: #111;">{{ repo.latest_version }}</span>
+                  <span v-if="repo.latest_version" class="text-[10px] px-1 py-0.5 rounded shrink-0" :style="{ backgroundColor: c, color: '#111' }">{{ repo.latest_version }}</span>
                 </h3>
                 <div class="flex items-center gap-3 text-xs shrink-0" style="color: #a1a1aa;">
                   <span class="flex items-center gap-1">
@@ -195,6 +195,7 @@
 <script setup>
 const api = useApi()
 const { langColor, repoIcon, formatNumber, timeAgo, sortLangPct } = useUtils()
+const { c, rgb } = useTheme()
 
 const { data: me, pending: pendingMe } = useAsyncData('me', () => api.getMe())
 const { data: allRepos, pending: pendingRepos } = useAsyncData('repos', () => api.getRepos())
@@ -232,10 +233,10 @@ const heatmapWeeks = computed(() => {
 
 function heatmapStyle(count) {
   if (count === 0) return { backgroundColor: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)' }
-  if (count <= 2) return { backgroundColor: 'rgba(22,163,74,0.2)' }
-  if (count <= 5) return { backgroundColor: 'rgba(22,163,74,0.45)' }
-  if (count <= 10) return { backgroundColor: 'rgba(22,163,74,0.7)' }
-  return { backgroundColor: '#16a34a' }
+  if (count <= 2) return { backgroundColor: `rgba(${rgb.value}, 0.2)` }
+  if (count <= 5) return { backgroundColor: `rgba(${rgb.value}, 0.45)` }
+  if (count <= 10) return { backgroundColor: `rgba(${rgb.value}, 0.7)` }
+  return { backgroundColor: c.value }
 }
 
 
