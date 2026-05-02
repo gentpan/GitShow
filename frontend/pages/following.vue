@@ -24,7 +24,7 @@
             <a :href="`https://github.com/${user.username}`" target="_blank" class="font-semibold hover:text-[#16a34a] truncate block transition-colors" style="color: #fafafa;">
               {{ user.username }}
             </a>
-            <p class="text-xs truncate" style="color: #a1a1aa;">{{ user.bio || 'No bio' }}</p>
+            <p v-if="user.bio" class="text-xs truncate" style="color: #a1a1aa;">{{ user.bio }}</p>
           </div>
         </div>
 
