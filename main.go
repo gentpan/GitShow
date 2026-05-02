@@ -55,6 +55,8 @@ type Settings struct {
 	GitHubUsername     string                `json:"github_username"`
 	GitHubURL          string                `json:"github_url"`
 	GitHubToken        string                `json:"github_token"`
+	ContactLabel       string                `json:"contact_label"`
+	ContactURL         string                `json:"contact_url"`
 	HomepageRepoCount  int                   `json:"homepage_repo_count"`
 	HomepageRepos      []string              `json:"homepage_repos"`
 	SocialLinks        []SocialLink          `json:"social_links"`
@@ -67,6 +69,8 @@ type PublicSettings struct {
 	Title             string       `json:"title"`
 	GitHubUsername    string       `json:"github_username"`
 	GitHubURL         string       `json:"github_url"`
+	ContactLabel      string       `json:"contact_label"`
+	ContactURL        string       `json:"contact_url"`
 	HomepageRepoCount int          `json:"homepage_repo_count"`
 	HomepageRepos     []string     `json:"homepage_repos"`
 	SocialLinks       []SocialLink `json:"social_links"`
@@ -410,6 +414,8 @@ func (s *Server) getPublicSettings() PublicSettings {
 		Title:             st.Title,
 		GitHubUsername:    st.GitHubUsername,
 		GitHubURL:         st.GitHubURL,
+		ContactLabel:      st.ContactLabel,
+		ContactURL:        st.ContactURL,
 		HomepageRepoCount: st.HomepageRepoCount,
 		HomepageRepos:     st.HomepageRepos,
 		SocialLinks:       st.SocialLinks,
@@ -1402,81 +1408,6 @@ func (s *Server) handleStarHistory(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 200, s.getStarHistory())
 }
 
-func (s *Server) handleRSS(w http.ResponseWriter, r *http.Request) {
-	c := s.getCache()
-	settings := s.getSettings()
-	title := settings.Title
-	if title == "" {
-		title = "GitShow"
-	}
-
-	var items []FeedItem
-	selfActor, selfAvatar := "", ""
-	if c.User != nil {
-		selfActor, selfAvatar = c.User.Login, c.User.AvatarURL
-	}
-	selfActivities := eventsToActivities(c.Events, selfActor, selfAvatar)
-	for _, it := range selfActivities {
-		items = append(items, activityToFeedItem(it))
-	}
-	for _, fc := range c.Following {
-		if fc == nil || fc.User == nil {
-			continue
-		}
-		acts := eventsToActivities(fc.Events, fc.User.Login, fc.User.AvatarURL)
-		for _, it := range acts {
-			items = append(items, activityToFeedItem(it))
-		}
-	}
-	sort.Slice(items, func(i, j int) bool {
-		return items[i].CreatedAt.After(items[j].CreatedAt)
-	})
-	if len(items) > 50 {
-		items = items[:50]
-	}
-
-	w.Header().Set("Content-Type", "application/rss+xml; charset=utf-8")
-	fmt.Fprintf(w, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
-	fmt.Fprintf(w, "<rss version=\"2.0\">\n")
-	fmt.Fprintf(w, "  <channel>\n")
-	fmt.Fprintf(w, "    <title>%s Activity Feed</title>\n", escapeXML(title))
-	fmt.Fprintf(w, "    <link>%s</link>\n", escapeXML(s.getGitHubURL()))
-	fmt.Fprintf(w, "    <description>GitHub activity feed for %s and following</description>\n", escapeXML(s.getUsername()))
-	fmt.Fprintf(w, "    <lastBuildDate>%s</lastBuildDate>\n", time.Now().Format(time.RFC1123))
-	for _, it := range items {
-		t := fmt.Sprintf("%s %s %s", it.Actor, it.Action, it.Repo)
-		if it.Target != "" {
-			t = fmt.Sprintf("%s %s %s - %s", it.Actor, it.Action, it.Repo, it.Target)
-		}
-		link := it.RepoURL
-		if it.TargetURL != "" {
-			link = it.TargetURL
-		}
-		desc := it.Message
-		if desc == "" && len(it.Commits) > 0 {
-			desc = it.Commits[0].Message
-		}
-		fmt.Fprintf(w, "    <item>\n")
-		fmt.Fprintf(w, "      <title>%s</title>\n", escapeXML(t))
-		fmt.Fprintf(w, "      <link>%s</link>\n", escapeXML(link))
-		fmt.Fprintf(w, "      <pubDate>%s</pubDate>\n", it.CreatedAt.Format(time.RFC1123))
-		if desc != "" {
-			fmt.Fprintf(w, "      <description>%s</description>\n", escapeXML(desc))
-		}
-		fmt.Fprintf(w, "    </item>\n")
-	}
-	fmt.Fprintf(w, "  </channel>\n")
-	fmt.Fprintf(w, "</rss>\n")
-}
-
-func escapeXML(s string) string {
-	s = strings.ReplaceAll(s, "&", "&amp;")
-	s = strings.ReplaceAll(s, "<", "&lt;")
-	s = strings.ReplaceAll(s, ">", "&gt;")
-	s = strings.ReplaceAll(s, "\"", "&quot;")
-	return s
-}
-
 func (s *Server) handleSettingsGet(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 200, s.getPublicSettings())
 }
@@ -1737,8 +1668,9 @@ func main() {
 		go srv.refreshCache()
 		writeJSON(w, 200, map[string]string{"status": "refreshing"})
 	})
-	mux.HandleFunc("/rss", srv.handleRSS)
-
+	mux.HandleFunc("/rss", func(w http.ResponseWriter, r *http.Request) {
+		writeJSON(w, http.StatusNotFound, map[string]string{"error": "rss disabled"})
+	})
 	staticDir := os.Getenv("STATIC_DIR")
 	if staticDir != "" {
 		log.Printf("serving web assets from %s", staticDir)

@@ -33,7 +33,7 @@
           onmouseout="this.style.backgroundColor='var(--theme-primary)'"
         >
           <i class="fas fa-paper-plane text-xs"></i>
-          联系
+          {{ contactLabel }}
         </a>
 
         <!-- Mobile Hamburger -->
@@ -67,7 +67,7 @@
         @click="mobileMenuOpen = false"
       >
         <i class="fas fa-paper-plane text-xs w-4 text-center"></i>
-        联系
+        {{ contactLabel }}
       </a>
     </div>
 
@@ -103,16 +103,6 @@
             onmouseout="this.style.color='#52525b'"
           >
             <i :class="link.icon"></i>
-          </a>
-          <a
-            :href="rssUrl" target="_blank"
-            class="w-8 h-8 flex items-center justify-center text-sm transition-colors"
-            style="color: #52525b;"
-            onmouseover="this.style.color='var(--theme-primary)'"
-            onmouseout="this.style.color='#52525b'"
-            title="RSS Feed"
-          >
-            <i class="fas fa-rss"></i>
           </a>
           <button
             v-if="isAdminLoggedIn"
@@ -262,14 +252,11 @@ const rootStyle = computed(() => ({
 }))
 
 const socials = computed(() => settings.value?.social_links || [])
+const contactLabel = computed(() => settings.value?.contact_label || '联系')
 const contactUrl = computed(() => {
+  if (settings.value?.contact_url) return settings.value.contact_url
   if (me.value?.user?.html_url) return me.value.user.html_url
   return 'https://github.com'
-})
-
-const rssUrl = computed(() => {
-  const base = useRuntimeConfig().public.apiBase || ''
-  return base + '/rss'
 })
 
 function logoutAdmin() {

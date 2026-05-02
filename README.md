@@ -1,6 +1,6 @@
 # GitShow
 
-GitShow is a self-hosted GitHub profile dashboard that turns your GitHub account into a clean personal homepage, project showcase, activity board, RSS feed, and lightweight admin panel.
+GitShow is a self-hosted GitHub profile dashboard that turns your GitHub account into a clean personal homepage, project showcase, activity board, and lightweight admin panel.
 
 It is designed for simple deployment: the Nuxt frontend is generated as static assets and embedded into a single Go service. One container, one process, one public port.
 
@@ -10,7 +10,6 @@ It is designed for simple deployment: the Nuxt frontend is generated as static a
 - Contribution heatmap, daily activity chart, recent activity, and star history
 - Project showcase controlled from the admin panel
 - Following page with followed users, recent repositories, and recent activity
-- RSS feed for your own GitHub activity plus followed users
 - Admin settings for title, GitHub account, token, social links, homepage projects, and password
 - Passkey support for passwordless admin login
 - Favicon and site manifest support from the `public/` directory
@@ -18,7 +17,7 @@ It is designed for simple deployment: the Nuxt frontend is generated as static a
 
 ## Tech Stack
 
-- Go HTTP service for API, cache refresh, RSS, settings, Passkey/WebAuthn, and static hosting
+- Go HTTP service for API, cache refresh, settings, Passkey/WebAuthn, and static hosting
 - Nuxt 3 SPA generated as static files
 - Tailwind CSS for the interface
 - GitHub REST API and GraphQL API for repository, activity, and contribution data
@@ -113,7 +112,7 @@ If no repositories are enabled, the projects page shows an empty-state message.
 
 ```text
 GitShow/
-├── main.go                # Go API, cache, RSS, Passkey, and embedded static server
+├── main.go                # Go API, cache, Passkey, and embedded static server
 ├── Dockerfile             # Multi-stage build: Nuxt static output + Go binary
 ├── docker-compose.yml     # Single app service
 ├── go.mod                 # Go dependencies

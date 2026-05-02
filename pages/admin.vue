@@ -72,6 +72,37 @@
           </div>
         </div>
 
+        <!-- 联系按钮 -->
+        <div class="p-6" style="background-color: #111; border: 1px solid rgba(255,255,255,0.08);">
+          <h2 class="text-sm font-medium mb-4" style="color: #a1a1aa;">右上角联系按钮</h2>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs mb-1" style="color: #52525b;">按钮名称</label>
+              <input
+                v-model="form.contact_label"
+                type="text"
+                class="w-full px-4 py-3 text-sm outline-none"
+                style="background-color: #111; color: #fafafa; border: 1px solid rgba(255,255,255,0.1);"
+                placeholder="联系"
+                @focus="$event.target.style.borderColor='#16a34a'"
+                @blur="$event.target.style.borderColor='rgba(255,255,255,0.1)'"
+              />
+            </div>
+            <div>
+              <label class="block text-xs mb-1" style="color: #52525b;">跳转链接</label>
+              <input
+                v-model="form.contact_url"
+                type="text"
+                class="w-full px-4 py-3 text-sm outline-none"
+                style="background-color: #111; color: #fafafa; border: 1px solid rgba(255,255,255,0.1);"
+                placeholder="https://github.com/your-name"
+                @focus="$event.target.style.borderColor='#16a34a'"
+                @blur="$event.target.style.borderColor='rgba(255,255,255,0.1)'"
+              />
+            </div>
+          </div>
+        </div>
+
         <!-- 数量设置 -->
         <div class="p-6" style="background-color: #111; border: 1px solid rgba(255,255,255,0.08);">
           <h2 class="text-sm font-medium mb-4" style="color: #a1a1aa;">首页项目显示数量</h2>
@@ -258,6 +289,8 @@ const form = ref({
   github_username: '',
   github_url: '',
   github_token: '',
+  contact_label: '',
+  contact_url: '',
   homepage_repo_count: 6,
   homepage_repos: [],
   social_links: [],
@@ -279,6 +312,8 @@ function applySettings(st) {
   form.value.github_username = st.github_username || ''
   form.value.github_url = st.github_url || ''
   form.value.github_token = st.github_token || ''
+  form.value.contact_label = st.contact_label || ''
+  form.value.contact_url = st.contact_url || ''
   form.value.homepage_repo_count = st.homepage_repo_count || 6
   form.value.homepage_repos = st.homepage_repos || []
   form.value.social_links = st.social_links || []
@@ -375,6 +410,8 @@ async function save() {
       github_username: form.value.github_username,
       github_url: form.value.github_url,
       github_token: form.value.github_token,
+      contact_label: form.value.contact_label,
+      contact_url: form.value.contact_url,
       homepage_repo_count: form.value.homepage_repo_count,
       homepage_repos: form.value.homepage_repos,
       social_links: form.value.social_links,

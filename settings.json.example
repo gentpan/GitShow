@@ -1,5 +1,7 @@
 {
   "title": "GitShow",
+  "contact_label": "联系",
+  "contact_url": "https://github.com",
   "homepage_repo_count": 6,
   "homepage_repos": [],
   "social_links": []
