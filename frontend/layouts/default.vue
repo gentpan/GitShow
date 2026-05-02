@@ -122,7 +122,6 @@ const navLinks = [
   { path: '/', label: '主页', icon: 'fas fa-house' },
   { path: '/projects', label: '项目', icon: 'fas fa-folder' },
   { path: '/following', label: '关注', icon: 'fas fa-user-plus' },
-  { path: '/feed', label: '动态', icon: 'fas fa-bolt' },
   { path: '/activity', label: '看板', icon: 'fas fa-chart-bar' },
   { path: '/admin', label: '管理', icon: 'fas fa-gear' },
 ]
