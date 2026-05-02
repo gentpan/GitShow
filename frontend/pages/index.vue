@@ -113,10 +113,10 @@
           <span>Less</span>
           <div class="flex gap-1">
             <div class="w-3 h-3" style="background-color: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1);" />
-            <div class="w-3 h-3" style="background-color: rgba(22,163,74,0.2);" />
-            <div class="w-3 h-3" style="background-color: rgba(22,163,74,0.45);" />
-            <div class="w-3 h-3" style="background-color: rgba(22,163,74,0.7);" />
-            <div class="w-3 h-3" style="background-color: #16a34a;" />
+            <div class="w-3 h-3" style="background-color: rgba(var(--theme-primary-rgb), 0.2);" />
+            <div class="w-3 h-3" style="background-color: rgba(var(--theme-primary-rgb), 0.45);" />
+            <div class="w-3 h-3" style="background-color: rgba(var(--theme-primary-rgb), 0.7);" />
+            <div class="w-3 h-3" style="background-color: var(--theme-primary);" />
           </div>
           <span>More</span>
         </div>

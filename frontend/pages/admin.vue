@@ -252,7 +252,10 @@ const themeColorMap = {
   orange: '#ea580c',
 }
 
-const currentThemeColor = computed(() => themeColorMap[form.value.theme] || '#16a34a')
+const currentThemeColor = computed(() => {
+  const t = form.value.theme || 'green'
+  return themeColorMap[t] || themeColorMap.green
+})
 
 const form = ref({
   title: 'GitShow',
@@ -299,7 +302,7 @@ watchEffect(() => {
 })
 
 function addSocialLink() {
-  form.value.social_links.push({ icon: 'fab fa-github', url: '', color: '#16a34a' })
+  form.value.social_links.push({ icon: 'fab fa-github', url: '', color: themeColorMap.green })
 }
 
 function removeSocialLink(i) {
