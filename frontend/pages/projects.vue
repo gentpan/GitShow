@@ -2,7 +2,7 @@
   <div class="space-y-6">
     <div class="flex items-center justify-between">
       <h1 class="text-2xl font-bold" style="color: #fafafa;">所有项目</h1>
-      <span class="text-sm" style="color: #a1a1aa;">{{ repos?.length || 0 }} 个仓库</span>
+      <span class="text-sm" style="color: #a1a1aa;">{{ filteredRepos?.length || 0 }} 个仓库</span>
     </div>
 
     <div v-if="pending" class="flex items-center justify-center py-20">
@@ -11,7 +11,7 @@
 
     <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <a
-        v-for="repo in repos" :key="repo.id"
+        v-for="repo in filteredRepos" :key="repo.id"
         :href="repo.html_url" target="_blank"
         class="repo-card group block overflow-hidden"
       >
@@ -50,6 +50,16 @@
 const api = useApi()
 const { timeAgo, sortLangPct, langColor } = useUtils()
 const { data: repos, pending } = useAsyncData('allRepos', () => api.getRepos())
+const { data: settings } = useAsyncData('projectsSettings', () => api.getSettings())
+
+const filteredRepos = computed(() => {
+  if (!repos.value) return []
+  const selected = settings.value?.homepage_repos || []
+  if (selected.length > 0) {
+    return repos.value.filter(r => selected.includes(r.name))
+  }
+  return repos.value
+})
 
 
 </script>
