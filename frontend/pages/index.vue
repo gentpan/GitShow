@@ -217,7 +217,8 @@ const repos = computed(() => {
     }
     return ordered.slice(0, count)
   }
-  return allRepos.value.slice(0, count)
+  // no selection: show by latest updated
+  return [...allRepos.value].sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at)).slice(0, count)
 })
 
 const heatmapWeeks = computed(() => {

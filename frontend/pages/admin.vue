@@ -153,7 +153,7 @@
         <!-- 仓库 Toggle -->
         <div class="p-6" style="background-color: #111; border: 1px solid rgba(255,255,255,0.08);">
           <div class="flex items-center justify-between mb-4">
-            <h2 class="text-sm font-medium" style="color: #a1a1aa;">首页展示项目</h2>
+            <h2 class="text-sm font-medium" style="color: #a1a1aa;">项目管理</h2>
             <button class="text-xs" :style="{ color: currentThemeColor }" @click="toggleAll">
               {{ allSelected ? '取消全选' : '全选' }}
             </button>
@@ -167,6 +167,9 @@
               <div class="flex items-center gap-3 min-w-0">
                 <div class="w-2 h-2 shrink-0" :style="{ backgroundColor: repo.language ? langColor(repo.language) : '#52525b' }" />
                 <span class="text-sm truncate" style="color: #fafafa;">{{ repo.name }}</span>
+                <span v-if="repo.full_name && repo.full_name.split('/')[0] !== 'gentpan'" class="text-[10px] px-1 py-0.5 shrink-0" style="background-color: rgba(255,255,255,0.08); color: #a1a1aa;">
+                  {{ repo.full_name.split('/')[0] }}
+                </span>
                 <span class="text-xs shrink-0" style="color: #a1a1aa;">{{ repo.stargazers_count }} ★</span>
               </div>
               <div class="w-10 h-5 shrink-0 relative toggle-bg" :class="isSelected(repo.name) ? 'toggle-on' : 'toggle-off'">
