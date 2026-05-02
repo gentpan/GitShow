@@ -40,12 +40,12 @@
             style="background-color: #111; color: #fafafa; border: 1px solid rgba(255,255,255,0.1);"
             :placeholder="form.admin_password ? '请输入密码' : '设置管理密码'"
             @keyup.enter="checkPassword"
-            @focus="$event.target.style.borderColor=currentThemeColor"
+            @focus="$event.target.style.borderColor='#16a34a'"
             @blur="$event.target.style.borderColor='rgba(255,255,255,0.1)'"
           />
           <button
             class="w-full px-6 py-3 text-sm font-semibold transition-colors"
-            :style="{ backgroundColor: currentThemeColor, color: '#000' }"
+            :style="{ backgroundColor: '#16a34a', color: '#000' }"
             @click="checkPassword"
           >
             {{ form.admin_password ? '登录' : '确认' }}
@@ -63,40 +63,9 @@
             class="w-full px-4 py-3 text-base outline-none transition-colors"
             style="background-color: #111; color: #fafafa; border: 1px solid rgba(255,255,255,0.1);"
             placeholder="GitShow"
-            @focus="$event.target.style.borderColor=currentThemeColor"
+            @focus="$event.target.style.borderColor='#16a34a'"
             @blur="$event.target.style.borderColor='rgba(255,255,255,0.1)'"
           />
-        </div>
-
-        <!-- 主题设置 -->
-        <div class="p-6" style="background-color: #111; border: 1px solid rgba(255,255,255,0.08);">
-          <h2 class="text-sm font-medium mb-4" style="color: #a1a1aa;">主题颜色</h2>
-          <div class="flex gap-3">
-            <button
-              v-for="t in themes" :key="t.key"
-              class="w-10 h-10 transition-transform hover:scale-110"
-              :class="form.theme === t.key ? 'ring-2 ring-offset-2 ring-offset-black' : ''"
-              :style="{ backgroundColor: t.color, '--ring-color': t.color }"
-              :title="t.label"
-              @click="form.theme = t.key"
-            />
-          </div>
-          <!-- Theme Preview -->
-          <div class="mt-4 p-4" :style="{ borderTop: '3px solid ' + currentThemeColor }">
-            <div class="text-xs mb-3" style="color: #a1a1aa;">预览</div>
-            <div class="flex items-center gap-2 flex-wrap">
-              <button
-                class="px-4 py-1.5 text-xs font-medium"
-                :style="{ backgroundColor: currentThemeColor, color: '#000' }"
-              >按钮</button>
-              <a
-                class="px-4 py-1.5 text-xs font-medium transition-colors"
-                :style="{ backgroundColor: currentThemeColor + '22', color: currentThemeColor, border: '1px solid ' + currentThemeColor + '55' }"
-              >胶囊</a>
-              <span class="text-xs" :style="{ color: currentThemeColor }">主色文字</span>
-              <div class="w-6 h-6 rounded" :style="{ backgroundColor: currentThemeColor }"></div>
-            </div>
-          </div>
         </div>
 
         <!-- 数量设置 -->
@@ -118,7 +87,7 @@
         <div class="p-6" style="background-color: #111; border: 1px solid rgba(255,255,255,0.08);">
           <div class="flex items-center justify-between mb-4">
             <h2 class="text-sm font-medium" style="color: #a1a1aa;">社交链接 (Icon 按钮)</h2>
-            <button class="text-xs flex items-center gap-1" :style="{ color: currentThemeColor }" @click="addSocialLink">
+            <button class="text-xs flex items-center gap-1" :style="{ color: '#16a34a' }" @click="addSocialLink">
               <i class="fas fa-plus"></i> 添加
             </button>
           </div>
@@ -170,7 +139,7 @@
         <div class="p-6" style="background-color: #111; border: 1px solid rgba(255,255,255,0.08);">
           <div class="flex items-center justify-between mb-4">
             <h2 class="text-sm font-medium" style="color: #a1a1aa;">项目管理</h2>
-            <button class="text-xs" :style="{ color: currentThemeColor }" @click="toggleAll">
+            <button class="text-xs" :style="{ color: '#16a34a' }" @click="toggleAll">
               {{ allSelected ? '取消全选' : '全选' }}
             </button>
           </div>
@@ -205,7 +174,7 @@
               class="flex-1 px-4 py-3 text-sm outline-none"
               style="background-color: #111; color: #fafafa; border: 1px solid rgba(255,255,255,0.1);"
               placeholder="设置或修改管理密码，留空则无需密码"
-              @focus="$event.target.style.borderColor=currentThemeColor"
+              @focus="$event.target.style.borderColor='#16a34a'"
               @blur="$event.target.style.borderColor='rgba(255,255,255,0.1)'"
             />
             <span class="text-xs shrink-0" style="color: #52525b;">留空则不启用密码</span>
@@ -216,13 +185,13 @@
         <div class="flex items-center gap-4">
           <button
             class="px-8 h-12 text-base font-semibold transition-colors btn-save"
-            :style="{ backgroundColor: currentThemeColor, color: '#000' }"
+            :style="{ backgroundColor: '#16a34a', color: '#000' }"
             :disabled="saving"
             @click="save"
           >
             {{ saving ? '保存中...' : '保存设置' }}
           </button>
-          <span v-if="saved" class="text-sm" :style="{ color: currentThemeColor }">✓ 已保存</span>
+          <span v-if="saved" class="text-sm" :style="{ color: '#16a34a' }">✓ 已保存</span>
           <span v-if="error" class="text-sm" style="color: #ef4444;">{{ error }}</span>
         </div>
       </div>
@@ -238,24 +207,9 @@ const saving = ref(false)
 const saved = ref(false)
 const error = ref('')
 
-const themes = [
-  { key: 'green', label: '绿色', color: '#16a34a' },
-  { key: 'blue', label: '蓝色', color: '#2563eb' },
-  { key: 'purple', label: '紫色', color: '#9333ea' },
-  { key: 'orange', label: '橙色', color: '#ea580c' },
-]
-
 const themeColorMap = {
   green: '#16a34a',
-  blue: '#2563eb',
-  purple: '#9333ea',
-  orange: '#ea580c',
 }
-
-const currentThemeColor = computed(() => {
-  const t = form.value.theme || 'green'
-  return themeColorMap[t] || themeColorMap.green
-})
 
 const form = ref({
   title: 'GitShow',
