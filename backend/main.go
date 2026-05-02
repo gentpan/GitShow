@@ -59,18 +59,19 @@ type GitHubUser struct {
 }
 
 type GitHubRepo struct {
-	ID          int64             `json:"id"`
-	Name        string            `json:"name"`
-	FullName    string            `json:"full_name"`
-	Description string            `json:"description"`
-	HtmlURL     string            `json:"html_url"`
-	Language    string            `json:"language"`
-	Private     bool              `json:"private"`
-	Stars       int               `json:"stargazers_count"`
-	Forks       int               `json:"forks_count"`
-	UpdatedAt   time.Time         `json:"updated_at"`
-	Languages   map[string]int    `json:"languages"`
-	LangPct     map[string]float64 `json:"lang_pct"`
+	ID            int64             `json:"id"`
+	Name          string            `json:"name"`
+	FullName      string            `json:"full_name"`
+	Description   string            `json:"description"`
+	HtmlURL       string            `json:"html_url"`
+	Language      string            `json:"language"`
+	Private       bool              `json:"private"`
+	Stars         int               `json:"stargazers_count"`
+	Forks         int               `json:"forks_count"`
+	UpdatedAt     time.Time         `json:"updated_at"`
+	Languages     map[string]int    `json:"languages"`
+	LangPct       map[string]float64 `json:"lang_pct"`
+	LatestVersion string            `json:"latest_version"`
 }
 
 type GitHubEvent struct {
@@ -402,6 +403,21 @@ func (s *Server) getRepoLanguages(owner, repo string) (map[string]int, error) {
 	return langs, nil
 }
 
+func (s *Server) getLatestRelease(owner, repo string) (string, error) {
+	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/latest", owner, repo)
+	data, err := s.githubRequest("GET", url, nil)
+	if err != nil {
+		return "", nil
+	}
+	var release struct {
+		TagName string `json:"tag_name"`
+	}
+	if err := json.Unmarshal(data, &release); err != nil {
+		return "", nil
+	}
+	return release.TagName, nil
+}
+
 func (s *Server) getEvents(username string, page int) ([]GitHubEvent, error) {
 	url := fmt.Sprintf("https://api.github.com/users/%s/events/public?per_page=100&page=%d", username, page)
 	data, err := s.githubRequest("GET", url, nil)
@@ -515,7 +531,7 @@ func (s *Server) refreshCache() {
 			cache.TotalStars += r.Stars
 		}
 		cache.TotalRepos = len(repos)
-		// fetch languages concurrently
+		// fetch languages & latest release concurrently
 		var langWg sync.WaitGroup
 		var langMu sync.Mutex
 		for i := range repos {
@@ -543,9 +559,11 @@ func (s *Server) refreshCache() {
 						pct[k] = float64(v) / float64(total) * 100
 					}
 				}
+				tag, _ := s.getLatestRelease(owner, repoName)
 				langMu.Lock()
 				repos[idx].Languages = langs
 				repos[idx].LangPct = pct
+				repos[idx].LatestVersion = tag
 				langMu.Unlock()
 			}(i)
 		}

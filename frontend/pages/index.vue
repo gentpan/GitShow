@@ -141,6 +141,7 @@
                 <h3 class="font-medium truncate flex items-center gap-2" style="color: #16a34a;">
                   <i :class="repoIcon(repo.language)" class="text-xs" style="color: #16a34a;"></i>
                   {{ repo.name }}
+                  <span v-if="repo.latest_version" class="text-[10px] px-1 py-0.5 rounded shrink-0" style="background-color: #16a34a; color: #111;">{{ repo.latest_version }}</span>
                 </h3>
                 <div class="flex items-center gap-3 text-xs shrink-0" style="color: #a1a1aa;">
                   <span class="flex items-center gap-1">
