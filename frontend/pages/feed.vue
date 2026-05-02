@@ -6,13 +6,13 @@
       <div class="w-8 h-8 border-2 border-[#16a34a] border-t-transparent animate-spin" />
     </div>
 
-    <div v-else-if="!feed?.length" class="text-center py-20" style="color: #a1a1aa;">
+    <div v-else-if="!todayFeed?.length" class="text-center py-20" style="color: #a1a1aa;">
       暂无动态
     </div>
 
     <div v-else class="max-w-3xl mx-auto space-y-2">
       <div
-        v-for="item in feed" :key="item.id"
+        v-for="item in todayFeed" :key="item.id"
         class="flex items-center gap-3 px-4 py-2.5 transition-colors"
         style="background-color: #111; border: 1px solid rgba(255,255,255,0.08);"
         onmouseover="this.style.borderColor='rgba(255,255,255,0.12)'"
@@ -43,4 +43,10 @@
 const api = useApi()
 const { timeAgo } = useUtils()
 const { data: feed, pending } = useAsyncData('feed', () => api.getFeed(50))
+
+const todayFeed = computed(() => {
+  if (!feed.value) return []
+  const today = new Date().toDateString()
+  return feed.value.filter(item => new Date(item.created_at).toDateString() === today)
+})
 </script>
