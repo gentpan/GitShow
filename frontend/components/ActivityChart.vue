@@ -46,10 +46,10 @@ const maxCount = computed(() => {
 })
 
 function barStyle(count) {
-  const pct = maxCount.value ? (count / maxCount.value) * 100 : 0
-  const height = Math.max(pct, 4)
+  const maxPx = 128 // 固定高度对应 maxCount
+  const height = maxCount.value ? Math.round((count / maxCount.value) * maxPx) : 0
   return {
-    height: height + '%',
+    height: Math.max(height, 4) + 'px',
     backgroundColor: count > 0 ? 'rgba(22,163,74,0.7)' : '#1a1a1a',
     minHeight: '4px',
   }
