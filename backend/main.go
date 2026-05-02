@@ -58,16 +58,17 @@ type GitHubUser struct {
 }
 
 type GitHubRepo struct {
-	ID          int64            `json:"id"`
-	Name        string           `json:"name"`
-	FullName    string           `json:"full_name"`
-	Description string           `json:"description"`
-	HtmlURL     string           `json:"html_url"`
-	Language    string           `json:"language"`
-	Stars       int              `json:"stargazers_count"`
-	Forks       int              `json:"forks_count"`
-	UpdatedAt   time.Time        `json:"updated_at"`
-	Languages   map[string]int   `json:"languages"`
+	ID          int64             `json:"id"`
+	Name        string            `json:"name"`
+	FullName    string            `json:"full_name"`
+	Description string            `json:"description"`
+	HtmlURL     string            `json:"html_url"`
+	Language    string            `json:"language"`
+	Private     bool              `json:"private"`
+	Stars       int               `json:"stargazers_count"`
+	Forks       int               `json:"forks_count"`
+	UpdatedAt   time.Time         `json:"updated_at"`
+	Languages   map[string]int    `json:"languages"`
 	LangPct     map[string]float64 `json:"lang_pct"`
 }
 
@@ -356,7 +357,14 @@ func (s *Server) getRepos(username string) ([]GitHubRepo, error) {
 	if err := json.Unmarshal(data, &repos); err != nil {
 		return nil, err
 	}
-	return repos, nil
+	// filter out private repos
+	public := repos[:0]
+	for _, r := range repos {
+		if !r.Private {
+			public = append(public, r)
+		}
+	}
+	return public, nil
 }
 
 func (s *Server) getUserFollowing(username string, limit int) ([]string, error) {
