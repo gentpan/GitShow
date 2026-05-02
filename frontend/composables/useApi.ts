@@ -1,5 +1,10 @@
 const getBase = () => {
   const config = useRuntimeConfig()
+  // Server-side requests go through internal Docker network
+  if (process.server) {
+    return config.apiBase as string
+  }
+  // Client-side requests go through host port mapping
   return config.public.apiBase as string
 }
 
@@ -29,6 +34,7 @@ export const useApi = () => {
     },
     getHeatmap: () => fetchJson<any[]>('/api/heatmap'),
     getStats: () => fetchJson<any>('/api/stats'),
+    getStarHistory: () => fetchJson<any[]>('/api/stars-history'),
     getHealth: () => fetchJson<any>('/api/health'),
     getSettings: () => fetchJson<any>('/api/settings'),
     saveSettings: (settings: any) => fetchJson<any>('/api/settings', {

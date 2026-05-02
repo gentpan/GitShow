@@ -20,11 +20,84 @@
               <span class="text-sm font-medium" style="color: #fafafa;">{{ item.actor }}</span>
               <span class="text-xs" style="color: #52525b;">{{ timeAgo(item.created_at) }}</span>
             </div>
-            <div class="text-sm mt-0.5">
+
+            <!-- PushEvent -->
+            <div v-if="item.type === 'PushEvent'" class="text-sm mt-0.5">
               <span style="color: #a1a1aa;">pushed to </span>
               <a :href="item.repo_url" target="_blank" class="hover:underline" style="color: #16a34a;">{{ item.repo }}</a>
             </div>
+
+            <!-- CreateEvent -->
+            <div v-else-if="item.type === 'CreateEvent'" class="text-sm mt-0.5">
+              <span style="color: #a1a1aa;">{{ item.action }}</span>
+              <a v-if="item.target_url" :href="item.target_url" target="_blank" class="hover:underline ml-1" style="color: #16a34a;">{{ item.target }}</a>
+              <span v-else class="ml-1" style="color: #16a34a;">{{ item.target }}</span>
+              <span style="color: #a1a1aa;"> in </span>
+              <a :href="item.repo_url" target="_blank" class="hover:underline" style="color: #16a34a;">{{ item.repo }}</a>
+            </div>
+
+            <!-- PullRequestEvent -->
+            <div v-else-if="item.type === 'PullRequestEvent'" class="text-sm mt-0.5">
+              <span style="color: #a1a1aa;">{{ item.action }}</span>
+              <a v-if="item.target_url" :href="item.target_url" target="_blank" class="hover:underline ml-1" style="color: #16a34a;">{{ item.target }}</a>
+              <span v-else class="ml-1" style="color: #16a34a;">{{ item.target }}</span>
+              <span style="color: #a1a1aa;"> in </span>
+              <a :href="item.repo_url" target="_blank" class="hover:underline" style="color: #16a34a;">{{ item.repo }}</a>
+            </div>
+
+            <!-- IssuesEvent -->
+            <div v-else-if="item.type === 'IssuesEvent'" class="text-sm mt-0.5">
+              <span style="color: #a1a1aa;">{{ item.action }}</span>
+              <a v-if="item.target_url" :href="item.target_url" target="_blank" class="hover:underline ml-1" style="color: #16a34a;">{{ item.target }}</a>
+              <span v-else class="ml-1" style="color: #16a34a;">{{ item.target }}</span>
+              <span style="color: #a1a1aa;"> in </span>
+              <a :href="item.repo_url" target="_blank" class="hover:underline" style="color: #16a34a;">{{ item.repo }}</a>
+            </div>
+
+            <!-- WatchEvent -->
+            <div v-else-if="item.type === 'WatchEvent'" class="text-sm mt-0.5">
+              <span style="color: #a1a1aa;">{{ item.action }}</span>
+              <a :href="item.repo_url" target="_blank" class="hover:underline ml-1" style="color: #16a34a;">{{ item.repo }}</a>
+            </div>
+
+            <!-- ForkEvent -->
+            <div v-else-if="item.type === 'ForkEvent'" class="text-sm mt-0.5">
+              <span style="color: #a1a1aa;">{{ item.action }}</span>
+              <a :href="item.repo_url" target="_blank" class="hover:underline ml-1" style="color: #16a34a;">{{ item.repo }}</a>
+              <span v-if="item.target" style="color: #a1a1aa;"> to </span>
+              <a v-if="item.target_url" :href="item.target_url" target="_blank" class="hover:underline" style="color: #16a34a;">{{ item.target }}</a>
+            </div>
+
+            <!-- ReleaseEvent -->
+            <div v-else-if="item.type === 'ReleaseEvent'" class="text-sm mt-0.5">
+              <span style="color: #a1a1aa;">{{ item.action }}</span>
+              <a v-if="item.target_url" :href="item.target_url" target="_blank" class="hover:underline ml-1" style="color: #16a34a;">{{ item.target || 'release' }}</a>
+              <span v-else class="ml-1" style="color: #16a34a;">{{ item.target || 'release' }}</span>
+              <span style="color: #a1a1aa;"> in </span>
+              <a :href="item.repo_url" target="_blank" class="hover:underline" style="color: #16a34a;">{{ item.repo }}</a>
+            </div>
+
+            <!-- Fallback -->
+            <div v-else class="text-sm mt-0.5">
+              <span style="color: #a1a1aa;">{{ item.action || item.type }}</span>
+              <a :href="item.repo_url" target="_blank" class="hover:underline ml-1" style="color: #16a34a;">{{ item.repo }}</a>
+            </div>
+
             <div v-if="item.message" class="text-xs mt-1 truncate" style="color: #52525b;">{{ item.message }}</div>
+
+            <!-- Commits (PushEvent only) -->
+            <div v-if="item.commits?.length && item.type === 'PushEvent'" class="mt-2 space-y-1">
+              <div
+                v-for="(commit, ci) in item.commits.slice(0, 2)" :key="ci"
+                class="flex items-center gap-2 text-xs px-2 py-1"
+                style="background-color: rgba(0,0,0,0.4);"
+              >
+                <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: #52525b;">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                </svg>
+                <span class="truncate" style="color: #a1a1aa;">{{ commit.message }}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -34,6 +107,8 @@
 </template>
 
 <script setup>
+const { timeAgo } = useUtils()
+
 const props = defineProps({
   items: { type: Array, default: () => [] }
 })
@@ -58,21 +133,4 @@ const groups = computed(() => {
   }
   return Array.from(map.values())
 })
-
-function timeAgo(date) {
-  const seconds = Math.floor((new Date() - new Date(date)) / 1000)
-  const intervals = [
-    [31536000, '年前'],
-    [2592000, '个月前'],
-    [86400, '天前'],
-    [3600, '小时前'],
-    [60, '分钟前'],
-    [1, '秒前']
-  ]
-  for (const [secs, label] of intervals) {
-    const count = Math.floor(seconds / secs)
-    if (count >= 1) return count + label
-  }
-  return '刚刚'
-}
 </script>

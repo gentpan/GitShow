@@ -25,14 +25,41 @@
               <a :href="`https://github.com/${item.actor}`" target="_blank" class="font-medium hover:text-[#16a34a] transition-colors" style="color: #fafafa;">
                 {{ item.actor }}
               </a>
-              <span class="text-sm" style="color: #a1a1aa;">{{ item.action }}</span>
+
+              <!-- Action text based on event type -->
+              <span class="text-sm" style="color: #a1a1aa;">
+                <template v-if="item.type === 'PushEvent'">pushed to</template>
+                <template v-else-if="item.type === 'CreateEvent'">{{ item.action }} in</template>
+                <template v-else-if="item.type === 'PullRequestEvent'">{{ item.action }} in</template>
+                <template v-else-if="item.type === 'IssuesEvent'">{{ item.action }} in</template>
+                <template v-else-if="item.type === 'WatchEvent'">{{ item.action }}</template>
+                <template v-else-if="item.type === 'ForkEvent'">{{ item.action }}</template>
+                <template v-else-if="item.type === 'ReleaseEvent'">{{ item.action }} in</template>
+                <template v-else>{{ item.action || item.type }}</template>
+              </span>
+
               <a :href="item.repo_url" target="_blank" class="hover:underline text-sm truncate" style="color: #16a34a;">
                 {{ item.repo }}
               </a>
             </div>
             <div class="text-xs mt-1" style="color: #a1a1aa;">{{ timeAgo(item.created_at) }}</div>
 
-            <div v-if="item.commits?.length" class="mt-3 space-y-1.5">
+            <!-- Target (PR / Issue / Branch / Fork / Release) -->
+            <div v-if="item.target" class="mt-2 text-sm">
+              <a v-if="item.target_url" :href="item.target_url" target="_blank" class="hover:underline" style="color: #16a34a;">
+                {{ item.target }}
+              </a>
+              <span v-else style="color: #16a34a;">{{ item.target }}</span>
+              <span v-if="item.type === 'ForkEvent'" style="color: #a1a1aa;"> (fork)</span>
+            </div>
+
+            <!-- Message / Description -->
+            <div v-if="item.message" class="mt-2 text-xs px-3 py-2" style="background-color: rgba(0,0,0,0.4); color: #a1a1aa;">
+              {{ item.message }}
+            </div>
+
+            <!-- Commits (PushEvent only) -->
+            <div v-if="item.commits?.length && item.type === 'PushEvent'" class="mt-3 space-y-1.5">
               <div
                 v-for="(commit, i) in item.commits.slice(0, 3)" :key="i"
                 class="flex items-center gap-2 text-sm px-3 py-2"
@@ -56,22 +83,6 @@
 
 <script setup>
 const api = useApi()
+const { timeAgo } = useUtils()
 const { data: feed, pending } = useAsyncData('feed', () => api.getFeed(50))
-
-function timeAgo(date) {
-  const seconds = Math.floor((new Date() - new Date(date)) / 1000)
-  const intervals = [
-    [31536000, '年前'],
-    [2592000, '个月前'],
-    [86400, '天前'],
-    [3600, '小时前'],
-    [60, '分钟前'],
-    [1, '秒前']
-  ]
-  for (const [secs, label] of intervals) {
-    const count = Math.floor(seconds / secs)
-    if (count >= 1) return count + label
-  }
-  return '刚刚'
-}
 </script>

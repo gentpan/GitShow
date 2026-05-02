@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"sort"
+	"strings"
 
 	"sync"
 	"time"
@@ -37,6 +38,7 @@ type Settings struct {
 	HomepageRepoCount int          `json:"homepage_repo_count"`
 	HomepageRepos     []string     `json:"homepage_repos"`
 	SocialLinks       []SocialLink `json:"social_links"`
+	Theme             string       `json:"theme"`
 }
 
 // ========== GitHub Models ==========
@@ -89,10 +91,28 @@ type GitHubEventRepo struct {
 }
 
 type EventPayload struct {
-	Size    int          `json:"size"`
-	Ref     string       `json:"ref"`
-	Commits []CommitInfo `json:"commits"`
-	Action  string       `json:"action"`
+	Size        int          `json:"size"`
+	Ref         string       `json:"ref"`
+	RefType     string       `json:"ref_type"`
+	Commits     []CommitInfo `json:"commits"`
+	Action      string       `json:"action"`
+	Description string       `json:"description"`
+	Issue       *struct {
+		Title string `json:"title"`
+		URL   string `json:"html_url"`
+		Number int   `json:"number"`
+	} `json:"issue"`
+	PullRequest *struct {
+		Title  string `json:"title"`
+		URL    string `json:"html_url"`
+		Number int    `json:"number"`
+		State  string `json:"state"`
+		Merged bool   `json:"merged"`
+	} `json:"pull_request"`
+	Forkee *struct {
+		FullName string `json:"full_name"`
+		HtmlURL  string `json:"html_url"`
+	} `json:"forkee"`
 }
 
 type CommitInfo struct {
@@ -146,6 +166,11 @@ type FollowingCache struct {
 	Repos  []GitHubRepo   `json:"repos"`
 }
 
+type StarHistoryPoint struct {
+	Date  string `json:"date"`
+	Stars int    `json:"stars"`
+}
+
 type CacheData struct {
 	User          *GitHubUser
 	Repos         []GitHubRepo
@@ -185,6 +210,9 @@ type ActivityItem struct {
 	RepoURL   string       `json:"repo_url"`
 	Commits   []CommitInfo `json:"commits"`
 	Message   string       `json:"message"`
+	Action    string       `json:"action"`
+	Target    string       `json:"target"`
+	TargetURL string       `json:"target_url"`
 	CreatedAt time.Time    `json:"created_at"`
 }
 
@@ -199,12 +227,16 @@ type FollowingItem struct {
 
 type FeedItem struct {
 	ID        string       `json:"id"`
+	Type      string       `json:"type"`
 	Actor     string       `json:"actor"`
 	AvatarURL string       `json:"avatar_url"`
 	Action    string       `json:"action"`
 	Repo      string       `json:"repo"`
 	RepoURL   string       `json:"repo_url"`
 	Commits   []CommitInfo `json:"commits"`
+	Message   string       `json:"message"`
+	Target    string       `json:"target"`
+	TargetURL string       `json:"target_url"`
 	CreatedAt time.Time    `json:"created_at"`
 }
 
@@ -480,15 +512,14 @@ func (s *Server) refreshCache() {
 			langWg.Add(1)
 			go func(idx int) {
 				defer langWg.Done()
-				parts := repos[idx].FullName
-				if parts == "" {
-					parts = s.config.Username + "/" + repos[idx].Name
+				owner, repoName := s.config.Username, repos[idx].Name
+				if repos[idx].FullName != "" {
+					p := strings.SplitN(repos[idx].FullName, "/", 2)
+					if len(p) == 2 {
+						owner, repoName = p[0], p[1]
+					}
 				}
-				ownerRepo := parts
-				if idx := len(ownerRepo); idx > 0 {
-					// already full_name
-				}
-				langs, err := s.getRepoLanguages(s.config.Username, repos[idx].Name)
+				langs, err := s.getRepoLanguages(owner, repoName)
 				if err != nil {
 					return
 				}
@@ -586,7 +617,46 @@ func (s *Server) refreshCache() {
 	s.cache = cache
 	s.mu.Unlock()
 
+	// Record star history
+	s.recordStarHistory(cache.TotalStars)
+
 	log.Printf("[cache] refreshed in %v", time.Since(start))
+}
+
+func (s *Server) recordStarHistory(totalStars int) {
+	today := time.Now().Format("2006-01-02")
+	var history []StarHistoryPoint
+	data, _ := os.ReadFile("star-history.json")
+	if len(data) > 0 {
+		json.Unmarshal(data, &history)
+	}
+	// Update or append today's record
+	updated := false
+	for i := range history {
+		if history[i].Date == today {
+			history[i].Stars = totalStars
+			updated = true
+			break
+		}
+	}
+	if !updated {
+		history = append(history, StarHistoryPoint{Date: today, Stars: totalStars})
+	}
+	// Keep last 90 days
+	if len(history) > 90 {
+		history = history[len(history)-90:]
+	}
+	out, _ := json.MarshalIndent(history, "", "  ")
+	os.WriteFile("star-history.json", out, 0644)
+}
+
+func (s *Server) getStarHistory() []StarHistoryPoint {
+	var history []StarHistoryPoint
+	data, _ := os.ReadFile("star-history.json")
+	if len(data) > 0 {
+		json.Unmarshal(data, &history)
+	}
+	return history
 }
 
 func (s *Server) buildHeatmapFromEvents(events []GitHubEvent) []HeatmapDay {
@@ -628,27 +698,130 @@ func (s *Server) getCache() *CacheData {
 func eventsToActivities(events []GitHubEvent, actor, avatar string) []ActivityItem {
 	var items []ActivityItem
 	for _, e := range events {
-		if e.Type != "PushEvent" {
-			continue
-		}
-		msg := ""
-		if len(e.Payload.Commits) > 0 {
-			msg = e.Payload.Commits[0].Message
-			if len(e.Payload.Commits) > 1 {
-				msg = fmt.Sprintf("%s and %d more", msg, len(e.Payload.Commits)-1)
+		repoURL := "https://github.com/" + e.Repo.Name
+		switch e.Type {
+		case "PushEvent":
+			msg := ""
+			if len(e.Payload.Commits) > 0 {
+				msg = e.Payload.Commits[0].Message
+				if len(e.Payload.Commits) > 1 {
+					msg = fmt.Sprintf("%s and %d more", msg, len(e.Payload.Commits)-1)
+				}
 			}
+			items = append(items, ActivityItem{
+				ID:        e.ID,
+				Type:      e.Type,
+				Actor:     actor,
+				AvatarURL: avatar,
+				Repo:      e.Repo.Name,
+				RepoURL:   repoURL,
+				Commits:   e.Payload.Commits,
+				Message:   msg,
+				Action:    "pushed to",
+				CreatedAt: e.CreatedAt,
+			})
+		case "CreateEvent":
+			items = append(items, ActivityItem{
+				ID:        e.ID,
+				Type:      e.Type,
+				Actor:     actor,
+				AvatarURL: avatar,
+				Repo:      e.Repo.Name,
+				RepoURL:   repoURL,
+				Action:    "created " + e.Payload.RefType,
+				Target:    e.Payload.Ref,
+				TargetURL: repoURL + "/tree/" + e.Payload.Ref,
+				CreatedAt: e.CreatedAt,
+			})
+		case "PullRequestEvent":
+			pr := e.Payload.PullRequest
+			action := e.Payload.Action
+			if pr != nil && pr.Merged {
+				action = "merged"
+			}
+			target := ""
+			targetURL := ""
+			if pr != nil {
+				target = fmt.Sprintf("#%d %s", pr.Number, pr.Title)
+				targetURL = pr.URL
+			}
+			items = append(items, ActivityItem{
+				ID:        e.ID,
+				Type:      e.Type,
+				Actor:     actor,
+				AvatarURL: avatar,
+				Repo:      e.Repo.Name,
+				RepoURL:   repoURL,
+				Action:    action + " pull request",
+				Target:    target,
+				TargetURL: targetURL,
+				CreatedAt: e.CreatedAt,
+			})
+		case "IssuesEvent":
+			issue := e.Payload.Issue
+			target := ""
+			targetURL := ""
+			if issue != nil {
+				target = fmt.Sprintf("#%d %s", issue.Number, issue.Title)
+				targetURL = issue.URL
+			}
+			items = append(items, ActivityItem{
+				ID:        e.ID,
+				Type:      e.Type,
+				Actor:     actor,
+				AvatarURL: avatar,
+				Repo:      e.Repo.Name,
+				RepoURL:   repoURL,
+				Action:    e.Payload.Action + " issue",
+				Target:    target,
+				TargetURL: targetURL,
+				CreatedAt: e.CreatedAt,
+			})
+		case "WatchEvent":
+			items = append(items, ActivityItem{
+				ID:        e.ID,
+				Type:      e.Type,
+				Actor:     actor,
+				AvatarURL: avatar,
+				Repo:      e.Repo.Name,
+				RepoURL:   repoURL,
+				Action:    "starred",
+				CreatedAt: e.CreatedAt,
+			})
+		case "ForkEvent":
+			target := ""
+			targetURL := ""
+			if e.Payload.Forkee != nil {
+				target = e.Payload.Forkee.FullName
+				targetURL = e.Payload.Forkee.HtmlURL
+			}
+			items = append(items, ActivityItem{
+				ID:        e.ID,
+				Type:      e.Type,
+				Actor:     actor,
+				AvatarURL: avatar,
+				Repo:      e.Repo.Name,
+				RepoURL:   repoURL,
+				Action:    "forked",
+				Target:    target,
+				TargetURL: targetURL,
+				CreatedAt: e.CreatedAt,
+			})
+		case "ReleaseEvent":
+			items = append(items, ActivityItem{
+				ID:        e.ID,
+				Type:      e.Type,
+				Actor:     actor,
+				AvatarURL: avatar,
+				Repo:      e.Repo.Name,
+				RepoURL:   repoURL,
+				Action:    "released",
+				Target:    e.Payload.Ref,
+				TargetURL: repoURL + "/releases",
+				Message:   e.Payload.Description,
+				CreatedAt: e.CreatedAt,
+			})
 		}
-		items = append(items, ActivityItem{
-			ID:        e.ID,
-			Type:      e.Type,
-			Actor:     actor,
-			AvatarURL: avatar,
-			Repo:      e.Repo.Name,
-			RepoURL:   "https://github.com/" + e.Repo.Name,
-			Commits:   e.Payload.Commits,
-			Message:   msg,
-			CreatedAt: e.CreatedAt,
-		})
 	}
 	return items
 }
@@ -754,6 +927,23 @@ func (s *Server) handleFollowing(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 200, result)
 }
 
+func activityToFeedItem(it ActivityItem) FeedItem {
+	return FeedItem{
+		ID:        it.ID,
+		Type:      it.Type,
+		Actor:     it.Actor,
+		AvatarURL: it.AvatarURL,
+		Action:    it.Action,
+		Repo:      it.Repo,
+		RepoURL:   it.RepoURL,
+		Commits:   it.Commits,
+		Message:   it.Message,
+		Target:    it.Target,
+		TargetURL: it.TargetURL,
+		CreatedAt: it.CreatedAt,
+	}
+}
+
 func (s *Server) handleFeed(w http.ResponseWriter, r *http.Request) {
 	c := s.getCache()
 	var all []FeedItem
@@ -765,16 +955,7 @@ func (s *Server) handleFeed(w http.ResponseWriter, r *http.Request) {
 	}
 	selfItems := eventsToActivities(c.Events, selfActor, selfAvatar)
 	for _, it := range selfItems {
-		all = append(all, FeedItem{
-			ID:        it.ID,
-			Actor:     it.Actor,
-			AvatarURL: it.AvatarURL,
-			Action:    "pushed to",
-			Repo:      it.Repo,
-			RepoURL:   it.RepoURL,
-			Commits:   it.Commits,
-			CreatedAt: it.CreatedAt,
-		})
+		all = append(all, activityToFeedItem(it))
 	}
 
 	// add following
@@ -784,16 +965,7 @@ func (s *Server) handleFeed(w http.ResponseWriter, r *http.Request) {
 		}
 		items := eventsToActivities(fc.Events, fc.User.Login, fc.User.AvatarURL)
 		for _, it := range items {
-			all = append(all, FeedItem{
-				ID:        it.ID,
-				Actor:     it.Actor,
-				AvatarURL: it.AvatarURL,
-				Action:    "pushed to",
-				Repo:      it.Repo,
-				RepoURL:   it.RepoURL,
-				Commits:   it.Commits,
-				CreatedAt: it.CreatedAt,
-			})
+			all = append(all, activityToFeedItem(it))
 		}
 	}
 
@@ -824,6 +996,85 @@ func (s *Server) handleStats(w http.ResponseWriter, r *http.Request) {
 		TotalCommits: c.TotalCommits,
 		TotalRepos:   c.TotalRepos,
 	})
+}
+
+func (s *Server) handleStarHistory(w http.ResponseWriter, r *http.Request) {
+	writeJSON(w, 200, s.getStarHistory())
+}
+
+func (s *Server) handleRSS(w http.ResponseWriter, r *http.Request) {
+	c := s.getCache()
+	settings := s.getSettings()
+	title := settings.Title
+	if title == "" {
+		title = "GitShow"
+	}
+
+	var items []FeedItem
+	selfActor, selfAvatar := "", ""
+	if c.User != nil {
+		selfActor, selfAvatar = c.User.Login, c.User.AvatarURL
+	}
+	selfActivities := eventsToActivities(c.Events, selfActor, selfAvatar)
+	for _, it := range selfActivities {
+		items = append(items, activityToFeedItem(it))
+	}
+	for _, fc := range c.Following {
+		if fc == nil || fc.User == nil {
+			continue
+		}
+		acts := eventsToActivities(fc.Events, fc.User.Login, fc.User.AvatarURL)
+		for _, it := range acts {
+			items = append(items, activityToFeedItem(it))
+		}
+	}
+	sort.Slice(items, func(i, j int) bool {
+		return items[i].CreatedAt.After(items[j].CreatedAt)
+	})
+	if len(items) > 50 {
+		items = items[:50]
+	}
+
+	w.Header().Set("Content-Type", "application/rss+xml; charset=utf-8")
+	fmt.Fprintf(w, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+	fmt.Fprintf(w, "<rss version=\"2.0\">\n")
+	fmt.Fprintf(w, "  <channel>\n")
+	fmt.Fprintf(w, "    <title>%s Activity Feed</title>\n", escapeXML(title))
+	fmt.Fprintf(w, "    <link>https://github.com/%s</link>\n", escapeXML(s.config.Username))
+	fmt.Fprintf(w, "    <description>GitHub activity feed for %s and following</description>\n", escapeXML(s.config.Username))
+	fmt.Fprintf(w, "    <lastBuildDate>%s</lastBuildDate>\n", time.Now().Format(time.RFC1123))
+	for _, it := range items {
+		t := fmt.Sprintf("%s %s %s", it.Actor, it.Action, it.Repo)
+		if it.Target != "" {
+			t = fmt.Sprintf("%s %s %s - %s", it.Actor, it.Action, it.Repo, it.Target)
+		}
+		link := it.RepoURL
+		if it.TargetURL != "" {
+			link = it.TargetURL
+		}
+		desc := it.Message
+		if desc == "" && len(it.Commits) > 0 {
+			desc = it.Commits[0].Message
+		}
+		fmt.Fprintf(w, "    <item>\n")
+		fmt.Fprintf(w, "      <title>%s</title>\n", escapeXML(t))
+		fmt.Fprintf(w, "      <link>%s</link>\n", escapeXML(link))
+		fmt.Fprintf(w, "      <pubDate>%s</pubDate>\n", it.CreatedAt.Format(time.RFC1123))
+		if desc != "" {
+			fmt.Fprintf(w, "      <description>%s</description>\n", escapeXML(desc))
+		}
+		fmt.Fprintf(w, "    </item>\n")
+	}
+	fmt.Fprintf(w, "  </channel>\n")
+	fmt.Fprintf(w, "</rss>\n")
+}
+
+func escapeXML(s string) string {
+	s = strings.ReplaceAll(s, "&", "&amp;")
+	s = strings.ReplaceAll(s, "<", "&lt;")
+	s = strings.ReplaceAll(s, ">", "&gt;")
+	s = strings.ReplaceAll(s, "\"", "&quot;")
+	return s
 }
 
 func (s *Server) handleSettingsGet(w http.ResponseWriter, r *http.Request) {
@@ -860,8 +1111,12 @@ func main() {
 	if err := json.Unmarshal(data, &cfg); err != nil {
 		log.Fatalf("parse config: %v", err)
 	}
+	// Allow overriding token via environment variable for security
+	if envToken := os.Getenv("GITHUB_TOKEN"); envToken != "" {
+		cfg.Token = envToken
+	}
 	if cfg.Username == "" || cfg.Token == "" || cfg.Token == "ghp_your_token_here" {
-		log.Fatal("please set valid username and token in config.json")
+		log.Fatal("please set valid username and token in config.json or GITHUB_TOKEN env")
 	}
 
 	srv := NewServer(cfg)
@@ -876,6 +1131,7 @@ func main() {
 	mux.HandleFunc("/api/feed", srv.handleFeed)
 	mux.HandleFunc("/api/heatmap", srv.handleHeatmap)
 	mux.HandleFunc("/api/stats", srv.handleStats)
+	mux.HandleFunc("/api/stars-history", srv.handleStarHistory)
 	mux.HandleFunc("/api/settings", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "GET" {
 			srv.handleSettingsGet(w, r)
@@ -888,6 +1144,7 @@ func main() {
 	mux.HandleFunc("/api/health", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 200, map[string]interface{}{"ok": true, "last_updated": srv.getCache().LastUpdated})
 	})
+	mux.HandleFunc("/rss", srv.handleRSS)
 
 	handler := cors.New(cors.Options{
 		AllowedOrigins: []string{"*"},

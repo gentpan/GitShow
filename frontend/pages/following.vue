@@ -75,32 +75,8 @@
 
 <script setup>
 const api = useApi()
+const { timeAgo, langColor } = useUtils()
 const { data: following, pending } = useAsyncData('following', () => api.getFollowing())
 
-function timeAgo(date) {
-  const seconds = Math.floor((new Date() - new Date(date)) / 1000)
-  const intervals = [
-    [31536000, '年前'],
-    [2592000, '个月前'],
-    [86400, '天前'],
-    [3600, '小时前'],
-    [60, '分钟前'],
-    [1, '秒前']
-  ]
-  for (const [secs, label] of intervals) {
-    const count = Math.floor(seconds / secs)
-    if (count >= 1) return count + label
-  }
-  return '刚刚'
-}
 
-const langColors = {
-  JavaScript: '#f1e05a', TypeScript: '#2b7489', Python: '#3572A5', Go: '#00ADD8',
-  Rust: '#dea584', Vue: '#41b883', HTML: '#e34c26', CSS: '#563d7c',
-  Shell: '#89e051', Java: '#b07219', 'C++': '#f34b7d', C: '#555555',
-  Ruby: '#701516', PHP: '#4F5D95',
-}
-function langColor(lang) {
-  return langColors[lang] || '#8b949e'
-}
 </script>

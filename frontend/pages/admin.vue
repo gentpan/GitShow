@@ -21,6 +21,21 @@
         />
       </div>
 
+      <!-- 主题设置 -->
+      <div class="p-6" style="background-color: #111; border: 1px solid rgba(255,255,255,0.08);">
+        <h2 class="text-sm font-medium mb-4" style="color: #a1a1aa;">主题颜色</h2>
+        <div class="flex gap-3">
+          <button
+            v-for="t in themes" :key="t.key"
+            class="w-10 h-10 transition-transform hover:scale-110"
+            :class="form.theme === t.key ? 'ring-2 ring-offset-2 ring-offset-black ring-white' : ''"
+            :style="{ backgroundColor: t.color }"
+            :title="t.label"
+            @click="form.theme = t.key"
+          />
+        </div>
+      </div>
+
       <!-- 数量设置 -->
       <div class="p-6" style="background-color: #111; border: 1px solid rgba(255,255,255,0.08);">
         <h2 class="text-sm font-medium mb-4" style="color: #a1a1aa;">首页项目显示数量</h2>
@@ -132,16 +147,25 @@
 
 <script setup>
 const api = useApi()
+const { langColor } = useUtils()
 
 const saving = ref(false)
 const saved = ref(false)
 const error = ref('')
+
+const themes = [
+  { key: 'green', label: '绿色', color: '#16a34a' },
+  { key: 'blue', label: '蓝色', color: '#2563eb' },
+  { key: 'purple', label: '紫色', color: '#9333ea' },
+  { key: 'orange', label: '橙色', color: '#ea580c' },
+]
 
 const form = ref({
   title: 'GitShow',
   homepage_repo_count: 6,
   homepage_repos: [],
   social_links: [],
+  theme: 'green',
 })
 
 const { data: settings, pending: settingsPending } = useAsyncData('settings', () => api.getSettings())
@@ -153,6 +177,7 @@ watchEffect(() => {
     form.value.homepage_repo_count = settings.value.homepage_repo_count || 6
     form.value.homepage_repos = settings.value.homepage_repos || []
     form.value.social_links = settings.value.social_links || []
+    form.value.theme = settings.value.theme || 'green'
   }
 })
 
@@ -201,6 +226,7 @@ async function save() {
       homepage_repo_count: form.value.homepage_repo_count,
       homepage_repos: form.value.homepage_repos,
       social_links: form.value.social_links,
+      theme: form.value.theme,
     })
     saved.value = true
     setTimeout(() => saved.value = false, 3000)
@@ -211,16 +237,7 @@ async function save() {
   }
 }
 
-const langColors = {
-  JavaScript: '#f1e05a', TypeScript: '#2b7489', Python: '#3572A5', Go: '#00ADD8',
-  Rust: '#dea584', Vue: '#41b883', HTML: '#e34c26', CSS: '#563d7c',
-  Shell: '#89e051', Java: '#b07219', 'C++': '#f34b7d', C: '#555555',
-  Ruby: '#701516', PHP: '#4F5D95', 'C#': '#178600', Swift: '#ffac45',
-  Kotlin: '#A97BFF', Dart: '#00B4AB', Dockerfile: '#384d54',
-}
-function langColor(lang) {
-  return langColors[lang] || '#8b949e'
-}
+
 </script>
 
 <style scoped>

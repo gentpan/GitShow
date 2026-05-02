@@ -14,6 +14,22 @@
 
 ### 1. 配置 GitHub Token
 
+**方式一（推荐）：环境变量**
+
+创建 `.env` 文件：
+
+```bash
+cp .env.example .env
+```
+
+编辑 `.env`，填入你的 Token：
+
+```
+GITHUB_TOKEN=ghp_你的token
+```
+
+**方式二：直接编辑配置文件**
+
 编辑 `backend/config.json`：
 
 ```json
@@ -30,6 +46,12 @@ Token 获取：[GitHub Settings > Developer settings > Personal access tokens](h
 
 ```bash
 ./start.sh
+```
+
+或使用 Docker：
+
+```bash
+docker-compose up --build
 ```
 
 或分别启动：

@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --theme-primary: #16a34a;
+  --theme-primary-rgb: 22, 163, 74;
+  --theme-primary-dark: #15803d;
+}
+
 body {
   @apply antialiased;
   background-color: #000;
@@ -36,20 +42,20 @@ body {
 }
 .repo-card:hover {
   background-color: #1a1a1a;
-  border-color: rgba(22,163,74,0.5);
-  box-shadow: 0 0 16px rgba(22,163,74,0.15), 0 0 48px rgba(22,163,74,0.08), 0 0 80px rgba(22,163,74,0.04);
+  border-color: rgba(var(--theme-primary-rgb), 0.5);
+  box-shadow: 0 0 16px rgba(var(--theme-primary-rgb), 0.15), 0 0 48px rgba(var(--theme-primary-rgb), 0.08), 0 0 80px rgba(var(--theme-primary-rgb), 0.04);
 }
 
-/* 头像绿色发光 */
+/* 头像主题色发光 */
 .avatar-glow {
-  box-shadow: 0 0 0 2px #16a34a, 0 0 20px rgba(22,163,74,0.4), 0 0 60px rgba(22,163,74,0.15);
+  box-shadow: 0 0 0 2px var(--theme-primary), 0 0 20px rgba(var(--theme-primary-rgb), 0.4), 0 0 60px rgba(var(--theme-primary-rgb), 0.15);
 }
 
 /* 标签样式 */
 .tag-green {
-  background-color: rgba(22,163,74,0.12);
-  border: 1px solid rgba(22,163,74,0.35);
-  color: #16a34a;
+  background-color: rgba(var(--theme-primary-rgb), 0.12);
+  border: 1px solid rgba(var(--theme-primary-rgb), 0.35);
+  color: var(--theme-primary);
   font-size: 12px;
   font-weight: 500;
   padding: 2px 10px;
@@ -58,13 +64,13 @@ body {
 /* 统计卡片 */
 .stat-card {
   background-color: #111;
-  border-top: 2px solid rgba(22,163,74,0.5);
+  border-top: 2px solid rgba(var(--theme-primary-rgb), 0.5);
   padding: 16px 20px;
   transition: all 0.25s ease;
 }
 .stat-card:hover {
   background-color: #1a1a1a;
-  border-top-color: #16a34a;
+  border-top-color: var(--theme-primary);
 }
 
 /* 语言横条 tooltip */

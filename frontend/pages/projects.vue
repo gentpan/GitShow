@@ -48,60 +48,8 @@
 
 <script setup>
 const api = useApi()
+const { timeAgo, sortLangPct, langColor } = useUtils()
 const { data: repos, pending } = useAsyncData('allRepos', () => api.getRepos())
 
-function timeAgo(date) {
-  const seconds = Math.floor((new Date() - new Date(date)) / 1000)
-  const intervals = [
-    [31536000, '年前'],
-    [2592000, '个月前'],
-    [86400, '天前'],
-    [3600, '小时前'],
-    [60, '分钟前'],
-    [1, '秒前']
-  ]
-  for (const [secs, label] of intervals) {
-    const count = Math.floor(seconds / secs)
-    if (count >= 1) return count + label
-  }
-  return '刚刚'
-}
 
-function sortLangPct(langPct) {
-  if (!langPct) return []
-  return Object.entries(langPct).sort((a, b) => b[1] - a[1])
-}
-
-const langColors = {
-  JavaScript: '#f1e05a', TypeScript: '#2b7489', Python: '#3572A5', Go: '#00ADD8',
-  Rust: '#dea584', Vue: '#41b883', HTML: '#e34c26', CSS: '#563d7c',
-  Shell: '#89e051', Java: '#b07219', 'C++': '#f34b7d', C: '#555555',
-  Ruby: '#701516', PHP: '#4F5D95', 'C#': '#178600', Swift: '#ffac45',
-  Kotlin: '#A97BFF', Dart: '#00B4AB', Dockerfile: '#384d54',
-}
-function langColor(lang) {
-  return langColors[lang] || '#8b949e'
-}
-
-const langIcons = {
-  PHP: 'fab fa-php',
-  JavaScript: 'fab fa-js',
-  TypeScript: 'fab fa-js',
-  Go: 'fab fa-golang',
-  Vue: 'fab fa-vuejs',
-  Python: 'fab fa-python',
-  HTML: 'fab fa-html5',
-  CSS: 'fab fa-css3',
-  Shell: 'fas fa-terminal',
-  Dockerfile: 'fab fa-docker',
-  Java: 'fab fa-java',
-  Ruby: 'fab fa-ruby',
-  Rust: 'fab fa-rust',
-  'C++': 'fas fa-microchip',
-  C: 'fas fa-microchip',
-  'C#': 'fas fa-microchip',
-}
-function repoIcon(lang) {
-  return langIcons[lang] || 'fas fa-code'
-}
 </script>
