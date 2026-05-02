@@ -42,7 +42,7 @@
             </div>
 
             <!-- Row 2: bio -->
-            <p class="text-base" style="color: #a1a1aa; line-height: 26px;">{{ me?.user?.bio || 'No bio' }}</p>
+            <p v-if="me?.user?.bio" class="text-base" style="color: #a1a1aa; line-height: 26px;">{{ me.user.bio }}</p>
 
             <!-- Row 3: buttons -->
             <div class="flex flex-wrap items-center gap-3 mt-1">
