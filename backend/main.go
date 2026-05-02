@@ -346,9 +346,11 @@ func (s *Server) getUser(username string) (*GitHubUser, error) {
 }
 
 func (s *Server) getRepos(username string) ([]GitHubRepo, error) {
-	// Use /user/repos to get all repos the authenticated user has access to
-	// including private repos, org repos, and collaborator repos
-	url := "https://api.github.com/user/repos?sort=updated&per_page=100&affiliation=owner,collaborator,organization_member"
+	return s.getUserRepos(username)
+}
+
+func (s *Server) getUserRepos(username string) ([]GitHubRepo, error) {
+	url := fmt.Sprintf("https://api.github.com/users/%s/repos?sort=updated&per_page=100&type=owner", username)
 	data, err := s.githubRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
@@ -357,7 +359,6 @@ func (s *Server) getRepos(username string) ([]GitHubRepo, error) {
 	if err := json.Unmarshal(data, &repos); err != nil {
 		return nil, err
 	}
-	// filter out private repos
 	public := repos[:0]
 	for _, r := range repos {
 		if !r.Private {
