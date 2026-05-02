@@ -68,6 +68,37 @@
           />
         </div>
 
+        <!-- GitHub 设置 -->
+        <div class="p-6" style="background-color: #111; border: 1px solid rgba(255,255,255,0.08);">
+          <h2 class="text-sm font-medium mb-4" style="color: #a1a1aa;">GitHub 账号</h2>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs mb-1" style="color: #52525b;">用户名</label>
+              <input
+                v-model="form.github_username"
+                type="text"
+                class="w-full px-4 py-3 text-sm outline-none"
+                style="background-color: #111; color: #fafafa; border: 1px solid rgba(255,255,255,0.1);"
+                placeholder="gentpan"
+                @focus="$event.target.style.borderColor='#16a34a'"
+                @blur="$event.target.style.borderColor='rgba(255,255,255,0.1)'"
+              />
+            </div>
+            <div>
+              <label class="block text-xs mb-1" style="color: #52525b;">GitHub 地址</label>
+              <input
+                v-model="form.github_url"
+                type="text"
+                class="w-full px-4 py-3 text-sm outline-none"
+                style="background-color: #111; color: #fafafa; border: 1px solid rgba(255,255,255,0.1);"
+                placeholder="https://github.com/gentpan"
+                @focus="$event.target.style.borderColor='#16a34a'"
+                @blur="$event.target.style.borderColor='rgba(255,255,255,0.1)'"
+              />
+            </div>
+          </div>
+        </div>
+
         <!-- 数量设置 -->
         <div class="p-6" style="background-color: #111; border: 1px solid rgba(255,255,255,0.08);">
           <h2 class="text-sm font-medium mb-4" style="color: #a1a1aa;">首页项目显示数量</h2>
@@ -213,6 +244,8 @@ const themeColorMap = {
 
 const form = ref({
   title: 'GitShow',
+  github_username: '',
+  github_url: '',
   homepage_repo_count: 6,
   homepage_repos: [],
   social_links: [],
@@ -246,6 +279,8 @@ function checkPassword() {
 watchEffect(() => {
   if (settings.value) {
     form.value.title = settings.value.title || 'GitShow'
+    form.value.github_username = settings.value.github_username || ''
+    form.value.github_url = settings.value.github_url || ''
     form.value.homepage_repo_count = settings.value.homepage_repo_count || 6
     form.value.homepage_repos = settings.value.homepage_repos || []
     form.value.social_links = settings.value.social_links || []
@@ -314,6 +349,8 @@ async function save() {
   try {
     await api.saveSettings({
       title: form.value.title,
+      github_username: form.value.github_username,
+      github_url: form.value.github_url,
       homepage_repo_count: form.value.homepage_repo_count,
       homepage_repos: form.value.homepage_repos,
       social_links: form.value.social_links,

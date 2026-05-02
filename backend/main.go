@@ -35,6 +35,8 @@ type SocialLink struct {
 
 type Settings struct {
 	Title             string       `json:"title"`
+	GitHubUsername    string       `json:"github_username"`
+	GitHubURL         string       `json:"github_url"`
 	HomepageRepoCount int          `json:"homepage_repo_count"`
 	HomepageRepos     []string     `json:"homepage_repos"`
 	SocialLinks       []SocialLink `json:"social_links"`
@@ -281,7 +283,26 @@ func (s *Server) loadSettings() {
 		st.HomepageRepoCount = 6
 	}
 	s.settings = st
-	log.Println("[settings] loaded")
+}
+
+func (s *Server) getUsername() string {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	u := s.settings.GitHubUsername
+	if u == "" {
+		return s.config.Username
+	}
+	return u
+}
+
+func (s *Server) getGitHubURL() string {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	u := s.settings.GitHubURL
+	if u == "" {
+		return "https://github.com/" + s.config.Username
+	}
+	return u
 }
 
 func (s *Server) saveSettings(st Settings) error {
@@ -589,7 +610,8 @@ func (s *Server) refreshCache() {
 	}
 
 	// 1. current user
-	user, err := s.getUser(s.config.Username)
+	username := s.getUsername()
+	user, err := s.getUser(username)
 	if err != nil {
 		log.Printf("[cache] get user error: %v", err)
 	} else {
@@ -597,7 +619,7 @@ func (s *Server) refreshCache() {
 	}
 
 	// 2. repos
-	repos, err := s.getRepos(s.config.Username)
+	repos, err := s.getRepos(username)
 	if err != nil {
 		log.Printf("[cache] get repos error: %v", err)
 	} else {
@@ -613,7 +635,7 @@ func (s *Server) refreshCache() {
 			langWg.Add(1)
 			go func(idx int) {
 				defer langWg.Done()
-				owner, repoName := s.config.Username, repos[idx].Name
+				owner, repoName := username, repos[idx].Name
 				if repos[idx].FullName != "" {
 					p := strings.SplitN(repos[idx].FullName, "/", 2)
 					if len(p) == 2 {
@@ -646,7 +668,7 @@ func (s *Server) refreshCache() {
 	}
 
 	// 3. events
-	events, err := s.getAllEvents(s.config.Username)
+	events, err := s.getAllEvents(username)
 	if err != nil {
 		log.Printf("[cache] get events error: %v", err)
 	} else {
@@ -654,7 +676,7 @@ func (s *Server) refreshCache() {
 	}
 
 	// 4. heatmap & commits via GraphQL
-	days, _, totalCommits, err := s.getContributions(s.config.Username)
+	days, _, totalCommits, err := s.getContributions(username)
 	if err != nil {
 		log.Printf("[cache] get contributions error: %v", err)
 		// fallback: build from events
@@ -674,7 +696,7 @@ func (s *Server) refreshCache() {
 		followingNames = s.config.Following
 	} else {
 		// auto fetch from GitHub, limit to 20 to avoid too many requests
-		fetched, err := s.getUserFollowing(s.config.Username, 20)
+		fetched, err := s.getUserFollowing(username, 20)
 		if err != nil {
 			log.Printf("[cache] get user following error: %v", err)
 		} else {
@@ -996,13 +1018,13 @@ func (s *Server) handleActivity(w http.ResponseWriter, r *http.Request) {
 	c := s.getCache()
 	username := r.URL.Query().Get("username")
 	if username == "" {
-		username = s.config.Username
+		username = s.getUsername()
 	}
 
 	var events []GitHubEvent
 	var actor, avatar string
 
-	if username == s.config.Username {
+	if username == s.getUsername() {
 		events = c.Events
 		if c.User != nil {
 			actor = c.User.Login
@@ -1169,8 +1191,8 @@ func (s *Server) handleRSS(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "<rss version=\"2.0\">\n")
 	fmt.Fprintf(w, "  <channel>\n")
 	fmt.Fprintf(w, "    <title>%s Activity Feed</title>\n", escapeXML(title))
-	fmt.Fprintf(w, "    <link>https://github.com/%s</link>\n", escapeXML(s.config.Username))
-	fmt.Fprintf(w, "    <description>GitHub activity feed for %s and following</description>\n", escapeXML(s.config.Username))
+	fmt.Fprintf(w, "    <link>%s</link>\n", escapeXML(s.getGitHubURL()))
+	fmt.Fprintf(w, "    <description>GitHub activity feed for %s and following</description>\n", escapeXML(s.getUsername()))
 	fmt.Fprintf(w, "    <lastBuildDate>%s</lastBuildDate>\n", time.Now().Format(time.RFC1123))
 	for _, it := range items {
 		t := fmt.Sprintf("%s %s %s", it.Actor, it.Action, it.Repo)
