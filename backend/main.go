@@ -679,7 +679,7 @@ func (s *Server) buildHeatmapFromEvents(events []GitHubEvent) []HeatmapDay {
 
 func (s *Server) startRefreshLoop() {
 	s.refreshCache()
-	ticker := time.NewTicker(6 * time.Hour)
+	ticker := time.NewTicker(30 * time.Minute)
 	go func() {
 		for range ticker.C {
 			s.refreshCache()
