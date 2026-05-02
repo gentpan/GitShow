@@ -395,7 +395,7 @@ func (s *Server) getUserRepos(username string) ([]GitHubRepo, error) {
 
 func (s *Server) getUserOrgRepos(username string) ([]GitHubRepo, error) {
 	// list orgs where user is owner
-	orgsUrl := fmt.Sprintf("https://api.github.com/user/emberships?per_page=100&state=active")
+	orgsUrl := fmt.Sprintf("https://api.github.com/user/memberships?per_page=100&state=active")
 	data, err := s.githubRequest("GET", orgsUrl, nil)
 	if err != nil {
 		return nil, err
@@ -423,7 +423,7 @@ func (s *Server) getUserOrgRepos(username string) ([]GitHubRepo, error) {
 		wg.Add(1)
 		go func(org string) {
 			defer wg.Done()
-			url := fmt.Sprintf("https://api.github.com/orgs/%s/repos?sort=updated&per_page=100&per_page=100", org)
+			url := fmt.Sprintf("https://api.github.com/orgs/%s/repos?sort=updated&per_page=100", org)
 			data, err := s.githubRequest("GET", url, nil)
 			if err != nil {
 				return
