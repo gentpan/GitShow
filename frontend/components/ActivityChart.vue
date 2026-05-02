@@ -2,7 +2,7 @@
   <div class="w-full">
     <div class="flex items-end justify-between mb-3">
       <h3 class="text-sm font-medium" style="color: #a1a1aa;">每日活动</h3>
-      <span class="text-xs" style="color: #52525b;">最近 14 天</span>
+      <span class="text-xs" style="color: #52525b;">最近 30 天</span>
     </div>
     <div class="flex items-end gap-[6px] h-36">
       <div
@@ -37,7 +37,7 @@ const props = defineProps({
 
 const chartData = computed(() => {
   if (!props.heatmap || props.heatmap.length === 0) return []
-  return props.heatmap.slice(-14)
+  return props.heatmap.slice(-30)
 })
 
 const maxCount = computed(() => {
