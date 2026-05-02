@@ -348,7 +348,30 @@ func (s *Server) getUser(username string) (*GitHubUser, error) {
 }
 
 func (s *Server) getRepos(username string) ([]GitHubRepo, error) {
-	return s.getUserRepos(username)
+	userRepos, err := s.getUserRepos(username)
+	if err != nil {
+		log.Printf("[repos] get user repos error: %v", err)
+	}
+	orgRepos, err := s.getUserOrgRepos(username)
+	if err != nil {
+		log.Printf("[repos] get org repos error: %v", err)
+	}
+	// deduplicate by full name
+	seen := make(map[string]bool)
+	var merged []GitHubRepo
+	for _, r := range userRepos {
+		if !r.Private {
+			seen[r.FullName] = true
+			merged = append(merged, r)
+		}
+	}
+	for _, r := range orgRepos {
+		if !r.Private && !seen[r.FullName] {
+			seen[r.FullName] = true
+			merged = append(merged, r)
+		}
+	}
+	return merged, nil
 }
 
 func (s *Server) getUserRepos(username string) ([]GitHubRepo, error) {
@@ -368,6 +391,58 @@ func (s *Server) getUserRepos(username string) ([]GitHubRepo, error) {
 		}
 	}
 	return public, nil
+}
+
+func (s *Server) getUserOrgRepos(username string) ([]GitHubRepo, error) {
+	// list orgs where user is owner
+	orgsUrl := fmt.Sprintf("https://api.github.com/user/emberships?per_page=100&state=active")
+	data, err := s.githubRequest("GET", orgsUrl, nil)
+	if err != nil {
+		return nil, err
+	}
+	var memberships []struct {
+		Organization struct {
+			Login string `json:"login"`
+		} `json:"organization"`
+		Role string `json:"role_name"`
+	}
+	if err := json.Unmarshal(data, &memberships); err != nil {
+		return nil, err
+	}
+
+	var allRepos []GitHubRepo
+	var mu sync.Mutex
+	var wg sync.WaitGroup
+
+	for _, m := range memberships {
+		role := m.Role
+		if role != "owner" {
+			continue
+		}
+		org := m.Organization.Login
+		wg.Add(1)
+		go func(org string) {
+			defer wg.Done()
+			url := fmt.Sprintf("https://api.github.com/orgs/%s/repos?sort=updated&per_page=100&per_page=100", org)
+			data, err := s.githubRequest("GET", url, nil)
+			if err != nil {
+				return
+			}
+			var repos []GitHubRepo
+			if err := json.Unmarshal(data, &repos); err != nil {
+				return
+			}
+			mu.Lock()
+			for _, r := range repos {
+				if !r.Private {
+					allRepos = append(allRepos, r)
+				}
+			}
+			mu.Unlock()
+		}(org)
+	}
+	wg.Wait()
+	return allRepos, nil
 }
 
 func (s *Server) getUserFollowing(username string, limit int) ([]string, error) {
