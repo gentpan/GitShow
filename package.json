@@ -1,5 +1,6 @@
 {
   "name": "gitshow",
+  "version": "1.2.0",
   "private": true,
   "scripts": {
     "build": "nuxt build",

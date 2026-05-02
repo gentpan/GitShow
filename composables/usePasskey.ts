@@ -81,7 +81,7 @@ export const usePasskey = () => {
 
   const isSupported = () => import.meta.client && !!window.PublicKeyCredential
 
-  const registerPasskey = async () => {
+  const registerPasskey = async (note = '') => {
     if (!isSupported()) {
       throw new Error('passkey unsupported')
     }
@@ -92,7 +92,7 @@ export const usePasskey = () => {
     if (!credential) {
       throw new Error('passkey registration cancelled')
     }
-    return api.passkeyRegisterFinish(start.session_id, credentialToJSON(credential))
+    return api.passkeyRegisterFinish(start.session_id, credentialToJSON(credential), note)
   }
 
   const loginWithPasskey = async () => {

@@ -27,6 +27,11 @@ body {
   border-radius: 9999px !important;
 }
 
+/* 页面加载圈例外 */
+.loading-spinner {
+  border-radius: 9999px !important;
+}
+
 .nav-shell {
   transition: transform 0.24s ease, opacity 0.24s ease;
 }

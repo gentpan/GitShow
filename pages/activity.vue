@@ -16,7 +16,7 @@
     </div>
 
     <div v-if="pending" class="flex items-center justify-center py-20">
-      <div class="w-8 h-8 border-2 animate-spin" :style="{ borderColor: c, borderTopColor: 'transparent' }" />
+      <div class="loading-spinner w-8 h-8 border-2 animate-spin" :style="{ borderColor: c, borderTopColor: 'transparent' }" />
     </div>
 
     <div v-else-if="!filteredFeed?.length" class="text-center py-20" style="color: #a1a1aa;">

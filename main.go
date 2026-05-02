@@ -50,6 +50,21 @@ type SocialLink struct {
 	Color string `json:"color"`
 }
 
+type PasskeyRecord struct {
+	ID         string              `json:"id"`
+	Note       string              `json:"note"`
+	CreatedAt  *time.Time          `json:"created_at,omitempty"`
+	LastUsedAt *time.Time          `json:"last_used_at,omitempty"`
+	Credential webauthn.Credential `json:"credential"`
+}
+
+type PasskeyInfo struct {
+	ID         string     `json:"id"`
+	Note       string     `json:"note"`
+	CreatedAt  *time.Time `json:"created_at,omitempty"`
+	LastUsedAt *time.Time `json:"last_used_at,omitempty"`
+}
+
 type Settings struct {
 	Title              string                `json:"title"`
 	GitHubUsername     string                `json:"github_username"`
@@ -62,7 +77,13 @@ type Settings struct {
 	SocialLinks        []SocialLink          `json:"social_links"`
 	Theme              string                `json:"theme"`
 	AdminPassword      string                `json:"admin_password"`
+	Passkeys           []PasskeyRecord       `json:"passkeys,omitempty"`
 	PasskeyCredentials []webauthn.Credential `json:"passkey_credentials,omitempty"`
+}
+
+type AdminSettingsResponse struct {
+	Settings
+	PasskeyItems []PasskeyInfo `json:"passkey_items"`
 }
 
 type PublicSettings struct {
@@ -111,6 +132,87 @@ func (u AdminPasskeyUser) WebAuthnDisplayName() string {
 
 func (u AdminPasskeyUser) WebAuthnCredentials() []webauthn.Credential {
 	return u.credentials
+}
+
+func passkeyCredentialID(credential webauthn.Credential) string {
+	return base64.RawURLEncoding.EncodeToString(credential.ID)
+}
+
+func normalizePasskeyNote(note string) string {
+	note = strings.TrimSpace(note)
+	if note == "" {
+		return "Passkey"
+	}
+	if len([]rune(note)) > 60 {
+		runes := []rune(note)
+		note = string(runes[:60])
+	}
+	return note
+}
+
+func passkeyCredentials(st Settings) []webauthn.Credential {
+	seen := make(map[string]bool)
+	var credentials []webauthn.Credential
+	for _, pk := range st.Passkeys {
+		id := pk.ID
+		if id == "" {
+			id = passkeyCredentialID(pk.Credential)
+		}
+		if id == "" || seen[id] {
+			continue
+		}
+		seen[id] = true
+		credentials = append(credentials, pk.Credential)
+	}
+	for _, credential := range st.PasskeyCredentials {
+		id := passkeyCredentialID(credential)
+		if id == "" || seen[id] {
+			continue
+		}
+		seen[id] = true
+		credentials = append(credentials, credential)
+	}
+	return credentials
+}
+
+func passkeyInfos(st Settings) []PasskeyInfo {
+	seen := make(map[string]bool)
+	var items []PasskeyInfo
+	for _, pk := range st.Passkeys {
+		id := pk.ID
+		if id == "" {
+			id = passkeyCredentialID(pk.Credential)
+		}
+		if id == "" || seen[id] {
+			continue
+		}
+		seen[id] = true
+		items = append(items, PasskeyInfo{
+			ID:         id,
+			Note:       normalizePasskeyNote(pk.Note),
+			CreatedAt:  pk.CreatedAt,
+			LastUsedAt: pk.LastUsedAt,
+		})
+	}
+	for i, credential := range st.PasskeyCredentials {
+		id := passkeyCredentialID(credential)
+		if id == "" || seen[id] {
+			continue
+		}
+		seen[id] = true
+		items = append(items, PasskeyInfo{
+			ID:   id,
+			Note: fmt.Sprintf("旧 Passkey %d", i+1),
+		})
+	}
+	return items
+}
+
+func adminSettingsResponse(st Settings) AdminSettingsResponse {
+	return AdminSettingsResponse{
+		Settings:     st,
+		PasskeyItems: passkeyInfos(st),
+	}
 }
 
 // ========== GitHub Models ==========
@@ -422,7 +524,7 @@ func (s *Server) getPublicSettings() PublicSettings {
 		Theme:             st.Theme,
 		HasAdminPassword:  st.AdminPassword != "",
 		HasGitHubToken:    st.GitHubToken != "" || s.config.Token != "",
-		HasPasskey:        len(st.PasskeyCredentials) > 0,
+		HasPasskey:        len(passkeyCredentials(st)) > 0,
 	}
 }
 
@@ -444,7 +546,7 @@ func (s *Server) requireAdmin(w http.ResponseWriter, r *http.Request) bool {
 
 func (s *Server) adminPasskeyUser() AdminPasskeyUser {
 	st := s.getSettings()
-	return AdminPasskeyUser{credentials: st.PasskeyCredentials}
+	return AdminPasskeyUser{credentials: passkeyCredentials(st)}
 }
 
 func passkeySessionID() (string, error) {
@@ -1019,8 +1121,7 @@ func eventsToActivities(events []GitHubEvent, actor, avatar string) []ActivityIt
 	seen := make(map[string]bool)
 	repoCount := make(map[string]int)
 	var filtered []GitHubEvent
-	for i := len(events) - 1; i >= 0; i-- {
-		e := events[i]
+	for _, e := range events {
 		if e.Type == "PushEvent" {
 			ref := e.Payload.Ref
 			if ref == "" {
@@ -1472,12 +1573,19 @@ func (s *Server) handlePasskeyRegisterFinish(w http.ResponseWriter, r *http.Requ
 	}
 
 	st := s.getSettings()
-	st.PasskeyCredentials = append(st.PasskeyCredentials, *credential)
+	now := time.Now()
+	note := normalizePasskeyNote(r.URL.Query().Get("note"))
+	st.Passkeys = append(st.Passkeys, PasskeyRecord{
+		ID:         passkeyCredentialID(*credential),
+		Note:       note,
+		CreatedAt:  &now,
+		Credential: *credential,
+	})
 	if err := s.saveSettings(st); err != nil {
 		writeJSON(w, 500, map[string]string{"error": err.Error()})
 		return
 	}
-	writeJSON(w, 200, map[string]interface{}{"ok": true, "count": len(st.PasskeyCredentials)})
+	writeJSON(w, 200, map[string]interface{}{"ok": true, "count": len(passkeyCredentials(st))})
 }
 
 func (s *Server) handlePasskeyLoginStart(w http.ResponseWriter, r *http.Request) {
@@ -1526,18 +1634,127 @@ func (s *Server) handlePasskeyLoginFinish(w http.ResponseWriter, r *http.Request
 	}
 
 	st := s.getSettings()
-	for i := range st.PasskeyCredentials {
-		if bytes.Equal(st.PasskeyCredentials[i].ID, credential.ID) {
-			st.PasskeyCredentials[i] = *credential
+	now := time.Now()
+	updated := false
+	for i := range st.Passkeys {
+		if bytes.Equal(st.Passkeys[i].Credential.ID, credential.ID) {
+			st.Passkeys[i].ID = passkeyCredentialID(*credential)
+			st.Passkeys[i].Credential = *credential
+			st.Passkeys[i].LastUsedAt = &now
 			_ = s.saveSettings(st)
+			updated = true
 			break
+		}
+	}
+	if !updated {
+		for i := range st.PasskeyCredentials {
+			if bytes.Equal(st.PasskeyCredentials[i].ID, credential.ID) {
+				st.PasskeyCredentials[i] = *credential
+				_ = s.saveSettings(st)
+				break
+			}
 		}
 	}
 	writeJSON(w, 200, AdminLoginResponse{OK: true})
 }
 
+func (s *Server) handlePasskeyUpdate(w http.ResponseWriter, r *http.Request) {
+	id := strings.TrimSpace(r.URL.Query().Get("id"))
+	if id == "" {
+		writeJSON(w, 400, map[string]string{"error": "missing passkey id"})
+		return
+	}
+	var req struct {
+		Note string `json:"note"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeJSON(w, 400, map[string]string{"error": "invalid json"})
+		return
+	}
+	st := s.getSettings()
+	for i := range st.Passkeys {
+		pkID := st.Passkeys[i].ID
+		if pkID == "" {
+			pkID = passkeyCredentialID(st.Passkeys[i].Credential)
+		}
+		if pkID == id {
+			st.Passkeys[i].ID = pkID
+			st.Passkeys[i].Note = normalizePasskeyNote(req.Note)
+			_ = s.saveSettings(st)
+			writeJSON(w, 200, map[string]interface{}{"ok": true, "passkey_items": passkeyInfos(st)})
+			return
+		}
+	}
+	legacy := st.PasskeyCredentials[:0]
+	for _, credential := range st.PasskeyCredentials {
+		if passkeyCredentialID(credential) == id {
+			now := time.Now()
+			st.Passkeys = append(st.Passkeys, PasskeyRecord{
+				ID:         id,
+				Note:       normalizePasskeyNote(req.Note),
+				CreatedAt:  &now,
+				Credential: credential,
+			})
+			continue
+		}
+		legacy = append(legacy, credential)
+	}
+	if len(legacy) != len(st.PasskeyCredentials) {
+		st.PasskeyCredentials = legacy
+		if err := s.saveSettings(st); err != nil {
+			writeJSON(w, 500, map[string]string{"error": err.Error()})
+			return
+		}
+		writeJSON(w, 200, map[string]interface{}{"ok": true, "passkey_items": passkeyInfos(st)})
+		return
+	}
+	writeJSON(w, 404, map[string]string{"error": "passkey not found"})
+}
+
+func (s *Server) handlePasskeyDelete(w http.ResponseWriter, r *http.Request) {
+	id := strings.TrimSpace(r.URL.Query().Get("id"))
+	if id == "" {
+		writeJSON(w, 400, map[string]string{"error": "missing passkey id"})
+		return
+	}
+	st := s.getSettings()
+	passkeys := st.Passkeys[:0]
+	removed := false
+	for _, pk := range st.Passkeys {
+		pkID := pk.ID
+		if pkID == "" {
+			pkID = passkeyCredentialID(pk.Credential)
+		}
+		if pkID == id {
+			removed = true
+			continue
+		}
+		passkeys = append(passkeys, pk)
+	}
+	st.Passkeys = passkeys
+	legacy := st.PasskeyCredentials[:0]
+	for _, credential := range st.PasskeyCredentials {
+		if passkeyCredentialID(credential) == id {
+			removed = true
+			continue
+		}
+		legacy = append(legacy, credential)
+	}
+	st.PasskeyCredentials = legacy
+	if !removed {
+		writeJSON(w, 404, map[string]string{"error": "passkey not found"})
+		return
+	}
+	if err := s.saveSettings(st); err != nil {
+		writeJSON(w, 500, map[string]string{"error": err.Error()})
+		return
+	}
+	writeJSON(w, 200, map[string]interface{}{"ok": true, "count": len(passkeyCredentials(st)), "passkey_items": passkeyInfos(st)})
+}
+
 func (s *Server) handlePasskeyReset(w http.ResponseWriter, r *http.Request) {
 	st := s.getSettings()
+	st.Passkeys = nil
 	st.PasskeyCredentials = nil
 	if err := s.saveSettings(st); err != nil {
 		writeJSON(w, 500, map[string]string{"error": err.Error()})
@@ -1547,7 +1764,7 @@ func (s *Server) handlePasskeyReset(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleAdminSettingsGet(w http.ResponseWriter, r *http.Request) {
-	writeJSON(w, 200, s.getSettings())
+	writeJSON(w, 200, adminSettingsResponse(s.getSettings()))
 }
 
 func (s *Server) handleSettingsPost(w http.ResponseWriter, r *http.Request) {
@@ -1564,6 +1781,7 @@ func (s *Server) handleSettingsPost(w http.ResponseWriter, r *http.Request) {
 	}
 	current := s.getSettings()
 	st.PasskeyCredentials = current.PasskeyCredentials
+	st.Passkeys = current.Passkeys
 	if err := s.saveSettings(st); err != nil {
 		writeJSON(w, 500, map[string]string{"error": err.Error()})
 		return
@@ -1648,6 +1866,20 @@ func main() {
 	mux.HandleFunc("/api/passkey/reset", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "POST" {
 			srv.handlePasskeyReset(w, r)
+		} else {
+			writeJSON(w, 405, map[string]string{"error": "method not allowed"})
+		}
+	})
+	mux.HandleFunc("/api/passkey/update", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "POST" {
+			srv.handlePasskeyUpdate(w, r)
+		} else {
+			writeJSON(w, 405, map[string]string{"error": "method not allowed"})
+		}
+	})
+	mux.HandleFunc("/api/passkey/delete", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "POST" {
+			srv.handlePasskeyDelete(w, r)
 		} else {
 			writeJSON(w, 405, map[string]string{"error": "method not allowed"})
 		}

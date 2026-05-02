@@ -27,7 +27,7 @@ It is designed for simple deployment: the Nuxt frontend is generated as static a
 - Project showcase controlled from the admin panel
 - Following page with followed users, recent repositories, and recent activity
 - Admin settings for title, GitHub account, token, social links, homepage projects, and password
-- Passkey support for passwordless admin login
+- Multiple Passkey support for passwordless admin login, with device notes
 - Favicon and site manifest support from the `public/` directory
 - Docker Compose deployment with a single `app` service
 
@@ -143,10 +143,10 @@ From `/admin`, you can:
 - select which repositories are shown on the homepage and projects page
 - edit social links
 - set or clear the admin password
-- register or clear a Passkey
+- register multiple Passkeys, edit Passkey notes, delete one Passkey, or clear all Passkeys
 - refresh cached GitHub data
 
-Passkeys work on `localhost` during local development and require HTTPS on a public domain.
+Passkeys work on `localhost` during local development and require HTTPS on a public domain. They are bound to the current domain, so separate root domains need separate Passkeys.
 
 ## Project Visibility
 

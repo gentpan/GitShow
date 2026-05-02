@@ -50,7 +50,7 @@ export const useApi = () => {
     passkeyRegisterStart: () => fetchJson<any>('/api/passkey/register/start', {
       method: 'POST',
     }),
-    passkeyRegisterFinish: (sessionId: string, credential: any) => fetchJson<any>(`/api/passkey/register/finish?session_id=${encodeURIComponent(sessionId)}`, {
+    passkeyRegisterFinish: (sessionId: string, credential: any, note = '') => fetchJson<any>(`/api/passkey/register/finish?session_id=${encodeURIComponent(sessionId)}&note=${encodeURIComponent(note)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(credential),
@@ -64,6 +64,14 @@ export const useApi = () => {
       body: JSON.stringify(credential),
     }),
     passkeyReset: () => fetchJson<any>('/api/passkey/reset', {
+      method: 'POST',
+    }),
+    passkeyUpdate: (id: string, note: string) => fetchJson<any>(`/api/passkey/update?id=${encodeURIComponent(id)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ note }),
+    }),
+    passkeyDelete: (id: string) => fetchJson<any>(`/api/passkey/delete?id=${encodeURIComponent(id)}`, {
       method: 'POST',
     }),
     getAdminSettings: (password: string) => fetchJson<any>('/api/admin/settings', {

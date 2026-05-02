@@ -3,7 +3,7 @@
     <h1 class="text-2xl font-bold" style="color: #fafafa;">管理设置</h1>
 
     <div v-if="!isHydrated || settingsPending || reposPending" class="flex items-center justify-center py-20">
-      <div class="w-8 h-8 border-2 border-green-600 border-t-transparent animate-spin" />
+      <div class="loading-spinner w-8 h-8 border-2 animate-spin" :style="{ borderColor: c, borderTopColor: 'transparent' }" />
     </div>
 
     <div v-else class="space-y-6">
@@ -14,6 +14,7 @@
           <span class="text-sm" style="color: #52525b;">{{ lastUpdated ? timeAgo(lastUpdated) : '—' }}</span>
         </div>
         <button
+          type="button"
           class="px-4 py-2 text-sm font-medium transition-colors"
           :style="{ backgroundColor: '#111', color: '#a1a1aa', border: '1px solid rgba(255,255,255,0.1)' }"
           :disabled="refreshing"
@@ -62,9 +63,12 @@
               <input
                 v-model="form.github_token"
                 type="password"
+                name="gitshow_github_token"
+                autocomplete="new-password"
                 class="w-full px-4 py-3 text-sm outline-none"
                 style="background-color: #111; color: #fafafa; border: 1px solid rgba(255,255,255,0.1);"
-                placeholder="ghp_xxx"
+                :placeholder="originalGithubToken ? '已设置，留空保持不变' : 'ghp_xxx'"
+                @input="githubTokenDirty = true"
                 @focus="$event.target.style.borderColor='#16a34a'"
                 @blur="$event.target.style.borderColor='rgba(255,255,255,0.1)'"
               />
@@ -108,6 +112,7 @@
           <h2 class="text-sm font-medium mb-4" style="color: #a1a1aa;">首页项目显示数量</h2>
           <div class="flex gap-3">
             <button
+              type="button"
               v-for="n in [4, 6, 8, 10]" :key="n"
               class="px-5 py-2 text-sm font-medium transition-colors"
               :class="form.homepage_repo_count === n ? 'active-count' : 'inactive-count'"
@@ -122,7 +127,7 @@
         <div class="p-6" style="background-color: #111; border: 1px solid rgba(255,255,255,0.08);">
           <div class="flex items-center justify-between mb-4">
             <h2 class="text-sm font-medium" style="color: #a1a1aa;">社交链接 (Icon 按钮)</h2>
-            <button class="text-xs flex items-center gap-1" :style="{ color: '#16a34a' }" @click="addSocialLink">
+            <button type="button" class="text-xs flex items-center gap-1" :style="{ color: '#16a34a' }" @click="addSocialLink">
               <i class="fas fa-plus"></i> 添加
             </button>
           </div>
@@ -150,6 +155,7 @@
                 placeholder="https://..."
               />
               <button
+                type="button"
                 class="w-8 h-8 flex items-center justify-center shrink-0 transition-colors"
                 style="color: #a1a1aa;"
                 onmouseover="this.style.color='#ef4444'"
@@ -167,7 +173,7 @@
         <div class="p-6" style="background-color: #111; border: 1px solid rgba(255,255,255,0.08);">
           <div class="flex items-center justify-between mb-4">
             <h2 class="text-sm font-medium" style="color: #a1a1aa;">项目管理</h2>
-            <button class="text-xs" :style="{ color: '#16a34a' }" @click="toggleAll">
+            <button type="button" class="text-xs" :style="{ color: '#16a34a' }" @click="toggleAll">
               {{ allSelected ? '取消全选' : '全选' }}
             </button>
           </div>
@@ -199,48 +205,111 @@
             <input
               v-model="form.admin_password"
               type="password"
+              name="gitshow_admin_password"
+              autocomplete="new-password"
               class="flex-1 px-4 py-3 text-sm outline-none"
               style="background-color: #111; color: #fafafa; border: 1px solid rgba(255,255,255,0.1);"
-              placeholder="设置或修改管理密码，留空则无需密码"
+              :placeholder="originalAdminPassword ? '已设置，留空保持不变' : '设置管理密码，留空则无需密码'"
+              @input="adminPasswordDirty = true"
               @focus="$event.target.style.borderColor='#16a34a'"
               @blur="$event.target.style.borderColor='rgba(255,255,255,0.1)'"
             />
-            <span class="text-xs shrink-0" style="color: #52525b;">留空则不启用密码</span>
+            <span class="text-xs shrink-0" style="color: #52525b;">已设置时留空保持不变</span>
           </div>
         </div>
 
         <!-- Passkey -->
         <div class="p-6" style="background-color: #111; border: 1px solid rgba(255,255,255,0.08);">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div class="flex flex-col gap-4">
             <div>
               <h2 class="text-sm font-medium mb-2" style="color: #a1a1aa;">Passkey</h2>
               <div class="text-xs" style="color: #52525b;">
-                {{ hasPasskey ? '已启用，可用系统指纹、面容或 PIN 登录。' : '未设置，建议添加一个无密码登录方式。' }}
+                {{ hasPasskey ? `已启用 ${passkeyItems.length} 个 Passkey，可用于无密码登录。` : '未设置，建议添加一个无密码登录方式。' }}
               </div>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+              <input
+                v-model="newPasskeyNote"
+                type="text"
+                maxlength="60"
+                class="flex-1 px-4 py-2 text-sm outline-none"
+                style="background-color: #111; color: #fafafa; border: 1px solid rgba(255,255,255,0.1);"
+                placeholder="备注，例如 MacBook、Windows、iPhone"
+                @focus="$event.target.style.borderColor='#16a34a'"
+                @blur="$event.target.style.borderColor='rgba(255,255,255,0.1)'"
+              />
               <button
-                class="px-4 py-2 text-sm font-medium transition-colors"
+                type="button"
+                class="px-4 py-2 text-sm font-medium transition-colors shrink-0"
                 :style="{ backgroundColor: 'var(--theme-primary)', color: '#000' }"
                 :disabled="passkeyBusy || !passkeySupported"
                 @click="setupPasskey"
               >
                 <i class="fas fa-fingerprint mr-1"></i>
-                {{ passkeyBusy ? '处理中...' : (hasPasskey ? '添加 Passkey' : '设置 Passkey') }}
+                {{ passkeyBusy ? '处理中...' : '添加 Passkey' }}
               </button>
+            </div>
+            <div v-if="passkeyItems.length" class="space-y-2">
+              <div
+                v-for="item in passkeyItems"
+                :key="item.id"
+                class="flex flex-col sm:flex-row sm:items-center gap-3 p-3"
+                style="background-color: #0a0a0a; border: 1px solid rgba(255,255,255,0.08);"
+              >
+                <div class="flex-1 min-w-0">
+                  <input
+                    :value="passkeyNotes[item.id] ?? item.note"
+                    type="text"
+                    maxlength="60"
+                    class="w-full px-3 py-2 text-sm outline-none"
+                    style="background-color: #111; color: #fafafa; border: 1px solid rgba(255,255,255,0.1);"
+                    @input="passkeyNotes[item.id] = $event.target.value"
+                  />
+                  <div class="text-[10px] mt-1 truncate" style="color: #52525b;">
+                    {{ item.created_at ? `创建 ${timeAgo(item.created_at)}` : '旧版 Passkey' }}
+                    <span v-if="item.last_used_at"> · 最近使用 {{ timeAgo(item.last_used_at) }}</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    class="px-3 py-2 text-xs transition-colors"
+                    style="background-color: #111; color: #a1a1aa; border: 1px solid rgba(255,255,255,0.1);"
+                    :disabled="passkeyBusy"
+                    @click="updatePasskeyNote(item)"
+                  >
+                    保存备注
+                  </button>
+                  <button
+                    type="button"
+                    class="px-3 py-2 text-xs transition-colors"
+                    style="background-color: #111; color: #ef4444; border: 1px solid rgba(239,68,68,0.3);"
+                    :disabled="passkeyBusy"
+                    @click="deletePasskey(item)"
+                  >
+                    删除
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center justify-between gap-3">
+              <div v-if="!passkeySupported" class="text-xs" style="color: #ef4444;">
+                当前浏览器或访问地址不支持 Passkey，请使用 localhost 或 HTTPS。
+              </div>
+              <div v-else class="text-xs" style="color: #52525b;">
+                不同域名需要分别设置 Passkey；同步到多设备取决于你的密码管理器。
+              </div>
               <button
                 v-if="hasPasskey"
-                class="px-4 py-2 text-sm transition-colors"
+                type="button"
+                class="px-3 py-2 text-xs transition-colors shrink-0"
                 style="background-color: #111; color: #ef4444; border: 1px solid rgba(239,68,68,0.3);"
                 :disabled="passkeyBusy"
                 @click="resetPasskey"
               >
-                清除
+                清除全部
               </button>
             </div>
-          </div>
-          <div v-if="!passkeySupported" class="mt-3 text-xs" style="color: #ef4444;">
-            当前浏览器或访问地址不支持 Passkey，请使用 localhost 或 HTTPS。
           </div>
           <div v-if="passkeyMessage" class="mt-3 text-xs" :style="{ color: passkeyError ? '#ef4444' : '#16a34a' }">
             {{ passkeyMessage }}
@@ -250,6 +319,7 @@
         <!-- Save -->
         <div class="flex items-center gap-4">
           <button
+            type="button"
             class="px-8 h-12 text-base font-semibold transition-colors btn-save"
             :style="{ backgroundColor: '#16a34a', color: '#000' }"
             :disabled="saving"
@@ -279,6 +349,12 @@ const passkeyBusy = ref(false)
 const passkeySupported = ref(false)
 const passkeyMessage = ref('')
 const passkeyError = ref(false)
+const originalGithubToken = ref('')
+const originalAdminPassword = ref('')
+const githubTokenDirty = ref(false)
+const adminPasswordDirty = ref(false)
+const newPasskeyNote = ref('')
+const passkeyNotes = ref({})
 
 const themeColorMap = {
   green: '#16a34a',
@@ -304,21 +380,33 @@ const { data: settings, pending: settingsPending } = useAsyncData('adminSettings
 const { data: repos, pending: reposPending } = useAsyncData('adminRepos', () => api.getRepos())
 const { data: health } = useAsyncData('health', () => api.getHealth())
 const { timeAgo } = useUtils()
-const hasPasskey = computed(() => Boolean(settings.value?.has_passkey || settings.value?.passkey_credentials?.length))
+const passkeyItems = computed(() => settings.value?.passkey_items || [])
+const hasPasskey = computed(() => Boolean(settings.value?.has_passkey || passkeyItems.value.length))
 
 function applySettings(st) {
   if (!st) return
   form.value.title = st.title || 'GitShow'
   form.value.github_username = st.github_username || ''
   form.value.github_url = st.github_url || ''
-  form.value.github_token = st.github_token || ''
+  originalGithubToken.value = st.github_token || ''
+  if (!githubTokenDirty.value) {
+    form.value.github_token = ''
+  }
   form.value.contact_label = st.contact_label || ''
   form.value.contact_url = st.contact_url || ''
   form.value.homepage_repo_count = st.homepage_repo_count || 6
   form.value.homepage_repos = st.homepage_repos || []
   form.value.social_links = st.social_links || []
   form.value.theme = st.theme || 'green'
-  form.value.admin_password = st.admin_password || ''
+  originalAdminPassword.value = st.admin_password || ''
+  if (!adminPasswordDirty.value) {
+    form.value.admin_password = ''
+  }
+  const notes = {}
+  for (const item of st.passkey_items || []) {
+    notes[item.id] = item.note || ''
+  }
+  passkeyNotes.value = notes
   onGithubUrlBlur()
 }
 
@@ -409,15 +497,21 @@ async function save() {
       title: form.value.title,
       github_username: form.value.github_username,
       github_url: form.value.github_url,
-      github_token: form.value.github_token,
+      github_token: githubTokenDirty.value ? form.value.github_token : originalGithubToken.value,
       contact_label: form.value.contact_label,
       contact_url: form.value.contact_url,
       homepage_repo_count: form.value.homepage_repo_count,
       homepage_repos: form.value.homepage_repos,
       social_links: form.value.social_links,
       theme: form.value.theme,
-      admin_password: form.value.admin_password,
+      admin_password: adminPasswordDirty.value ? form.value.admin_password : originalAdminPassword.value,
     })
+    originalGithubToken.value = githubTokenDirty.value ? form.value.github_token : originalGithubToken.value
+    originalAdminPassword.value = adminPasswordDirty.value ? form.value.admin_password : originalAdminPassword.value
+    form.value.github_token = ''
+    form.value.admin_password = ''
+    githubTokenDirty.value = false
+    adminPasswordDirty.value = false
     saved.value = true
     setTimeout(() => saved.value = false, 3000)
   } catch (e) {
@@ -432,19 +526,55 @@ async function setupPasskey() {
   passkeyMessage.value = ''
   passkeyError.value = false
   try {
-    await passkey.registerPasskey()
+    await passkey.registerPasskey(newPasskeyNote.value)
     await refreshNuxtData('adminSettings')
     await refreshNuxtData('layoutSettings')
-    passkeyMessage.value = 'Passkey 已设置'
+    newPasskeyNote.value = ''
+    passkeyMessage.value = 'Passkey 已添加'
   } catch (e) {
     passkeyError.value = true
-    passkeyMessage.value = 'Passkey 设置失败'
+    passkeyMessage.value = 'Passkey 添加失败'
+  } finally {
+    passkeyBusy.value = false
+  }
+}
+
+async function updatePasskeyNote(item) {
+  passkeyBusy.value = true
+  passkeyMessage.value = ''
+  passkeyError.value = false
+  try {
+    await api.passkeyUpdate(item.id, passkeyNotes.value[item.id] ?? item.note ?? '')
+    await refreshNuxtData('adminSettings')
+    passkeyMessage.value = 'Passkey 备注已保存'
+  } catch (e) {
+    passkeyError.value = true
+    passkeyMessage.value = '备注保存失败'
+  } finally {
+    passkeyBusy.value = false
+  }
+}
+
+async function deletePasskey(item) {
+  if (!confirm(`删除 Passkey「${item.note || 'Passkey'}」？`)) return
+  passkeyBusy.value = true
+  passkeyMessage.value = ''
+  passkeyError.value = false
+  try {
+    await api.passkeyDelete(item.id)
+    await refreshNuxtData('adminSettings')
+    await refreshNuxtData('layoutSettings')
+    passkeyMessage.value = 'Passkey 已删除'
+  } catch (e) {
+    passkeyError.value = true
+    passkeyMessage.value = '删除失败'
   } finally {
     passkeyBusy.value = false
   }
 }
 
 async function resetPasskey() {
+  if (!confirm('确定清除全部 Passkey？')) return
   passkeyBusy.value = true
   passkeyMessage.value = ''
   passkeyError.value = false

@@ -2,7 +2,7 @@
   <div class="space-y-8">
     <!-- Loading -->
     <div v-if="pending" class="flex items-center justify-center py-20">
-      <div class="w-8 h-8 border-2 animate-spin" :style="{ borderColor: c, borderTopColor: 'transparent' }" />
+      <div class="loading-spinner w-8 h-8 border-2 animate-spin" :style="{ borderColor: c, borderTopColor: 'transparent' }" />
     </div>
 
     <template v-else>

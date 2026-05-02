@@ -1,5 +1,7 @@
 services:
   app:
+    image: gitshow
+    container_name: gitshow
     build: .
     ports:
       - "3000:3000"
