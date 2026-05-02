@@ -250,17 +250,8 @@ const passwordError = ref(false)
 
 const isUnlocked = ref(false)
 
-watchEffect(() => {
-  if (settings.value) {
-    form.value.title = settings.value.title || 'GitShow'
-    form.value.homepage_repo_count = settings.value.homepage_repo_count || 6
-    form.value.homepage_repos = settings.value.homepage_repos || []
-    form.value.social_links = settings.value.social_links || []
-    form.value.theme = settings.value.theme || 'green'
-    form.value.admin_password = settings.value.admin_password || ''
-    showPasswordInput.value = !settings.value.admin_password
-  }
-})
+const { data: settings, pending: settingsPending } = useAsyncData('settings', () => api.getSettings())
+const { data: repos, pending: reposPending } = useAsyncData('adminRepos', () => api.getRepos())
 
 function checkPassword() {
   if (passwordInput.value === form.value.admin_password) {
@@ -271,9 +262,6 @@ function checkPassword() {
   }
 }
 
-const { data: settings, pending: settingsPending } = useAsyncData('settings', () => api.getSettings())
-const { data: repos, pending: reposPending } = useAsyncData('adminRepos', () => api.getRepos())
-
 watchEffect(() => {
   if (settings.value) {
     form.value.title = settings.value.title || 'GitShow'
@@ -281,6 +269,8 @@ watchEffect(() => {
     form.value.homepage_repos = settings.value.homepage_repos || []
     form.value.social_links = settings.value.social_links || []
     form.value.theme = settings.value.theme || 'green'
+    form.value.admin_password = settings.value.admin_password || ''
+    showPasswordInput.value = !settings.value.admin_password
   }
 })
 
