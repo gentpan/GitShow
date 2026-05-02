@@ -1,91 +1,147 @@
 # GitShow
 
-个人 GitHub 可视化主页 + 关注动态看板。
+GitShow is a self-hosted GitHub profile dashboard that turns your GitHub account into a clean personal homepage, project showcase, activity board, RSS feed, and lightweight admin panel.
 
-## 功能
+It is designed for simple deployment: the Nuxt frontend is generated as static assets and embedded into a single Go service. One container, one process, one public port.
 
-- **主页** (`/`)：GitHub 个人信息、统计数字、贡献热力图、项目列表、最近动态
-- **关注** (`/following`)：关注者的最近活跃状态、仓库和提交
-- **动态流** (`/feed`)：自己和关注者的提交动态聚合
+## Features
 
-数据每小时自动从 GitHub API 同步一次，前端始终读取缓存，避免触发限流。
+- Personal GitHub profile hero with avatar, bio, location, social links, and stats
+- Contribution heatmap, daily activity chart, recent activity, and star history
+- Project showcase controlled from the admin panel
+- Following page with followed users, recent repositories, and recent activity
+- RSS feed for your own GitHub activity plus followed users
+- Admin settings for title, GitHub account, token, social links, homepage projects, and password
+- Passkey support for passwordless admin login
+- Favicon and site manifest support from the `public/` directory
+- Docker Compose deployment with a single `app` service
 
-## 快速开始
+## Tech Stack
 
-### 1. 配置 GitHub Token
+- Go HTTP service for API, cache refresh, RSS, settings, Passkey/WebAuthn, and static hosting
+- Nuxt 3 SPA generated as static files
+- Tailwind CSS for the interface
+- GitHub REST API and GraphQL API for repository, activity, and contribution data
+- `github.com/go-webauthn/webauthn` for Passkey support
 
-**方式一（推荐）：环境变量**
+## Quick Start
 
-创建 `.env` 文件：
+### 1. Prepare Config
+
+Copy the examples:
 
 ```bash
-cp .env.example .env
+cp config.json.example config.json
+cp settings.json.example settings.json
 ```
 
-编辑 `.env`，填入你的 Token：
-
-```
-GITHUB_TOKEN=ghp_你的token
-```
-
-**方式二：直接编辑配置文件**
-
-编辑 `backend/config.json`：
+Edit `config.json`:
 
 ```json
 {
-  "username": "你的GitHub用户名",
-  "token": "ghp_你的token",
+  "username": "your-github-username",
+  "token": "ghp_your_token",
   "following": ["antfu", "yyx990803", "torvalds"]
 }
 ```
 
-Token 获取：[GitHub Settings > Developer settings > Personal access tokens](https://github.com/settings/tokens)（勾选 `read:user` 和 `public_repo`）
+You can also provide the token through `.env`:
 
-### 2. 启动
+```bash
+GITHUB_TOKEN=ghp_your_token
+```
+
+The token should be able to read public GitHub data. For private deployments that need more account context, use a personal access token with the appropriate GitHub scopes.
+
+### 2. Run With Docker
+
+```bash
+docker compose up -d --build
+```
+
+Open:
+
+```text
+http://localhost:3000
+```
+
+### 3. Local Development Run
 
 ```bash
 ./start.sh
 ```
 
-或使用 Docker：
+The script installs frontend dependencies when needed, generates the Nuxt static output, builds the Go binary, and starts the single service on port `3000`.
+
+## Manual Build
 
 ```bash
-docker-compose up --build
+NUXT_PUBLIC_API_BASE= npm run generate
+go build -o gitshow .
+PORT=3000 ./gitshow
 ```
 
-或分别启动：
+The generated `gitshow` binary embeds `.output/public`, so deployment only needs the binary plus runtime files such as `config.json`, `settings.json`, and `star-history.json`.
 
-```bash
-# 后端
-cd backend
-go run .
+## Admin
 
-# 前端（新终端）
-cd frontend
-npm run dev
+Open the footer login button and sign in with the admin password. After login, the navigation adds the `管理` menu item and the footer login icon becomes a red logout button.
+
+From `/admin`, you can:
+
+- change the site title
+- configure the GitHub profile URL and token
+- select which repositories are shown on the homepage and projects page
+- edit social links
+- set or clear the admin password
+- register or clear a Passkey
+- refresh cached GitHub data
+
+Passkeys work on `localhost` during local development and require HTTPS on a public domain.
+
+## Project Visibility
+
+The projects page follows the admin project toggles exactly:
+
+- enabled repositories are shown
+- disabled repositories are hidden
+- the display order follows the saved admin selection
+
+If no repositories are enabled, the projects page shows an empty-state message.
+
+## Directory Structure
+
+```text
+GitShow/
+├── main.go                # Go API, cache, RSS, Passkey, and embedded static server
+├── Dockerfile             # Multi-stage build: Nuxt static output + Go binary
+├── docker-compose.yml     # Single app service
+├── go.mod                 # Go dependencies
+├── package.json           # Nuxt build scripts and frontend dependencies
+├── app.vue                # Nuxt app entry
+├── pages/                 # Nuxt pages
+├── components/            # Vue components
+├── composables/           # API, theme, auth, and Passkey helpers
+├── layouts/               # Site layout and footer/header
+├── assets/                # Global CSS
+├── public/                # favicon, webmanifest, and static public assets
+├── config.json.example    # Example runtime GitHub config
+├── settings.json.example  # Example runtime site settings
+└── start.sh               # Local build-and-run helper
 ```
 
-访问 http://localhost:3000
+## Runtime Files
 
-## 技术栈
+These files are intentionally ignored by git because they can contain secrets or machine-local data:
 
-- **后端**: Go + 内存缓存 + 定时任务
-- **前端**: Nuxt 3 + TailwindCSS
-- **API**: GitHub REST API + GraphQL (contributions)
+- `config.json`
+- `settings.json`
+- `.env`
+- `star-history.json`
+- `.output/`
+- `dist`
+- `gitshow`
 
-## 目录结构
+## License
 
-```
-gitshow/
-├── backend/
-│   ├── main.go          # Go API 服务
-│   ├── config.json      # 配置文件
-│   └── go.mod
-├── frontend/
-│   ├── pages/           # 页面
-│   ├── components/      # 组件
-│   ├── composables/     # API 客户端
-│   └── layouts/         # 布局
-└── start.sh             # 一键启动脚本
-```
+MIT

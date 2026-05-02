@@ -1,0 +1,12 @@
+.git
+.env
+node_modules
+.nuxt
+.output
+dist
+gitshow
+config.json
+settings.json
+star-history.json
+*.log
+.DS_Store

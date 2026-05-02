@@ -17,6 +17,11 @@ export const useApi = () => {
     return res.json()
   }
 
+  const adminHeaders = (password: string) => ({
+    'Content-Type': 'application/json',
+    'X-Admin-Password': password,
+  })
+
   return {
     getMe: () => fetchJson<any>('/api/me'),
     getRepos: () => fetchJson<any[]>('/api/repos'),
@@ -37,9 +42,36 @@ export const useApi = () => {
     getStarHistory: () => fetchJson<any[]>('/api/stars-history'),
     getHealth: () => fetchJson<any>('/api/health'),
     getSettings: () => fetchJson<any>('/api/settings'),
-    saveSettings: (settings: any) => fetchJson<any>('/api/settings', {
+    adminLogin: (password: string) => fetchJson<any>('/api/admin/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password }),
+    }),
+    passkeyRegisterStart: () => fetchJson<any>('/api/passkey/register/start', {
+      method: 'POST',
+    }),
+    passkeyRegisterFinish: (sessionId: string, credential: any) => fetchJson<any>(`/api/passkey/register/finish?session_id=${encodeURIComponent(sessionId)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credential),
+    }),
+    passkeyLoginStart: () => fetchJson<any>('/api/passkey/login/start', {
+      method: 'POST',
+    }),
+    passkeyLoginFinish: (sessionId: string, credential: any) => fetchJson<any>(`/api/passkey/login/finish?session_id=${encodeURIComponent(sessionId)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credential),
+    }),
+    passkeyReset: () => fetchJson<any>('/api/passkey/reset', {
+      method: 'POST',
+    }),
+    getAdminSettings: (password: string) => fetchJson<any>('/api/admin/settings', {
+      headers: { 'X-Admin-Password': password },
+    }),
+    saveSettings: (settings: any, password = '') => fetchJson<any>('/api/admin/settings', {
+      method: 'POST',
+      headers: adminHeaders(password),
       body: JSON.stringify(settings),
     }),
     refreshCache: () => fetchJson<any>('/api/refresh'),

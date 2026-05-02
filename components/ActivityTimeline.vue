@@ -1,20 +1,24 @@
 <template>
-  <div class="space-y-1">
+  <div class="grid grid-cols-2 gap-3">
     <div
       v-for="item in items" :key="item.id"
-      class="flex items-center gap-3"
+      class="px-3 py-2 flex items-center gap-2"
+      style="background-color: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06);"
     >
-      <img :src="item.avatar_url" class="w-7 h-7 rounded-full shrink-0" />
-      <span class="text-xs shrink-0 px-1.5 py-0.5 rounded-sm font-medium" :style="actionStyle(item.type).style">
+      <img :src="item.avatar_url" class="w-6 h-6 rounded-full shrink-0" />
+      <span class="text-xs shrink-0 px-1.5 py-0.5 rounded font-medium" :style="actionStyle(item.type).style">
         {{ actionLabel(item) }}
       </span>
-      <a :href="item.repo_url" target="_blank" class="hover:underline text-sm" :style="{ color: c }">
+      <a :href="item.actor_url" target="_blank" class="hover:underline text-sm shrink-0" :style="{ color: c }">
+        {{ item.actor }}
+      </a>
+      <span class="text-sm shrink-0" style="color: #52525b;">/</span>
+      <a :href="item.repo_url" target="_blank" class="hover:underline text-sm shrink-0" :style="{ color: c }">
         {{ item.repo }}
       </a>
-      <span v-if="item.message" class="text-sm truncate max-w-xs" style="color: #a1a1aa;">{{ item.message }}</span>
-      <span class="text-xs ml-auto" style="color: #52525b;">{{ timeAgo(item.created_at) }}</span>
+      <span class="text-xs ml-auto shrink-0" style="color: #52525b;">{{ timeAgo(item.created_at) }}</span>
     </div>
-    <div v-if="!items?.length" class="text-sm py-6 text-center" style="color: #a1a1aa;">暂无近期动态</div>
+    <div v-if="!items?.length" class="col-span-2 text-sm py-6 text-center" style="color: #a1a1aa;">暂无近期动态</div>
   </div>
 </template>
 

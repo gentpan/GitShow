@@ -2,20 +2,37 @@ package main
 
 import (
 	"bytes"
+	"crypto/rand"
+	"embed"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/fs"
 	"log"
+	"mime"
+	"net"
 	"net/http"
 	"os"
+	"path"
+	"path/filepath"
 	"sort"
 	"strings"
 
 	"sync"
 	"time"
 
+	"github.com/go-webauthn/webauthn/protocol"
+	"github.com/go-webauthn/webauthn/webauthn"
 	"github.com/rs/cors"
 )
+
+//go:embed all:.output/public
+var embeddedPublic embed.FS
+
+func init() {
+	mime.AddExtensionType(".webmanifest", "application/manifest+json")
+}
 
 // ========== Config ==========
 
@@ -34,15 +51,62 @@ type SocialLink struct {
 }
 
 type Settings struct {
+	Title              string                `json:"title"`
+	GitHubUsername     string                `json:"github_username"`
+	GitHubURL          string                `json:"github_url"`
+	GitHubToken        string                `json:"github_token"`
+	HomepageRepoCount  int                   `json:"homepage_repo_count"`
+	HomepageRepos      []string              `json:"homepage_repos"`
+	SocialLinks        []SocialLink          `json:"social_links"`
+	Theme              string                `json:"theme"`
+	AdminPassword      string                `json:"admin_password"`
+	PasskeyCredentials []webauthn.Credential `json:"passkey_credentials,omitempty"`
+}
+
+type PublicSettings struct {
 	Title             string       `json:"title"`
 	GitHubUsername    string       `json:"github_username"`
 	GitHubURL         string       `json:"github_url"`
-	GitHubToken       string       `json:"github_token"`
 	HomepageRepoCount int          `json:"homepage_repo_count"`
 	HomepageRepos     []string     `json:"homepage_repos"`
 	SocialLinks       []SocialLink `json:"social_links"`
 	Theme             string       `json:"theme"`
-	AdminPassword     string       `json:"admin_password"`
+	HasAdminPassword  bool         `json:"has_admin_password"`
+	HasGitHubToken    bool         `json:"has_github_token"`
+	HasPasskey        bool         `json:"has_passkey"`
+}
+
+type AdminLoginRequest struct {
+	Password string `json:"password"`
+}
+
+type AdminLoginResponse struct {
+	OK bool `json:"ok"`
+}
+
+type PasskeyChallengeResponse struct {
+	SessionID string      `json:"session_id"`
+	Options   interface{} `json:"options"`
+}
+
+type AdminPasskeyUser struct {
+	credentials []webauthn.Credential
+}
+
+func (u AdminPasskeyUser) WebAuthnID() []byte {
+	return []byte("gitshow-admin")
+}
+
+func (u AdminPasskeyUser) WebAuthnName() string {
+	return "admin"
+}
+
+func (u AdminPasskeyUser) WebAuthnDisplayName() string {
+	return "GitShow Admin"
+}
+
+func (u AdminPasskeyUser) WebAuthnCredentials() []webauthn.Credential {
+	return u.credentials
 }
 
 // ========== GitHub Models ==========
@@ -62,19 +126,19 @@ type GitHubUser struct {
 }
 
 type GitHubRepo struct {
-	ID            int64             `json:"id"`
-	Name          string            `json:"name"`
-	FullName      string            `json:"full_name"`
-	Description   string            `json:"description"`
-	HtmlURL       string            `json:"html_url"`
-	Language      string            `json:"language"`
-	Private       bool              `json:"private"`
-	Stars         int               `json:"stargazers_count"`
-	Forks         int               `json:"forks_count"`
-	UpdatedAt     time.Time         `json:"updated_at"`
-	Languages     map[string]int    `json:"languages"`
+	ID            int64              `json:"id"`
+	Name          string             `json:"name"`
+	FullName      string             `json:"full_name"`
+	Description   string             `json:"description"`
+	HtmlURL       string             `json:"html_url"`
+	Language      string             `json:"language"`
+	Private       bool               `json:"private"`
+	Stars         int                `json:"stargazers_count"`
+	Forks         int                `json:"forks_count"`
+	UpdatedAt     time.Time          `json:"updated_at"`
+	Languages     map[string]int     `json:"languages"`
 	LangPct       map[string]float64 `json:"lang_pct"`
-	LatestVersion string            `json:"latest_version"`
+	LatestVersion string             `json:"latest_version"`
 }
 
 type GitHubEvent struct {
@@ -104,9 +168,9 @@ type EventPayload struct {
 	Action      string       `json:"action"`
 	Description string       `json:"description"`
 	Issue       *struct {
-		Title string `json:"title"`
-		URL   string `json:"html_url"`
-		Number int   `json:"number"`
+		Title  string `json:"title"`
+		URL    string `json:"html_url"`
+		Number int    `json:"number"`
 	} `json:"issue"`
 	PullRequest *struct {
 		Title  string `json:"title"`
@@ -137,10 +201,10 @@ type GraphQLResponse struct {
 	Data struct {
 		User *struct {
 			ContributionsCollection struct {
-				TotalCommitContributions          int `json:"totalCommitContributions"`
-				TotalIssueContributions           int `json:"totalIssueContributions"`
-				TotalPullRequestContributions     int `json:"totalPullRequestContributions"`
-				ContributionCalendar struct {
+				TotalCommitContributions      int `json:"totalCommitContributions"`
+				TotalIssueContributions       int `json:"totalIssueContributions"`
+				TotalPullRequestContributions int `json:"totalPullRequestContributions"`
+				ContributionCalendar          struct {
 					TotalContributions int `json:"totalContributions"`
 					Weeks              []struct {
 						ContributionDays []struct {
@@ -167,9 +231,9 @@ type HeatmapDay struct {
 }
 
 type FollowingCache struct {
-	User   *GitHubUser    `json:"user"`
-	Events []GitHubEvent  `json:"events"`
-	Repos  []GitHubRepo   `json:"repos"`
+	User   *GitHubUser   `json:"user"`
+	Events []GitHubEvent `json:"events"`
+	Repos  []GitHubRepo  `json:"repos"`
 }
 
 type StarHistoryPoint struct {
@@ -178,16 +242,16 @@ type StarHistoryPoint struct {
 }
 
 type CacheData struct {
-	User          *GitHubUser
-	Repos         []GitHubRepo
-	Events        []GitHubEvent
-	Following     map[string]*FollowingCache
+	User           *GitHubUser
+	Repos          []GitHubRepo
+	Events         []GitHubEvent
+	Following      map[string]*FollowingCache
 	FollowingNames []string
-	Heatmap       []HeatmapDay
-	TotalStars    int
-	TotalCommits  int
-	TotalRepos    int
-	LastUpdated   time.Time
+	Heatmap        []HeatmapDay
+	TotalStars     int
+	TotalCommits   int
+	TotalRepos     int
+	LastUpdated    time.Time
 }
 
 // ========== Response Models ==========
@@ -211,6 +275,7 @@ type ActivityItem struct {
 	ID        string       `json:"id"`
 	Type      string       `json:"type"`
 	Actor     string       `json:"actor"`
+	ActorURL  string       `json:"actor_url"`
 	AvatarURL string       `json:"avatar_url"`
 	Repo      string       `json:"repo"`
 	RepoURL   string       `json:"repo_url"`
@@ -223,11 +288,11 @@ type ActivityItem struct {
 }
 
 type FollowingItem struct {
-	Username     string        `json:"username"`
-	AvatarURL    string        `json:"avatar_url"`
-	Bio          string        `json:"bio"`
-	LastActive   *time.Time    `json:"last_active"`
-	RecentRepos  []GitHubRepo  `json:"recent_repos"`
+	Username     string         `json:"username"`
+	AvatarURL    string         `json:"avatar_url"`
+	Bio          string         `json:"bio"`
+	LastActive   *time.Time     `json:"last_active"`
+	RecentRepos  []GitHubRepo   `json:"recent_repos"`
 	RecentEvents []ActivityItem `json:"recent_events"`
 }
 
@@ -235,6 +300,7 @@ type FeedItem struct {
 	ID        string       `json:"id"`
 	Type      string       `json:"type"`
 	Actor     string       `json:"actor"`
+	ActorURL  string       `json:"actor_url"`
 	AvatarURL string       `json:"avatar_url"`
 	Action    string       `json:"action"`
 	Repo      string       `json:"repo"`
@@ -249,18 +315,20 @@ type FeedItem struct {
 // ========== Server ==========
 
 type Server struct {
-	config   Config
-	client   *http.Client
-	mu       sync.RWMutex
-	cache    *CacheData
-	settings Settings
+	config          Config
+	client          *http.Client
+	mu              sync.RWMutex
+	cache           *CacheData
+	settings        Settings
+	passkeySessions map[string]webauthn.SessionData
 }
 
 func NewServer(cfg Config) *Server {
 	return &Server{
-		config: cfg,
-		client: &http.Client{Timeout: 30 * time.Second},
-		cache:  &CacheData{Following: make(map[string]*FollowingCache)},
+		config:          cfg,
+		client:          &http.Client{Timeout: 30 * time.Second},
+		cache:           &CacheData{Following: make(map[string]*FollowingCache)},
+		passkeySessions: make(map[string]webauthn.SessionData),
 	}
 }
 
@@ -334,6 +402,102 @@ func (s *Server) getSettings() Settings {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.settings
+}
+
+func (s *Server) getPublicSettings() PublicSettings {
+	st := s.getSettings()
+	return PublicSettings{
+		Title:             st.Title,
+		GitHubUsername:    st.GitHubUsername,
+		GitHubURL:         st.GitHubURL,
+		HomepageRepoCount: st.HomepageRepoCount,
+		HomepageRepos:     st.HomepageRepos,
+		SocialLinks:       st.SocialLinks,
+		Theme:             st.Theme,
+		HasAdminPassword:  st.AdminPassword != "",
+		HasGitHubToken:    st.GitHubToken != "" || s.config.Token != "",
+		HasPasskey:        len(st.PasskeyCredentials) > 0,
+	}
+}
+
+func (s *Server) validateAdminPassword(password string) bool {
+	st := s.getSettings()
+	if st.AdminPassword == "" {
+		return true
+	}
+	return password == st.AdminPassword
+}
+
+func (s *Server) requireAdmin(w http.ResponseWriter, r *http.Request) bool {
+	if s.validateAdminPassword(r.Header.Get("X-Admin-Password")) {
+		return true
+	}
+	writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "unauthorized"})
+	return false
+}
+
+func (s *Server) adminPasskeyUser() AdminPasskeyUser {
+	st := s.getSettings()
+	return AdminPasskeyUser{credentials: st.PasskeyCredentials}
+}
+
+func passkeySessionID() (string, error) {
+	b := make([]byte, 32)
+	if _, err := rand.Read(b); err != nil {
+		return "", err
+	}
+	return base64.RawURLEncoding.EncodeToString(b), nil
+}
+
+func requestOriginAndRPID(r *http.Request) (origin string, rpID string) {
+	host := r.Host
+	if forwardedHost := r.Header.Get("X-Forwarded-Host"); forwardedHost != "" {
+		host = strings.TrimSpace(strings.Split(forwardedHost, ",")[0])
+	}
+
+	scheme := "http"
+	if r.TLS != nil {
+		scheme = "https"
+	}
+	if forwardedProto := r.Header.Get("X-Forwarded-Proto"); forwardedProto != "" {
+		scheme = strings.TrimSpace(strings.Split(forwardedProto, ",")[0])
+	}
+
+	rpID = host
+	if h, _, err := net.SplitHostPort(host); err == nil {
+		rpID = h
+	}
+	return scheme + "://" + host, rpID
+}
+
+func (s *Server) webAuthnForRequest(r *http.Request) (*webauthn.WebAuthn, error) {
+	origin, rpID := requestOriginAndRPID(r)
+	return webauthn.New(&webauthn.Config{
+		RPDisplayName: "GitShow",
+		RPID:          rpID,
+		RPOrigins:     []string{origin},
+	})
+}
+
+func (s *Server) savePasskeySession(session *webauthn.SessionData) (string, error) {
+	id, err := passkeySessionID()
+	if err != nil {
+		return "", err
+	}
+	s.mu.Lock()
+	s.passkeySessions[id] = *session
+	s.mu.Unlock()
+	return id, nil
+}
+
+func (s *Server) popPasskeySession(id string) (webauthn.SessionData, bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	session, ok := s.passkeySessions[id]
+	if ok {
+		delete(s.passkeySessions, id)
+	}
+	return session, ok
 }
 
 // ---------- GitHub API Helpers ----------
@@ -755,9 +919,14 @@ func (s *Server) refreshCache() {
 func (s *Server) recordStarHistory(totalStars int) {
 	today := time.Now().Format("2006-01-02")
 	var history []StarHistoryPoint
-	data, _ := os.ReadFile("star-history.json")
+	data, err := os.ReadFile("star-history.json")
+	if err != nil && !os.IsNotExist(err) {
+		log.Printf("[stars] read history error: %v", err)
+	}
 	if len(data) > 0 {
-		json.Unmarshal(data, &history)
+		if err := json.Unmarshal(data, &history); err != nil {
+			log.Printf("[stars] parse history error: %v", err)
+		}
 	}
 	// Update or append today's record
 	updated := false
@@ -775,15 +944,29 @@ func (s *Server) recordStarHistory(totalStars int) {
 	if len(history) > 90 {
 		history = history[len(history)-90:]
 	}
-	out, _ := json.MarshalIndent(history, "", "  ")
-	os.WriteFile("star-history.json", out, 0644)
+	out, err := json.MarshalIndent(history, "", "  ")
+	if err != nil {
+		log.Printf("[stars] encode history error: %v", err)
+		return
+	}
+	if err := os.WriteFile("star-history.json", out, 0644); err != nil {
+		log.Printf("[stars] write history error: %v", err)
+	}
 }
 
 func (s *Server) getStarHistory() []StarHistoryPoint {
 	var history []StarHistoryPoint
-	data, _ := os.ReadFile("star-history.json")
+	data, err := os.ReadFile("star-history.json")
+	if err != nil {
+		if !os.IsNotExist(err) {
+			log.Printf("[stars] read history error: %v", err)
+		}
+		return history
+	}
 	if len(data) > 0 {
-		json.Unmarshal(data, &history)
+		if err := json.Unmarshal(data, &history); err != nil {
+			log.Printf("[stars] parse history error: %v", err)
+		}
 	}
 	return history
 }
@@ -867,6 +1050,7 @@ func eventsToActivities(events []GitHubEvent, actor, avatar string) []ActivityIt
 				ID:        e.ID,
 				Type:      e.Type,
 				Actor:     actor,
+				ActorURL:  "https://github.com/" + actor,
 				AvatarURL: avatar,
 				Repo:      e.Repo.Name,
 				RepoURL:   repoURL,
@@ -880,6 +1064,7 @@ func eventsToActivities(events []GitHubEvent, actor, avatar string) []ActivityIt
 				ID:        e.ID,
 				Type:      e.Type,
 				Actor:     actor,
+				ActorURL:  "https://github.com/" + actor,
 				AvatarURL: avatar,
 				Repo:      e.Repo.Name,
 				RepoURL:   repoURL,
@@ -904,6 +1089,7 @@ func eventsToActivities(events []GitHubEvent, actor, avatar string) []ActivityIt
 				ID:        e.ID,
 				Type:      e.Type,
 				Actor:     actor,
+				ActorURL:  "https://github.com/" + actor,
 				AvatarURL: avatar,
 				Repo:      e.Repo.Name,
 				RepoURL:   repoURL,
@@ -924,6 +1110,7 @@ func eventsToActivities(events []GitHubEvent, actor, avatar string) []ActivityIt
 				ID:        e.ID,
 				Type:      e.Type,
 				Actor:     actor,
+				ActorURL:  "https://github.com/" + actor,
 				AvatarURL: avatar,
 				Repo:      e.Repo.Name,
 				RepoURL:   repoURL,
@@ -937,6 +1124,7 @@ func eventsToActivities(events []GitHubEvent, actor, avatar string) []ActivityIt
 				ID:        e.ID,
 				Type:      e.Type,
 				Actor:     actor,
+				ActorURL:  "https://github.com/" + actor,
 				AvatarURL: avatar,
 				Repo:      e.Repo.Name,
 				RepoURL:   repoURL,
@@ -954,6 +1142,7 @@ func eventsToActivities(events []GitHubEvent, actor, avatar string) []ActivityIt
 				ID:        e.ID,
 				Type:      e.Type,
 				Actor:     actor,
+				ActorURL:  "https://github.com/" + actor,
 				AvatarURL: avatar,
 				Repo:      e.Repo.Name,
 				RepoURL:   repoURL,
@@ -967,6 +1156,7 @@ func eventsToActivities(events []GitHubEvent, actor, avatar string) []ActivityIt
 				ID:        e.ID,
 				Type:      e.Type,
 				Actor:     actor,
+				ActorURL:  "https://github.com/" + actor,
 				AvatarURL: avatar,
 				Repo:      e.Repo.Name,
 				RepoURL:   repoURL,
@@ -985,6 +1175,60 @@ func writeJSON(w http.ResponseWriter, status int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(data)
+}
+
+func spaHandler(staticDir string) http.HandlerFunc {
+	fs := http.FileServer(http.Dir(staticDir))
+	return func(w http.ResponseWriter, r *http.Request) {
+		path := filepath.Join(staticDir, filepath.Clean(r.URL.Path))
+		if info, err := os.Stat(path); err == nil && !info.IsDir() {
+			fs.ServeHTTP(w, r)
+			return
+		}
+
+		index := filepath.Join(staticDir, "index.html")
+		if _, err := os.Stat(index); err != nil {
+			writeJSON(w, http.StatusNotFound, map[string]string{"error": "web assets not built"})
+			return
+		}
+		http.ServeFile(w, r, index)
+	}
+}
+
+func embeddedSPAHandler() http.HandlerFunc {
+	publicFS, err := fs.Sub(embeddedPublic, ".output/public")
+	if err != nil {
+		return func(w http.ResponseWriter, r *http.Request) {
+			writeJSON(w, http.StatusNotFound, map[string]string{"error": "web assets not embedded"})
+		}
+	}
+
+	fileServer := http.FileServer(http.FS(publicFS))
+	return func(w http.ResponseWriter, r *http.Request) {
+		cleanPath := strings.TrimPrefix(path.Clean(r.URL.Path), "/")
+		if cleanPath != "." && cleanPath != "" {
+			if info, err := fs.Stat(publicFS, cleanPath); err == nil && !info.IsDir() {
+				fileServer.ServeHTTP(w, r)
+				return
+			}
+		}
+
+		index, err := publicFS.Open("index.html")
+		if err != nil {
+			writeJSON(w, http.StatusNotFound, map[string]string{"error": "web assets not embedded"})
+			return
+		}
+		defer index.Close()
+
+		content, err := io.ReadAll(index)
+		if err != nil {
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to read embedded web assets"})
+			return
+		}
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
+		w.Write(content)
+	}
 }
 
 // ---------- HTTP Handlers ----------
@@ -1087,6 +1331,7 @@ func activityToFeedItem(it ActivityItem) FeedItem {
 		ID:        it.ID,
 		Type:      it.Type,
 		Actor:     it.Actor,
+		ActorURL:  it.ActorURL,
 		AvatarURL: it.AvatarURL,
 		Action:    it.Action,
 		Repo:      it.Repo,
@@ -1233,6 +1478,144 @@ func escapeXML(s string) string {
 }
 
 func (s *Server) handleSettingsGet(w http.ResponseWriter, r *http.Request) {
+	writeJSON(w, 200, s.getPublicSettings())
+}
+
+func (s *Server) handleAdminLogin(w http.ResponseWriter, r *http.Request) {
+	var req AdminLoginRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeJSON(w, 400, map[string]string{"error": "invalid json"})
+		return
+	}
+	if !s.validateAdminPassword(req.Password) {
+		writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "unauthorized"})
+		return
+	}
+	writeJSON(w, 200, AdminLoginResponse{OK: true})
+}
+
+func (s *Server) handlePasskeyRegisterStart(w http.ResponseWriter, r *http.Request) {
+	wa, err := s.webAuthnForRequest(r)
+	if err != nil {
+		writeJSON(w, 500, map[string]string{"error": err.Error()})
+		return
+	}
+
+	user := s.adminPasskeyUser()
+	creation, session, err := wa.BeginRegistration(
+		user,
+		webauthn.WithResidentKeyRequirement(protocol.ResidentKeyRequirementPreferred),
+		webauthn.WithExclusions(webauthn.Credentials(user.WebAuthnCredentials()).CredentialDescriptors()),
+	)
+	if err != nil {
+		writeJSON(w, 500, map[string]string{"error": err.Error()})
+		return
+	}
+
+	sessionID, err := s.savePasskeySession(session)
+	if err != nil {
+		writeJSON(w, 500, map[string]string{"error": err.Error()})
+		return
+	}
+	writeJSON(w, 200, PasskeyChallengeResponse{SessionID: sessionID, Options: creation})
+}
+
+func (s *Server) handlePasskeyRegisterFinish(w http.ResponseWriter, r *http.Request) {
+	sessionID := r.URL.Query().Get("session_id")
+	session, ok := s.popPasskeySession(sessionID)
+	if !ok {
+		writeJSON(w, 400, map[string]string{"error": "invalid passkey session"})
+		return
+	}
+
+	wa, err := s.webAuthnForRequest(r)
+	if err != nil {
+		writeJSON(w, 500, map[string]string{"error": err.Error()})
+		return
+	}
+	user := s.adminPasskeyUser()
+	credential, err := wa.FinishRegistration(user, session, r)
+	if err != nil {
+		writeJSON(w, 400, map[string]string{"error": err.Error()})
+		return
+	}
+
+	st := s.getSettings()
+	st.PasskeyCredentials = append(st.PasskeyCredentials, *credential)
+	if err := s.saveSettings(st); err != nil {
+		writeJSON(w, 500, map[string]string{"error": err.Error()})
+		return
+	}
+	writeJSON(w, 200, map[string]interface{}{"ok": true, "count": len(st.PasskeyCredentials)})
+}
+
+func (s *Server) handlePasskeyLoginStart(w http.ResponseWriter, r *http.Request) {
+	user := s.adminPasskeyUser()
+	if len(user.WebAuthnCredentials()) == 0 {
+		writeJSON(w, 400, map[string]string{"error": "passkey not configured"})
+		return
+	}
+
+	wa, err := s.webAuthnForRequest(r)
+	if err != nil {
+		writeJSON(w, 500, map[string]string{"error": err.Error()})
+		return
+	}
+	assertion, session, err := wa.BeginLogin(user)
+	if err != nil {
+		writeJSON(w, 500, map[string]string{"error": err.Error()})
+		return
+	}
+	sessionID, err := s.savePasskeySession(session)
+	if err != nil {
+		writeJSON(w, 500, map[string]string{"error": err.Error()})
+		return
+	}
+	writeJSON(w, 200, PasskeyChallengeResponse{SessionID: sessionID, Options: assertion})
+}
+
+func (s *Server) handlePasskeyLoginFinish(w http.ResponseWriter, r *http.Request) {
+	sessionID := r.URL.Query().Get("session_id")
+	session, ok := s.popPasskeySession(sessionID)
+	if !ok {
+		writeJSON(w, 400, map[string]string{"error": "invalid passkey session"})
+		return
+	}
+
+	wa, err := s.webAuthnForRequest(r)
+	if err != nil {
+		writeJSON(w, 500, map[string]string{"error": err.Error()})
+		return
+	}
+	user := s.adminPasskeyUser()
+	credential, err := wa.FinishLogin(user, session, r)
+	if err != nil {
+		writeJSON(w, 401, map[string]string{"error": err.Error()})
+		return
+	}
+
+	st := s.getSettings()
+	for i := range st.PasskeyCredentials {
+		if bytes.Equal(st.PasskeyCredentials[i].ID, credential.ID) {
+			st.PasskeyCredentials[i] = *credential
+			_ = s.saveSettings(st)
+			break
+		}
+	}
+	writeJSON(w, 200, AdminLoginResponse{OK: true})
+}
+
+func (s *Server) handlePasskeyReset(w http.ResponseWriter, r *http.Request) {
+	st := s.getSettings()
+	st.PasskeyCredentials = nil
+	if err := s.saveSettings(st); err != nil {
+		writeJSON(w, 500, map[string]string{"error": err.Error()})
+		return
+	}
+	writeJSON(w, 200, map[string]interface{}{"ok": true, "count": 0})
+}
+
+func (s *Server) handleAdminSettingsGet(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 200, s.getSettings())
 }
 
@@ -1248,6 +1631,8 @@ func (s *Server) handleSettingsPost(w http.ResponseWriter, r *http.Request) {
 	if st.HomepageRepoCount == 0 {
 		st.HomepageRepoCount = 6
 	}
+	current := s.getSettings()
+	st.PasskeyCredentials = current.PasskeyCredentials
 	if err := s.saveSettings(st); err != nil {
 		writeJSON(w, 500, map[string]string{"error": err.Error()})
 		return
@@ -1290,6 +1675,55 @@ func main() {
 	mux.HandleFunc("/api/settings", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "GET" {
 			srv.handleSettingsGet(w, r)
+		} else {
+			writeJSON(w, 405, map[string]string{"error": "method not allowed"})
+		}
+	})
+	mux.HandleFunc("/api/admin/login", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "POST" {
+			srv.handleAdminLogin(w, r)
+		} else {
+			writeJSON(w, 405, map[string]string{"error": "method not allowed"})
+		}
+	})
+	mux.HandleFunc("/api/passkey/register/start", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "POST" {
+			srv.handlePasskeyRegisterStart(w, r)
+		} else {
+			writeJSON(w, 405, map[string]string{"error": "method not allowed"})
+		}
+	})
+	mux.HandleFunc("/api/passkey/register/finish", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "POST" {
+			srv.handlePasskeyRegisterFinish(w, r)
+		} else {
+			writeJSON(w, 405, map[string]string{"error": "method not allowed"})
+		}
+	})
+	mux.HandleFunc("/api/passkey/login/start", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "POST" {
+			srv.handlePasskeyLoginStart(w, r)
+		} else {
+			writeJSON(w, 405, map[string]string{"error": "method not allowed"})
+		}
+	})
+	mux.HandleFunc("/api/passkey/login/finish", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "POST" {
+			srv.handlePasskeyLoginFinish(w, r)
+		} else {
+			writeJSON(w, 405, map[string]string{"error": "method not allowed"})
+		}
+	})
+	mux.HandleFunc("/api/passkey/reset", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "POST" {
+			srv.handlePasskeyReset(w, r)
+		} else {
+			writeJSON(w, 405, map[string]string{"error": "method not allowed"})
+		}
+	})
+	mux.HandleFunc("/api/admin/settings", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "GET" {
+			srv.handleAdminSettingsGet(w, r)
 		} else if r.Method == "POST" {
 			srv.handleSettingsPost(w, r)
 		} else {
@@ -1304,6 +1738,15 @@ func main() {
 		writeJSON(w, 200, map[string]string{"status": "refreshing"})
 	})
 	mux.HandleFunc("/rss", srv.handleRSS)
+
+	staticDir := os.Getenv("STATIC_DIR")
+	if staticDir != "" {
+		log.Printf("serving web assets from %s", staticDir)
+		mux.HandleFunc("/", spaHandler(staticDir))
+	} else {
+		log.Printf("serving embedded web assets")
+		mux.HandleFunc("/", embeddedSPAHandler())
+	}
 
 	handler := cors.New(cors.Options{
 		AllowedOrigins: []string{"*"},

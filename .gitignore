@@ -1,16 +1,16 @@
 # Dependencies
-frontend/node_modules/
-backend/gitshow
+node_modules/
+gitshow
 
 # Build outputs
-frontend/.nuxt/
-frontend/.output/
-frontend/dist/
+.nuxt/
+.output/
+dist/
+dist
 
 # Logs
 *.log
-backend.log
-frontend.log
+gitshow.log
 
 # OS
 .DS_Store
@@ -27,5 +27,8 @@ Thumbs.db
 .env.local
 
 # Config files with secrets
-backend/config.json
-backend/settings.json
+config.json
+settings.json
+
+# Runtime data
+star-history.json

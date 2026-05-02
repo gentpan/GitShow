@@ -12,7 +12,7 @@
 
     <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <div
-        v-for="user in following" :key="user.username"
+        v-for="user in sortedFollowing" :key="user.username"
         class="p-5 transition-colors"
         style="background-color: #111; border: 1px solid rgba(255,255,255,0.08);"
         onmouseover="this.style.borderColor='rgba(255,255,255,0.12)'"
@@ -78,6 +78,15 @@ const api = useApi()
 const { timeAgo, langColor } = useUtils()
 const { c } = useTheme()
 const { data: following, pending } = useAsyncData('following', () => api.getFollowing())
+
+const sortedFollowing = computed(() => {
+  if (!following.value) return []
+  return [...following.value].sort((a, b) => {
+    const ta = a.last_active ? new Date(a.last_active).getTime() : 0
+    const tb = b.last_active ? new Date(b.last_active).getTime() : 0
+    return tb - ta
+  })
+})
 
 
 </script>

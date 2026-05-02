@@ -1,92 +1,29 @@
 <template>
-  <div class="space-y-6">
-    <div class="flex items-center justify-between">
-      <h1 class="text-2xl font-bold" style="color: #fafafa;">管理设置</h1>
-      <div class="flex items-center gap-3">
-        <button
-          v-if="!isUnlocked"
-          class="px-4 py-2 text-sm font-semibold transition-colors"
-          :style="{ backgroundColor: '#16a34a', color: '#000' }"
-          @click="showLogin = true"
-        >
-          登录
-        </button>
-        <button
-          v-else
-          class="px-4 py-2 text-sm font-medium transition-colors"
-          style="background-color: #111; color: #a1a1aa; border: 1px solid rgba(255,255,255,0.1);"
-          @click="logout"
-        >
-          登出
-        </button>
-      </div>
-    </div>
+  <div class="space-y-6 pb-20">
+    <h1 class="text-2xl font-bold" style="color: #fafafa;">管理设置</h1>
 
-    <div v-if="settingsPending || reposPending" class="flex items-center justify-center py-20">
+    <div v-if="!isHydrated || settingsPending || reposPending" class="flex items-center justify-center py-20">
       <div class="w-8 h-8 border-2 border-green-600 border-t-transparent animate-spin" />
     </div>
 
     <div v-else class="space-y-6">
-      <!-- Login Modal -->
-      <div v-if="showLogin" class="p-8 text-center" style="background-color: #111; border: 1px solid rgba(255,255,255,0.08);">
-        <div class="text-lg font-medium mb-6" style="color: #fafafa;">登录管理后台</div>
-        <div class="max-w-sm mx-auto space-y-4">
-          <div v-if="loginError" class="text-sm mb-2" style="color: #ef4444;">{{ loginError }}</div>
-          <input
-            v-model="loginUsername"
-            type="text"
-            class="w-full px-4 py-3 text-center text-base outline-none"
-            style="background-color: #111; color: #fafafa; border: 1px solid rgba(255,255,255,0.1);"
-            placeholder="用户名"
-            @focus="$event.target.style.borderColor='#16a34a'"
-            @blur="$event.target.style.borderColor='rgba(255,255,255,0.1)'"
-          />
-          <input
-            v-model="loginPassword"
-            type="password"
-            class="w-full px-4 py-3 text-center text-base outline-none"
-            style="background-color: #111; color: #fafafa; border: 1px solid rgba(255,255,255,0.1);"
-            placeholder="密码"
-            @keyup.enter="doLogin"
-            @focus="$event.target.style.borderColor='#16a34a'"
-            @blur="$event.target.style.borderColor='rgba(255,255,255,0.1)'"
-          />
-          <button
-            class="w-full px-6 py-3 text-sm font-semibold transition-colors"
-            :style="{ backgroundColor: '#16a34a', color: '#000' }"
-            @click="doLogin"
-          >
-            确认
-          </button>
-          <button class="text-xs mt-2" style="color: #52525b;" @click="showLogin = false">取消</button>
+      <!-- Refresh -->
+      <div class="p-4 flex items-center justify-between" style="background-color: #111; border: 1px solid rgba(255,255,255,0.08);">
+        <div class="flex items-center gap-2">
+          <span class="text-sm" style="color: #a1a1aa;">最后刷新</span>
+          <span class="text-sm" style="color: #52525b;">{{ lastUpdated ? timeAgo(lastUpdated) : '—' }}</span>
         </div>
+        <button
+          class="px-4 py-2 text-sm font-medium transition-colors"
+          :style="{ backgroundColor: '#111', color: '#a1a1aa', border: '1px solid rgba(255,255,255,0.1)' }"
+          :disabled="refreshing"
+          @click="triggerRefresh"
+        >
+          {{ refreshing ? '刷新中...' : '刷新数据' }}
+        </button>
       </div>
 
-      <!-- Password Gate (setup / no password configured) -->
-      <div v-else-if="showPasswordInput" class="p-8 text-center" style="background-color: #111; border: 1px solid rgba(255,255,255,0.08);">
-        <div class="text-lg font-medium mb-6" style="color: #fafafa;">设置管理密码</div>
-        <div class="max-w-sm mx-auto space-y-4">
-          <input
-            v-model="passwordInput"
-            type="password"
-            class="w-full px-4 py-3 text-center text-base outline-none"
-            style="background-color: #111; color: #fafafa; border: 1px solid rgba(255,255,255,0.1);"
-            placeholder="设置管理密码"
-            @keyup.enter="checkPassword"
-            @focus="$event.target.style.borderColor='#16a34a'"
-            @blur="$event.target.style.borderColor='rgba(255,255,255,0.1)'"
-          />
-          <button
-            class="w-full px-6 py-3 text-sm font-semibold transition-colors"
-            :style="{ backgroundColor: '#16a34a', color: '#000' }"
-            @click="checkPassword"
-          >
-            确认
-          </button>
-        </div>
-      </div>
-
-      <div v-else class="space-y-6">
+      <div class="space-y-6">
         <!-- 标题设置 -->
         <div class="p-6" style="background-color: #111; border: 1px solid rgba(255,255,255,0.08);">
           <h2 class="text-sm font-medium mb-4" style="color: #a1a1aa;">网站标题</h2>
@@ -106,18 +43,6 @@
           <h2 class="text-sm font-medium mb-4" style="color: #a1a1aa;">GitHub 账号</h2>
           <div class="space-y-4">
             <div>
-              <label class="block text-xs mb-1" style="color: #52525b;">用户名</label>
-              <input
-                v-model="form.github_username"
-                type="text"
-                class="w-full px-4 py-3 text-sm outline-none"
-                style="background-color: #111; color: #fafafa; border: 1px solid rgba(255,255,255,0.1);"
-                placeholder="gentpan"
-                @focus="$event.target.style.borderColor='#16a34a'"
-                @blur="$event.target.style.borderColor='rgba(255,255,255,0.1)'"
-              />
-            </div>
-            <div>
               <label class="block text-xs mb-1" style="color: #52525b;">GitHub 地址</label>
               <input
                 v-model="form.github_url"
@@ -125,9 +50,12 @@
                 class="w-full px-4 py-3 text-sm outline-none"
                 style="background-color: #111; color: #fafafa; border: 1px solid rgba(255,255,255,0.1);"
                 placeholder="https://github.com/gentpan"
+                @blur="onGithubUrlBlur"
                 @focus="$event.target.style.borderColor='#16a34a'"
-                @blur="$event.target.style.borderColor='rgba(255,255,255,0.1)'"
               />
+            </div>
+            <div v-if="form.github_username" class="text-xs" style="color: #52525b;">
+              识别用户: <span :style="{ color: c }">{{ form.github_username }}</span>
             </div>
             <div>
               <label class="block text-xs mb-1" style="color: #52525b;">GitHub Token (ghp_xxx)</label>
@@ -179,23 +107,16 @@
               <input
                 v-model="link.icon"
                 type="text"
-                class="w-28 px-3 py-2 text-sm outline-none"
+                class="w-28 shrink-0 px-3 py-2 text-sm outline-none"
                 style="background-color: #111; color: #fafafa; border: 1px solid rgba(255,255,255,0.1);"
                 placeholder="fab fa-github"
               />
               <input
                 v-model="link.url"
                 type="text"
-                class="flex-1 px-3 py-2 text-sm outline-none"
+                class="flex-1 min-w-0 px-3 py-2 text-sm outline-none"
                 style="background-color: #111; color: #fafafa; border: 1px solid rgba(255,255,255,0.1);"
                 placeholder="https://..."
-              />
-              <input
-                v-model="link.color"
-                type="text"
-                class="w-20 px-3 py-2 text-sm outline-none"
-                style="background-color: #111; color: #fafafa; border: 1px solid rgba(255,255,255,0.1);"
-                placeholder="#16a34a"
               />
               <button
                 class="w-8 h-8 flex items-center justify-center shrink-0 transition-colors"
@@ -207,7 +128,7 @@
                 <i class="fas fa-trash text-xs"></i>
               </button>
             </div>
-            <div v-if="!form.social_links.length" class="text-xs py-2" style="color: #a1a1aa;">暂无社交链接</div>
+            <div v-if="form.social_links && !form.social_links.length" class="text-xs py-2" style="color: #a1a1aa;">暂无社交链接</div>
           </div>
         </div>
 
@@ -257,6 +178,44 @@
           </div>
         </div>
 
+        <!-- Passkey -->
+        <div class="p-6" style="background-color: #111; border: 1px solid rgba(255,255,255,0.08);">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 class="text-sm font-medium mb-2" style="color: #a1a1aa;">Passkey</h2>
+              <div class="text-xs" style="color: #52525b;">
+                {{ hasPasskey ? '已启用，可用系统指纹、面容或 PIN 登录。' : '未设置，建议添加一个无密码登录方式。' }}
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button
+                class="px-4 py-2 text-sm font-medium transition-colors"
+                :style="{ backgroundColor: 'var(--theme-primary)', color: '#000' }"
+                :disabled="passkeyBusy || !passkeySupported"
+                @click="setupPasskey"
+              >
+                <i class="fas fa-fingerprint mr-1"></i>
+                {{ passkeyBusy ? '处理中...' : (hasPasskey ? '添加 Passkey' : '设置 Passkey') }}
+              </button>
+              <button
+                v-if="hasPasskey"
+                class="px-4 py-2 text-sm transition-colors"
+                style="background-color: #111; color: #ef4444; border: 1px solid rgba(239,68,68,0.3);"
+                :disabled="passkeyBusy"
+                @click="resetPasskey"
+              >
+                清除
+              </button>
+            </div>
+          </div>
+          <div v-if="!passkeySupported" class="mt-3 text-xs" style="color: #ef4444;">
+            当前浏览器或访问地址不支持 Passkey，请使用 localhost 或 HTTPS。
+          </div>
+          <div v-if="passkeyMessage" class="mt-3 text-xs" :style="{ color: passkeyError ? '#ef4444' : '#16a34a' }">
+            {{ passkeyMessage }}
+          </div>
+        </div>
+
         <!-- Save -->
         <div class="flex items-center gap-4">
           <button
@@ -277,18 +236,25 @@
 
 <script setup>
 const api = useApi()
+const passkey = usePasskey()
+const adminAuth = useAdminAuth()
 const { langColor } = useUtils()
+const { c } = useTheme()
 
 const saving = ref(false)
 const saved = ref(false)
 const error = ref('')
+const passkeyBusy = ref(false)
+const passkeySupported = ref(false)
+const passkeyMessage = ref('')
+const passkeyError = ref(false)
 
 const themeColorMap = {
   green: '#16a34a',
 }
 
 const form = ref({
-  title: 'GitShow',
+  title: '',
   github_username: '',
   github_url: '',
   github_token: '',
@@ -299,70 +265,56 @@ const form = ref({
   admin_password: '',
 })
 
-const showPasswordInput = ref(false)
-const passwordInput = ref('')
-const passwordError = ref(false)
+const isHydrated = ref(false)
 
-const showLogin = ref(false)
-const loginUsername = ref('')
-const loginPassword = ref('')
-const loginError = ref('')
-
-const isUnlocked = ref(localStorage.getItem('admin_logged_in') === '1')
-
-const { data: settings, pending: settingsPending } = useAsyncData('settings', () => api.getSettings())
+const { data: settings, pending: settingsPending } = useAsyncData('adminSettings', () => api.getAdminSettings(''))
 const { data: repos, pending: reposPending } = useAsyncData('adminRepos', () => api.getRepos())
 const { data: health } = useAsyncData('health', () => api.getHealth())
 const { timeAgo } = useUtils()
+const hasPasskey = computed(() => Boolean(settings.value?.has_passkey || settings.value?.passkey_credentials?.length))
+
+function applySettings(st) {
+  if (!st) return
+  form.value.title = st.title || 'GitShow'
+  form.value.github_username = st.github_username || ''
+  form.value.github_url = st.github_url || ''
+  form.value.github_token = st.github_token || ''
+  form.value.homepage_repo_count = st.homepage_repo_count || 6
+  form.value.homepage_repos = st.homepage_repos || []
+  form.value.social_links = st.social_links || []
+  form.value.theme = st.theme || 'green'
+  form.value.admin_password = st.admin_password || ''
+  onGithubUrlBlur()
+}
+
+applySettings(settings.value)
+
+onMounted(() => {
+  isHydrated.value = true
+  adminAuth.login()
+  passkeySupported.value = passkey.isSupported()
+})
 
 const lastUpdated = computed(() => health.value?.last_updated)
 const refreshing = ref(false)
 
-function checkPassword() {
-  if (passwordInput.value === form.value.admin_password) {
-    isUnlocked.value = true
-    localStorage.setItem('admin_logged_in', '1')
-    passwordError.value = false
-  } else {
-    passwordError.value = true
+function onGithubUrlBlur() {
+  const url = form.value.github_url.trim()
+  if (!url) {
+    form.value.github_username = ''
+    return
+  }
+  // extract username from https://github.com/username or https://github.com/username/
+  const match = url.match(/github\.com\/([^/]+)/)
+  if (match) {
+    form.value.github_username = match[1]
   }
 }
 
-function doLogin() {
-  loginError.value = ''
-  if (loginUsername.value === 'admin' && loginPassword.value === form.value.admin_password) {
-    isUnlocked.value = true
-    localStorage.setItem('admin_logged_in', '1')
-    showLogin.value = false
-    loginPassword.value = ''
-    loginUsername.value = ''
-  } else {
-    loginError.value = '用户名或密码错误'
-  }
-}
-
-function logout() {
-  isUnlocked.value = false
-  localStorage.removeItem('admin_logged_in')
-}
-
-watchEffect(() => {
-  if (settings.value) {
-    form.value.title = settings.value.title || 'GitShow'
-    form.value.github_username = settings.value.github_username || ''
-    form.value.github_url = settings.value.github_url || ''
-    form.value.github_token = settings.value.github_token || ''
-    form.value.homepage_repo_count = settings.value.homepage_repo_count || 6
-    form.value.homepage_repos = settings.value.homepage_repos || []
-    form.value.social_links = settings.value.social_links || []
-    form.value.theme = settings.value.theme || 'green'
-    form.value.admin_password = settings.value.admin_password || ''
-    showPasswordInput.value = !settings.value.admin_password
-  }
-})
+watch(settings, applySettings)
 
 function addSocialLink() {
-  form.value.social_links.push({ icon: 'fab fa-github', url: '', color: themeColorMap.green })
+  form.value.social_links.push({ icon: 'fab fa-github', url: '' })
 }
 
 function removeSocialLink(i) {
@@ -435,6 +387,40 @@ async function save() {
     error.value = '保存失败'
   } finally {
     saving.value = false
+  }
+}
+
+async function setupPasskey() {
+  passkeyBusy.value = true
+  passkeyMessage.value = ''
+  passkeyError.value = false
+  try {
+    await passkey.registerPasskey()
+    await refreshNuxtData('adminSettings')
+    await refreshNuxtData('layoutSettings')
+    passkeyMessage.value = 'Passkey 已设置'
+  } catch (e) {
+    passkeyError.value = true
+    passkeyMessage.value = 'Passkey 设置失败'
+  } finally {
+    passkeyBusy.value = false
+  }
+}
+
+async function resetPasskey() {
+  passkeyBusy.value = true
+  passkeyMessage.value = ''
+  passkeyError.value = false
+  try {
+    await api.passkeyReset()
+    await refreshNuxtData('adminSettings')
+    await refreshNuxtData('layoutSettings')
+    passkeyMessage.value = 'Passkey 已清除'
+  } catch (e) {
+    passkeyError.value = true
+    passkeyMessage.value = '清除失败'
+  } finally {
+    passkeyBusy.value = false
   }
 }
 

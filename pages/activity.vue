@@ -31,8 +31,8 @@
         onmouseover="this.style.borderColor='rgba(255,255,255,0.12)'"
         onmouseout="this.style.borderColor='rgba(255,255,255,0.06)'"
       >
-        <img :src="item.avatar_url" class="w-8 h-8 rounded-full shrink-0" />
-        <span class="text-xs shrink-0 px-1.5 py-0.5 rounded-sm font-medium" :style="actionStyle(item.type).style">
+        <img :src="item.avatar_url" class="w-6 h-6 rounded-full shrink-0" />
+        <span class="text-xs shrink-0 px-1.5 py-0.5 rounded font-medium" :style="actionStyle(item.type).style">
           {{ actionLabel(item) }}
         </span>
         <a :href="item.repo_url" target="_blank" class="hover:underline text-sm truncate" :style="{ color: c }">

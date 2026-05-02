@@ -1,7 +1,7 @@
 export const useTheme = () => {
+  const api = useApi()
   const { data: settings } = useAsyncData('themeSettings', () => {
-    if (process.server) return { theme: 'green' }
-    return fetch('/api/settings').then(r => r.json()).catch(() => ({ theme: 'green' }))
+    return api.getSettings().catch(() => ({ theme: 'green' }))
   })
 
   const themeMap = {

@@ -1,27 +1,13 @@
 services:
-  backend:
-    build: ./backend
-    ports:
-      - "3001:3001"
-    environment:
-      - PORT=3001
-      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
-    volumes:
-      - ./backend/config.json:/root/config.json:ro
-      - ./backend/settings.json:/root/settings.json
-      - ./backend/star-history.json:/root/star-history.json
-    restart: unless-stopped
-
-  frontend:
-    build: ./frontend
+  app:
+    build: .
     ports:
       - "3000:3000"
     environment:
-      - NUXT_PUBLIC_API_BASE=http://localhost:3001
-      - NUXT_API_BASE=http://backend:3001
+      - PORT=3000
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
     volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    depends_on:
-      - backend
+      - ./config.json:/app/config.json:ro
+      - ./settings.json:/app/settings.json
+      - ./star-history.json:/app/star-history.json
     restart: unless-stopped

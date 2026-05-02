@@ -1,5 +1,5 @@
 {
-  "name": "gitshow-frontend",
+  "name": "gitshow",
   "private": true,
   "scripts": {
     "build": "nuxt build",

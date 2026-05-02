@@ -9,6 +9,10 @@
       <div class="w-8 h-8 border-2 animate-spin" :style="{ borderColor: c, borderTopColor: 'transparent' }" />
     </div>
 
+    <div v-else-if="!filteredRepos.length" class="text-center py-20" style="color: #a1a1aa;">
+      后台未开启任何项目
+    </div>
+
     <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <a
         v-for="repo in filteredRepos" :key="repo.id"
@@ -56,18 +60,20 @@
 
 <script setup>
 const api = useApi()
-const { timeAgo, sortLangPct, langColor } = useUtils()
 const { c } = useTheme()
-const { data: repos, pending } = useAsyncData('allRepos', () => api.getRepos())
-const { data: settings } = useAsyncData('projectsSettings', () => api.getSettings())
+const { langColor, timeAgo, sortLangPct } = useUtils()
+const { data: repos, pending: reposPending } = useAsyncData('allRepos', () => api.getRepos())
+const { data: settings, pending: settingsPending } = useAsyncData('projectSettings', () => api.getSettings())
+const pending = computed(() => reposPending.value || settingsPending.value)
 
 const filteredRepos = computed(() => {
   if (!repos.value) return []
   const selected = settings.value?.homepage_repos || []
-  if (selected.length > 0) {
-    return repos.value.filter(r => selected.includes(r.name))
-  }
-  return repos.value
+  if (!selected.length) return []
+
+  return selected
+    .map(name => repos.value.find(repo => repo.name === name || repo.full_name === name))
+    .filter(Boolean)
 })
 
 
