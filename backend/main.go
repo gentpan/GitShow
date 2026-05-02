@@ -799,8 +799,27 @@ func (s *Server) getCache() *CacheData {
 }
 
 func eventsToActivities(events []GitHubEvent, actor, avatar string) []ActivityItem {
+	// deduplicate: for PushEvents, keep only the latest per (repo+ref)
+	seen := make(map[string]bool)
+	var filtered []GitHubEvent
+	for i := len(events) - 1; i >= 0; i-- {
+		e := events[i]
+		if e.Type == "PushEvent" {
+			ref := e.Payload.Ref
+			if ref == "" {
+				ref = "main"
+			}
+			key := e.Repo.Name + "#" + ref
+			if seen[key] {
+				continue
+			}
+			seen[key] = true
+		}
+		filtered = append(filtered, e)
+	}
+
 	var items []ActivityItem
-	for _, e := range events {
+	for _, e := range filtered {
 		repoURL := "https://github.com/" + e.Repo.Name
 		switch e.Type {
 		case "PushEvent":
