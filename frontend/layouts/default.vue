@@ -29,10 +29,10 @@
         <!-- Desktop Contact Button -->
         <a
           :href="contactUrl" target="_blank"
-          class="nav-pill flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors"
-          style="color: var(--theme-primary);"
-          onmouseover="this.style.backgroundColor='rgba(var(--theme-primary-rgb), 0.1)'; this.style.color='var(--theme-primary)';"
-          onmouseout="this.style.backgroundColor=''; this.style.color='var(--theme-primary)';"
+          class="nav-pill flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition-colors"
+          style="background-color: #16a34a; color: #000;"
+          onmouseover="this.style.backgroundColor='#15803d'"
+          onmouseout="this.style.backgroundColor='#16a34a'"
         >
           <i class="fas fa-paper-plane text-xs"></i>
           联系
@@ -68,7 +68,7 @@
       <a
         :href="contactUrl" target="_blank"
         class="flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors"
-        :style="'color: var(--theme-primary);'"
+        style="background-color: #16a34a; color: #000;"
         @click="mobileMenuOpen = false"
       >
         <i class="fas fa-paper-plane text-xs w-4 text-center"></i>
