@@ -139,7 +139,7 @@
             <div class="p-4 pb-3">
               <div class="flex items-start justify-between gap-2">
                 <h3 class="font-medium truncate flex items-center gap-2" :style="{ color: c }">
-                  <i :class="repoIcon(repo.language)" class="text-xs" :style="{ color: c }"></i>
+                  <i :class="[repoIcon(repo.language), 'text-xs']" :style="{ color: c }"></i>
                   {{ repo.name }}
                   <span v-if="repo.latest_version" class="text-[10px] px-1 py-0.5 rounded shrink-0" :style="{ backgroundColor: c, color: '#111' }">{{ repo.latest_version }}</span>
                 </h3>
