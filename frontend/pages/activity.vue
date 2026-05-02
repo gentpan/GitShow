@@ -27,6 +27,9 @@
       </div>
     </div>
 
+    <!-- Daily Activity Chart -->
+    <ActivityChart v-if="heatmap?.length" :heatmap="heatmap" />
+
     <div v-if="pending" class="flex items-center justify-center py-20">
       <div class="w-8 h-8 border-2 border-[#16a34a] border-t-transparent animate-spin" />
     </div>
@@ -95,6 +98,7 @@ const api = useApi()
 const { timeAgo } = useUtils()
 
 const { data: feed, pending } = useAsyncData('feedBoard', () => api.getFeed(200))
+const { data: heatmap } = useAsyncData('heatmapBoard', () => api.getHeatmap())
 
 const selectedType = ref('all')
 

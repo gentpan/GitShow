@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sw_vers)",
+      "Bash(git clone *)",
+      "Read(//Users/peter/Desktop/**)"
+    ]
+  }
+}
