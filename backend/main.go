@@ -800,7 +800,9 @@ func (s *Server) getCache() *CacheData {
 
 func eventsToActivities(events []GitHubEvent, actor, avatar string) []ActivityItem {
 	// deduplicate: for PushEvents, keep only the latest per (repo+ref)
+	// and limit total per repo to 5 items
 	seen := make(map[string]bool)
+	repoCount := make(map[string]int)
 	var filtered []GitHubEvent
 	for i := len(events) - 1; i >= 0; i-- {
 		e := events[i]
@@ -815,6 +817,11 @@ func eventsToActivities(events []GitHubEvent, actor, avatar string) []ActivityIt
 			}
 			seen[key] = true
 		}
+		// limit to 5 per repo
+		if repoCount[e.Repo.Name] >= 5 {
+			continue
+		}
+		repoCount[e.Repo.Name]++
 		filtered = append(filtered, e)
 	}
 
