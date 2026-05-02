@@ -39,6 +39,7 @@ body {
   background-color: #111;
   border: 1px solid rgba(255,255,255,0.08);
   transition: all 0.35s ease;
+  overflow: visible !important;
 }
 .repo-card:hover {
   background-color: #1a1a1a;
