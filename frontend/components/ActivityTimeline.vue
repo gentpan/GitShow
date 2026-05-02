@@ -18,6 +18,7 @@
       <a :href="item.repo_url" target="_blank" class="hover:underline text-sm" style="color: #16a34a;">
         {{ item.repo }}
       </a>
+      <span v-if="item.message" class="text-sm truncate max-w-xs" style="color: #a1a1aa;">{{ item.message }}</span>
       <span class="text-xs ml-auto" style="color: #52525b;">{{ timeAgo(item.created_at) }}</span>
     </div>
     <div v-if="!items?.length" class="text-sm py-6 text-center" style="color: #a1a1aa;">暂无近期动态</div>
