@@ -18,6 +18,7 @@ import {
   passkeyInfos,
   type PasskeyRecord,
 } from './config'
+import { passkeyCredentialId, toBase64URL, toSimpleWebAuthnCredential } from './passkeyCodec'
 
 const RP_NAME = 'GitShow Admin'
 const sessions = new Map<string, { challenge: string; type: 'reg' | 'auth' }>()
@@ -36,28 +37,30 @@ function getOrigin(event: { headers: Headers }): string {
   return `${proto}://${host}`
 }
 
-export function passkeyCredentialId(credential: { id: string | Uint8Array | Buffer }): string {
-  const { id } = credential
-  if (typeof id === 'string') return id
-  return Buffer.from(id).toString('base64url')
-}
-
 function getCredentials(): WebAuthnCredential[] {
   const st = loadSettings()
-  const fromPasskeys = (st.passkeys || []).map((pk) => pk.credential as WebAuthnCredential)
-  const fromLegacy = (st.passkey_credentials || []).map((c) => c as WebAuthnCredential)
-  return [...fromPasskeys, ...fromLegacy]
+  const creds: WebAuthnCredential[] = []
+  for (const pk of st.passkeys || []) {
+    const c = toSimpleWebAuthnCredential(pk.credential)
+    if (c) creds.push(c)
+  }
+  for (const legacy of st.passkey_credentials || []) {
+    const c = toSimpleWebAuthnCredential(legacy)
+    if (c) creds.push(c)
+  }
+  return creds
 }
 
 function findPasskeyRecord(st: ReturnType<typeof loadSettings>, id: string) {
+  const targetId = toBase64URL(id)
   for (const pk of st.passkeys || []) {
-    const pkId = pk.id || passkeyCredentialId(pk.credential as WebAuthnCredential)
-    if (pkId === id) return { type: 'passkey' as const, index: (st.passkeys || []).indexOf(pk), record: pk }
+    const pkId = pk.id ? toBase64URL(pk.id) : passkeyCredentialId(pk.credential as WebAuthnCredential)
+    if (pkId === targetId) return { type: 'passkey' as const, index: (st.passkeys || []).indexOf(pk), record: pk }
   }
   for (let i = 0; i < (st.passkey_credentials || []).length; i++) {
-    const cred = st.passkey_credentials![i] as WebAuthnCredential
-    if (passkeyCredentialId(cred) === id) {
-      return { type: 'legacy' as const, index: i, credential: cred }
+    const normalized = toSimpleWebAuthnCredential(st.passkey_credentials![i])
+    if (normalized && normalized.id === targetId) {
+      return { type: 'legacy' as const, index: i, credential: normalized }
     }
   }
   return null
@@ -155,7 +158,10 @@ export async function passkeyLoginFinish(
   const found = findPasskeyRecord(st, body.id)
   if (!found) throw new Error('credential not found')
 
-  const credential = (found.type === 'passkey' ? found.record.credential : found.credential) as WebAuthnCredential
+  const credential = found.type === 'passkey'
+    ? (toSimpleWebAuthnCredential(found.record.credential) || found.record.credential as WebAuthnCredential)
+    : found.credential
+
   const verification = await verifyAuthenticationResponse({
     response: body,
     expectedChallenge: session.challenge,
@@ -171,10 +177,17 @@ export async function passkeyLoginFinish(
   }
   if (found.type === 'passkey') {
     found.record.last_used_at = new Date().toISOString()
-    found.record.credential = credential
-    if (!found.record.id) found.record.id = passkeyCredentialId(credential)
+    found.record.credential = {
+      id: credential.id,
+      publicKey: credential.publicKey,
+      counter: credential.counter,
+      transports: credential.transports,
+    }
+    if (!found.record.id) found.record.id = credential.id
   } else {
-    st.passkey_credentials![found.index] = credential
+    const legacy = st.passkey_credentials![found.index] as Record<string, unknown>
+    const auth = legacy.authenticator as { signCount?: number } | undefined
+    if (auth) auth.signCount = credential.counter
   }
   saveSettings(st)
   return { ok: true }
@@ -190,10 +203,9 @@ export function passkeyUpdate(id: string, note: string) {
     return { ok: true, passkey_items: passkeyInfos(st) }
   }
   const now = new Date().toISOString()
-  const credId = passkeyCredentialId(found.credential)
   st.passkey_credentials = (st.passkey_credentials || []).filter((_, i) => i !== found.index)
   st.passkeys = [...(st.passkeys || []), {
-    id: credId,
+    id: found.credential.id,
     note: normalizePasskeyNote(note),
     created_at: now,
     credential: found.credential,
@@ -205,12 +217,15 @@ export function passkeyUpdate(id: string, note: string) {
 export function passkeyDelete(id: string) {
   const st = loadSettings()
   let removed = false
+  const targetId = toBase64URL(id)
   st.passkeys = (st.passkeys || []).filter((p) => {
-    if (p.id === id) { removed = true; return false }
+    const pkId = p.id ? toBase64URL(p.id) : passkeyCredentialId(p.credential as WebAuthnCredential)
+    if (pkId === targetId) { removed = true; return false }
     return true
   })
   const legacy = (st.passkey_credentials || []).filter((cred) => {
-    if (passkeyCredentialId(cred as WebAuthnCredential) === id) { removed = true; return false }
+    const normalized = toSimpleWebAuthnCredential(cred)
+    if (normalized && normalized.id === targetId) { removed = true; return false }
     return true
   })
   st.passkey_credentials = legacy
@@ -227,4 +242,4 @@ export function passkeyReset() {
   return { ok: true }
 }
 
-export { passkeyInfos }
+export { passkeyInfos, passkeyCredentialId, toBase64URL }
