@@ -10,9 +10,9 @@
 
 body {
   @apply antialiased;
-  background-color: #000;
-  color: #fafafa;
-  font-family: "PingFang SC", "PingFang TC", "Microsoft YaHei", "微软雅黑", sans-serif;
+  background-color: #030303;
+  color: #ededed;
+  font-family: "Geist", "PingFang SC", "PingFang TC", "Microsoft YaHei", "微软雅黑", sans-serif;
 }
 
 *, *::before, *::after {
@@ -516,5 +516,158 @@ body {
 
   .activity-chart-bars .chart-day-label {
     font-size: 9px;
+  }
+}
+
+/* ── CheckMyGit-style homepage ── */
+.home-page {
+  --home-bg-primary: #030303;
+  --home-bg-secondary: #0a0a0a;
+  --home-bg-tertiary: #161616;
+  --home-border: #222222;
+  --home-border-subtle: #333333;
+  --home-text-primary: #ededed;
+  --home-text-secondary: #a1a1a1;
+  --home-text-tertiary: #666666;
+  --home-accent: var(--theme-primary, #2dd4bf);
+}
+
+.home-rounded {
+  border-radius: 8px !important;
+}
+
+.home-rounded-sm {
+  border-radius: 2px !important;
+}
+
+.home-rounded-full {
+  border-radius: 9999px !important;
+}
+
+.home-card {
+  background-color: var(--home-bg-secondary);
+  border: 1px solid var(--home-border);
+  transition: all 0.2s ease;
+}
+
+.home-card-hover:hover {
+  border-color: var(--home-border-subtle);
+  background-color: var(--home-bg-tertiary);
+}
+
+.home-badge {
+  border: 1px solid transparent;
+}
+
+.home-badge-default {
+  background-color: rgba(255, 255, 255, 0.06);
+  color: var(--home-text-secondary);
+  border-color: var(--home-border);
+}
+
+.home-badge-outline {
+  background-color: transparent;
+  color: var(--home-text-secondary);
+  border-color: var(--home-border);
+}
+
+.home-badge-solid {
+  background-color: var(--home-accent);
+  color: #000;
+}
+
+.home-btn-primary {
+  background-color: #ededed;
+  color: #000;
+}
+
+.home-btn-primary:hover {
+  background-color: #ffffff;
+}
+
+.home-social-icon {
+  background-color: var(--home-bg-tertiary);
+  border: 1px solid var(--home-border);
+  color: var(--home-text-secondary);
+}
+
+.home-social-icon:hover {
+  border-color: var(--home-accent);
+  color: var(--home-accent);
+}
+
+.home-avatar {
+  border: 1px solid var(--home-border);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.home-welcome-card {
+  background: linear-gradient(135deg, rgba(22, 22, 22, 0.9) 0%, rgba(10, 10, 10, 0.95) 100%);
+}
+
+.home-gradient-text {
+  background: linear-gradient(135deg, var(--home-accent) 0%, #22d3ee 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.home-stat-card {
+  min-height: 88px;
+}
+
+.home-stat-banner {
+  background: linear-gradient(90deg, rgba(var(--theme-primary-rgb), 0.08) 0%, transparent 100%);
+  border-color: rgba(var(--theme-primary-rgb), 0.2);
+}
+
+.home-contrib-card {
+  overflow: hidden;
+}
+
+.home-contrib-cell {
+  transition: transform 0.1s ease;
+}
+
+.home-contrib-cell:hover {
+  transform: scale(1.15);
+}
+
+.home-sort-btn {
+  background-color: var(--home-bg-secondary);
+  color: var(--home-text-secondary);
+  border: 1px solid var(--home-border);
+}
+
+.home-sort-btn:hover {
+  color: var(--home-text-primary);
+  border-color: var(--home-border-subtle);
+}
+
+.home-sort-active {
+  background-color: rgba(var(--theme-primary-rgb), 0.12);
+  color: var(--home-accent);
+  border-color: rgba(var(--theme-primary-rgb), 0.35);
+}
+
+@keyframes homeFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: homeFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@media (max-width: 1023px) {
+  .home-sidebar .home-avatar {
+    width: 120px;
+    height: 120px;
   }
 }

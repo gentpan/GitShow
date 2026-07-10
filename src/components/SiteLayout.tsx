@@ -51,10 +51,11 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
   }, [loggedIn, pathname])
 
   const rootStyle = {
-    backgroundColor: '#000',
+    backgroundColor: '#030303',
     ['--theme-primary' as string]: theme.primary,
     ['--theme-primary-rgb' as string]: theme.rgb,
     ['--theme-primary-dark' as string]: darkenColor(theme.primary),
+    ['--home-accent' as string]: theme.primary,
   } as React.CSSProperties
 
   const contactUrl = settings?.contact_url || me?.user?.html_url || 'https://github.com'
@@ -94,7 +95,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col" style={rootStyle}>
       <div className={`nav-shell sticky top-4 z-50 px-4 ${navHidden && !mobileOpen ? 'nav-shell-hidden' : ''}`}>
-        <div className="nav-capsule themed-nav max-w-5xl mx-auto flex items-center justify-between px-2 py-2">
+        <div className="nav-capsule themed-nav max-w-6xl mx-auto flex items-center justify-between px-2 py-2">
           <Link to="/" className="flex items-center gap-2 px-4 py-2" style={{ color: 'var(--theme-primary)', fontSize: 18, fontWeight: 700 }}>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>
             {settings?.title || 'GitShow'}
@@ -128,10 +129,10 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
         </div>
       )}
 
-      <main className="flex-1 max-w-5xl mx-auto px-4 py-8 w-full">{children}</main>
+      <main className="flex-1 max-w-6xl mx-auto px-4 py-8 w-full">{children}</main>
 
       <footer style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-        <div className="max-w-5xl mx-auto px-4 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="max-w-6xl mx-auto px-4 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="text-sm flex flex-wrap items-center justify-center gap-1.5" style={{ color: '#52525b' }}>
             <span>© {new Date().getFullYear()} {settings?.title || 'GitShow'}</span>
             <span>build with</span>
