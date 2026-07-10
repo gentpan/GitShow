@@ -8,6 +8,7 @@ export const Route = createRootRoute({
     links: [
       { rel: 'stylesheet', href: appCss },
       { rel: 'icon', href: '/favicon.ico' },
+      { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap' },
       { rel: 'stylesheet', href: 'https://static.utterlog.com/libs/fontawesome/7.2.0/css/all.min.css' },
     ],
   }),
