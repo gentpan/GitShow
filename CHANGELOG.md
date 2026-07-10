@@ -1,20 +1,29 @@
 # Changelog
 
-## 1.2.0 - 2026-05-02
-
-### Added
-
-- Support multiple admin Passkeys.
-- Add Passkey notes so each credential can be labeled by device or purpose.
-- Add Passkey management in the admin panel, including note editing, single deletion, and clear-all.
-
-### Fixed
-
-- Show recent activity in newest-first order instead of oldest-first.
-- Make page loading indicators render as circular spinners despite the global square-corner style.
-- Avoid browser password-save prompts by keeping sensitive admin fields empty unless edited.
+## 2.0.0 - 2026-07-10
 
 ### Changed
 
-- Pin the Docker Compose image and container name to `gitshow`.
-- Keep legacy Passkeys compatible and expose them in the new Passkey management list.
+- **重大架构迁移**：Go + Nuxt Vue → TanStack Start + React 19 + TypeScript 7.0 + Bun 全栈
+- 后端逻辑迁移至 `server/utils/`（GitHub API、内存缓存、Passkey）
+- 前端重写为 React 组件与 TanStack Router 文件路由
+- Docker 镜像改为 `oven/bun`，构建产物为 Nitro `.output/`
+
+### Added
+
+- TanStack Start 全栈架构，类型安全的 React 路由
+- Bun 构建与运行支持
+- TypeScript 7.0
+
+### Removed
+
+- Go 后端（`main.go`）
+- Nuxt 3 前端
+
+### Note
+
+- Passkey 凭证格式变更（`@simplewebauthn/server`），旧版 Go WebAuthn 凭证需重新注册
+
+## 1.2.0 - 2026-05-02
+
+（历史版本，Go + Nuxt 架构）
