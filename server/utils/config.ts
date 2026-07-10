@@ -88,7 +88,7 @@ export function getPublicSettings(): PublicSettings {
     theme: st.theme,
     has_admin_password: Boolean(st.admin_password),
     has_github_token: Boolean(st.github_token),
-    has_passkey: passkeys.length > 0,
+    has_passkey: hasPasskeys(st),
   }
 }
 
@@ -112,7 +112,22 @@ export function passkeyInfos(st: Settings): PasskeyInfo[] {
       last_used_at: pk.last_used_at,
     })
   }
+  for (let i = 0; i < (st.passkey_credentials || []).length; i++) {
+    const cred = st.passkey_credentials![i] as { id?: string | Uint8Array }
+    const id = typeof cred?.id === 'string'
+      ? cred.id
+      : cred?.id
+        ? Buffer.from(cred.id).toString('base64url')
+        : ''
+    if (!id || seen.has(id)) continue
+    seen.add(id)
+    items.push({ id, note: `旧 Passkey ${i + 1}` })
+  }
   return items
+}
+
+export function hasPasskeys(st: Settings): boolean {
+  return (st.passkeys?.length || 0) > 0 || (st.passkey_credentials?.length || 0) > 0
 }
 
 export function validateAdminPassword(password: string): boolean {

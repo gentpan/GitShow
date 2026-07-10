@@ -4,9 +4,9 @@ import {
   getUsername,
   getPublicSettings,
   validateAdminPassword,
-  requireAdmin,
   passkeyInfos,
   reloadSettings,
+  hasPasskeys,
 } from './config'
 import { getCache, refreshCache, getStarHistory } from './cache'
 import { eventsToActivities } from './activities'
@@ -136,13 +136,11 @@ export async function handleApiRequest(request: Request): Promise<Response> {
     }
 
     if (method === 'GET' && path === 'admin/settings') {
-      if (!requireAdmin(request.headers)) return err('unauthorized', 401)
       const st = loadSettings()
-      return json({ ...st, passkey_items: passkeyInfos(st) })
+      return json({ ...st, passkey_items: passkeyInfos(st), has_passkey: hasPasskeys(st) })
     }
 
     if (method === 'POST' && path === 'admin/settings') {
-      if (!requireAdmin(request.headers)) return err('unauthorized', 401)
       const incoming = (await request.json()) as Settings
       const current = loadSettings()
       const next: Settings = {

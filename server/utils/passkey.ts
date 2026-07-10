@@ -36,9 +36,31 @@ function getOrigin(event: { headers: Headers }): string {
   return `${proto}://${host}`
 }
 
+export function passkeyCredentialId(credential: { id: string | Uint8Array | Buffer }): string {
+  const { id } = credential
+  if (typeof id === 'string') return id
+  return Buffer.from(id).toString('base64url')
+}
+
 function getCredentials(): WebAuthnCredential[] {
   const st = loadSettings()
-  return (st.passkeys || []).map((pk) => pk.credential as WebAuthnCredential)
+  const fromPasskeys = (st.passkeys || []).map((pk) => pk.credential as WebAuthnCredential)
+  const fromLegacy = (st.passkey_credentials || []).map((c) => c as WebAuthnCredential)
+  return [...fromPasskeys, ...fromLegacy]
+}
+
+function findPasskeyRecord(st: ReturnType<typeof loadSettings>, id: string) {
+  for (const pk of st.passkeys || []) {
+    const pkId = pk.id || passkeyCredentialId(pk.credential as WebAuthnCredential)
+    if (pkId === id) return { type: 'passkey' as const, index: (st.passkeys || []).indexOf(pk), record: pk }
+  }
+  for (let i = 0; i < (st.passkey_credentials || []).length; i++) {
+    const cred = st.passkey_credentials![i] as WebAuthnCredential
+    if (passkeyCredentialId(cred) === id) {
+      return { type: 'legacy' as const, index: i, credential: cred }
+    }
+  }
+  return null
 }
 
 export async function passkeyRegisterStart(event: { headers: Headers }) {
@@ -130,12 +152,10 @@ export async function passkeyLoginFinish(
   const origin = getOrigin(event)
   const rpID = getRpId(origin)
   const st = loadSettings()
-  const passkeys = st.passkeys || []
-  const credId = body.id
-  const record = passkeys.find((p) => p.id === credId)
-  if (!record) throw new Error('credential not found')
+  const found = findPasskeyRecord(st, body.id)
+  if (!found) throw new Error('credential not found')
 
-  const credential = record.credential as WebAuthnCredential
+  const credential = (found.type === 'passkey' ? found.record.credential : found.credential) as WebAuthnCredential
   const verification = await verifyAuthenticationResponse({
     response: body,
     expectedChallenge: session.challenge,
@@ -146,9 +166,15 @@ export async function passkeyLoginFinish(
   sessions.delete(sessionId)
   if (!verification.verified) throw new Error('passkey verification failed')
 
-  record.last_used_at = new Date().toISOString()
   if (verification.authenticationInfo?.newCounter !== undefined) {
-    ;(record.credential as WebAuthnCredential).counter = verification.authenticationInfo.newCounter
+    credential.counter = verification.authenticationInfo.newCounter
+  }
+  if (found.type === 'passkey') {
+    found.record.last_used_at = new Date().toISOString()
+    found.record.credential = credential
+    if (!found.record.id) found.record.id = passkeyCredentialId(credential)
+  } else {
+    st.passkey_credentials![found.index] = credential
   }
   saveSettings(st)
   return { ok: true }
@@ -156,18 +182,41 @@ export async function passkeyLoginFinish(
 
 export function passkeyUpdate(id: string, note: string) {
   const st = loadSettings()
-  const pk = (st.passkeys || []).find((p) => p.id === id)
-  if (!pk) throw new Error('passkey not found')
-  pk.note = normalizePasskeyNote(note)
+  const found = findPasskeyRecord(st, id)
+  if (!found) throw new Error('passkey not found')
+  if (found.type === 'passkey') {
+    found.record.note = normalizePasskeyNote(note)
+    saveSettings(st)
+    return { ok: true, passkey_items: passkeyInfos(st) }
+  }
+  const now = new Date().toISOString()
+  const credId = passkeyCredentialId(found.credential)
+  st.passkey_credentials = (st.passkey_credentials || []).filter((_, i) => i !== found.index)
+  st.passkeys = [...(st.passkeys || []), {
+    id: credId,
+    note: normalizePasskeyNote(note),
+    created_at: now,
+    credential: found.credential,
+  }]
   saveSettings(st)
-  return { ok: true }
+  return { ok: true, passkey_items: passkeyInfos(st) }
 }
 
 export function passkeyDelete(id: string) {
   const st = loadSettings()
-  st.passkeys = (st.passkeys || []).filter((p) => p.id !== id)
+  let removed = false
+  st.passkeys = (st.passkeys || []).filter((p) => {
+    if (p.id === id) { removed = true; return false }
+    return true
+  })
+  const legacy = (st.passkey_credentials || []).filter((cred) => {
+    if (passkeyCredentialId(cred as WebAuthnCredential) === id) { removed = true; return false }
+    return true
+  })
+  st.passkey_credentials = legacy
+  if (!removed) throw new Error('passkey not found')
   saveSettings(st)
-  return { ok: true, count: st.passkeys.length }
+  return { ok: true, count: (st.passkeys?.length || 0) + (st.passkey_credentials?.length || 0), passkey_items: passkeyInfos(st) }
 }
 
 export function passkeyReset() {
