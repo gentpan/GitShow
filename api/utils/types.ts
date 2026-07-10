@@ -85,6 +85,41 @@ export interface GitHubRepo {
   latest_version?: string
 }
 
+export interface GitHubRepoDetail extends GitHubRepo {
+  topics?: string[]
+  default_branch?: string
+  created_at?: string
+  pushed_at?: string
+  open_issues_count?: number
+  watchers_count?: number
+  homepage?: string
+  license?: { spdx_id: string; name: string } | null
+}
+
+export interface RepoContentItem {
+  name: string
+  path: string
+  type: 'file' | 'dir'
+  size: number
+  html_url: string
+}
+
+export interface RepoCommitItem {
+  sha: string
+  message: string
+  html_url: string
+  author: string
+  avatar_url: string
+  date: string
+}
+
+export interface RepoDetailResponse {
+  repo: GitHubRepoDetail
+  readme_html: string | null
+  contents: RepoContentItem[]
+  commits: RepoCommitItem[]
+}
+
 export interface CommitInfo {
   sha: string
   message: string

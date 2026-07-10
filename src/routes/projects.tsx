@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { Link, createFileRoute } from '@tanstack/react-router'
 import { useEffect, useMemo, useState } from 'react'
 import { api } from '@/lib/api'
 import { langColor, repoIcon, sortLangPct, themeMap, timeAgo } from '@/lib/utils'
@@ -41,7 +41,7 @@ function ProjectsPage() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {filteredRepos.map((repo: any) => (
-          <a key={repo.id} href={repo.html_url} target="_blank" rel="noreferrer" className="repo-card group block overflow-hidden">
+          <Link key={repo.id} to="/projects/$name" params={{ name: repo.name }} className="repo-card group block overflow-hidden">
             <div className="p-4 pb-3">
               <div className="flex items-start justify-between gap-2">
                 <h3 className="font-medium truncate flex items-center gap-2 min-w-0" style={{ color: c }}>
@@ -78,7 +78,7 @@ function ProjectsPage() {
                 </div>
               ))}
             </div>
-          </a>
+          </Link>
         ))}
       </div>
     </div>
