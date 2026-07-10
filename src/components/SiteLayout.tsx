@@ -106,7 +106,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
               </Link>
             ))}
           </div>
-          <a href={contactUrl} target="_blank" rel="noreferrer" className="nav-pill hidden sm:flex items-center gap-1.5 px-4 py-2 text-sm font-medium" style={{ backgroundColor: 'var(--theme-primary)', color: '#000' }}>
+          <a href={contactUrl} target="_blank" rel="noreferrer" className="nav-pill contact-btn hidden sm:flex items-center gap-1.5 px-4 py-2 text-sm font-medium">
             <i className="fas fa-paper-plane text-xs" />{settings?.contact_label || '联系'}
           </a>
           <button type="button" className="nav-pill nav-link sm:hidden flex items-center justify-center w-9 h-9" onClick={() => setMobileOpen(!mobileOpen)}>
@@ -122,6 +122,9 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
               <i className={`${link.icon} text-xs w-4 text-center`} />{link.label}
             </Link>
           ))}
+          <a href={contactUrl} target="_blank" rel="noreferrer" className="nav-pill nav-link flex items-center gap-2 px-4 py-2.5 text-sm font-medium" onClick={() => setMobileOpen(false)}>
+            <i className="fas fa-paper-plane text-xs w-4 text-center" />{settings?.contact_label || '联系'}
+          </a>
         </div>
       )}
 
@@ -132,11 +135,11 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
           <div className="text-sm flex flex-wrap items-center justify-center gap-1.5" style={{ color: '#52525b' }}>
             <span>© {new Date().getFullYear()} {settings?.title || 'GitShow'}</span>
             <span>build with</span>
-            <a href="https://github.com/gentpan/GitShow" target="_blank" rel="noreferrer" style={{ color: '#a1a1aa' }}>GitShow</a>
+            <a href="https://github.com/gentpan/GitShow" target="_blank" rel="noreferrer" className="footer-text-link">GitShow</a>
           </div>
           <div className="flex items-center gap-2">
             {(settings?.social_links || []).map((link: any, i: number) => (
-              <a key={i} href={link.url} target="_blank" rel="noreferrer" className="w-8 h-8 flex items-center justify-center text-sm" style={{ color: '#52525b' }}><i className={link.icon} /></a>
+              <a key={i} href={link.url} target="_blank" rel="noreferrer" className="footer-icon-link w-8 h-8 flex items-center justify-center text-sm"><i className={link.icon} /></a>
             ))}
             {loggedIn ? (
               <button type="button" className="footer-logout-button w-8 h-8 flex items-center justify-center text-sm" title="退出登录" onClick={() => { adminAuth.logout(); setLoggedIn(false); if (pathname === '/admin') window.location.href = '/' }}>
@@ -153,14 +156,14 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
                         <i className="fas fa-fingerprint mr-1" />{passkeyLoading ? '验证中...' : '使用 Passkey'}
                       </button>
                     )}
-                    <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && login()} className="w-full px-3 py-2 text-sm outline-none" style={{ backgroundColor: 'rgba(0,0,0,0.55)', color: '#fafafa', border: '1px solid rgba(255,255,255,0.12)' }} placeholder={settings?.has_admin_password ? '输入管理密码' : '无需密码，回车进入'} />
+                    <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && login()} className="input-field-muted w-full px-3 py-2 text-sm" placeholder={settings?.has_admin_password ? '输入管理密码' : '无需密码，回车进入'} />
                     <div className="flex items-center gap-2">
                       <button type="button" className="flex-1 px-3 py-2 text-xs font-medium" style={{ backgroundColor: 'var(--theme-primary)', color: '#000' }} onClick={login}>登录</button>
                       <button type="button" className="px-3 py-2 text-xs" style={{ color: '#52525b' }} onClick={() => setShowLogin(false)}>取消</button>
                     </div>
                   </div>
                 )}
-                <button type="button" className="w-8 h-8 flex items-center justify-center text-sm" style={{ color: '#52525b' }} onClick={() => setShowLogin(!showLogin)}><i className="fas fa-lock" /></button>
+                <button type="button" className="footer-icon-link w-8 h-8 flex items-center justify-center text-sm" title="登录" onClick={() => setShowLogin(!showLogin)}><i className="fas fa-lock" /></button>
               </div>
             )}
           </div>
