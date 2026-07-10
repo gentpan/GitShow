@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { api } from '@/lib/api'
-import type { PublicSettingsData, RepoDetailData } from '@/lib/serverFns/repo'
+import type { PublicSettings, RepoDetailResponse } from '../../api/utils/types'
 import { formatNumber, langColor, repoIcon, sortLangPct, themeMap, timeAgo } from '@/lib/utils'
 
 function formatSize(bytes: number) {
@@ -12,13 +12,13 @@ function formatSize(bytes: number) {
 
 interface RepoDetailPageProps {
   name: string
-  initialDetail?: RepoDetailData
-  initialSettings?: PublicSettingsData
+  initialDetail?: RepoDetailResponse
+  initialSettings?: PublicSettings
 }
 
 export function RepoDetailPage({ name, initialDetail, initialSettings }: RepoDetailPageProps) {
-  const [data, setData] = useState<RepoDetailData | null>(initialDetail ?? null)
-  const [settings, setSettings] = useState<PublicSettingsData | null>(initialSettings ?? null)
+  const [data, setData] = useState<RepoDetailResponse | null>(initialDetail ?? null)
+  const [settings, setSettings] = useState<PublicSettings | null>(initialSettings ?? null)
   const [contents, setContents] = useState(initialDetail?.contents ?? [])
   const [currentPath, setCurrentPath] = useState('')
   const [pending, setPending] = useState(!initialDetail)
