@@ -186,3 +186,56 @@ export function buildHeatmapFromEvents(events: GitHubEvent[]): HeatmapDay[] {
   }
   return days
 }
+
+export function parseRepoOwnerName(repo: GitHubRepo, defaultOwner: string): [string, string] {
+  if (repo.full_name?.includes('/')) {
+    const [owner, name] = repo.full_name.split('/')
+    return [owner, name]
+  }
+  return [defaultOwner, repo.name]
+}
+
+export async function getRepoDetail(owner: string, repo: string): Promise<Record<string, unknown>> {
+  return githubRequest('GET', `https://api.github.com/repos/${owner}/${repo}`) as Promise<Record<string, unknown>>
+}
+
+export async function getReadmeHtml(owner: string, repo: string): Promise<string | null> {
+  const token = getToken()
+  const headers: Record<string, string> = {
+    Accept: 'application/vnd.github.html+json',
+  }
+  if (token && token !== 'ghp_your_token_here') {
+    headers.Authorization = `Bearer ${token}`
+  }
+  const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/readme`, { headers })
+  if (res.status === 404) return null
+  if (!res.ok) throw new Error(`github readme ${owner}/${repo}: ${res.status}`)
+  return res.text()
+}
+
+interface GitHubContent {
+  name: string
+  path: string
+  type: 'file' | 'dir'
+  size: number
+  html_url: string
+}
+
+export async function getRepoContents(owner: string, repo: string, path = ''): Promise<GitHubContent[]> {
+  const suffix = path ? `/${path.split('/').map(encodeURIComponent).join('/')}` : ''
+  const data = await githubRequest('GET', `https://api.github.com/repos/${owner}/${repo}/contents${suffix}`)
+  if (Array.isArray(data)) return data as GitHubContent[]
+  return [data as GitHubContent]
+}
+
+interface GitHubCommit {
+  sha: string
+  html_url: string
+  commit: { message: string; author: { name: string; date: string } }
+  author: { login: string; avatar_url: string } | null
+}
+
+export async function getRepoCommits(owner: string, repo: string, limit = 10): Promise<GitHubCommit[]> {
+  const url = `https://api.github.com/repos/${owner}/${repo}/commits?per_page=${limit}`
+  return (await githubRequest('GET', url)) as GitHubCommit[]
+}

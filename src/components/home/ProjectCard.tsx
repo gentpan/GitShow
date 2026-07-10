@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router'
 import { Badge } from '@/components/home/ui/Badge'
 import { formatNumber, langColor } from '@/lib/utils'
 
@@ -10,10 +11,9 @@ export function ProjectCard({ repo, accent }: ProjectCardProps) {
   const lang = repo.language
 
   return (
-    <a
-      href={repo.html_url}
-      target="_blank"
-      rel="noreferrer"
+    <Link
+      to="/projects/$name"
+      params={{ name: repo.name }}
       className="home-card home-rounded home-card-hover block p-4 h-full transition-all"
     >
       <div className="flex items-start justify-between gap-2 mb-2">
@@ -48,6 +48,6 @@ export function ProjectCard({ repo, accent }: ProjectCardProps) {
           {formatNumber(repo.forks_count)}
         </span>
       </div>
-    </a>
+    </Link>
   )
 }

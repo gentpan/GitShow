@@ -1,5 +1,7 @@
+const API_BASE = '/api'
+
 async function fetchJson<T>(path: string, opts?: RequestInit): Promise<T> {
-  const res = await fetch(path, opts)
+  const res = await fetch(`${API_BASE}${path}`, opts)
   if (!res.ok) throw new Error(`API error: ${res.status}`)
   return res.json() as Promise<T>
 }
@@ -10,61 +12,68 @@ const adminHeaders = (password: string) => ({
 })
 
 export const api = {
-  getMe: () => fetchJson<any>('/api/me'),
-  getRepos: () => fetchJson<any[]>('/api/repos'),
+  getMe: () => fetchJson<any>('/me'),
+  getRepos: () => fetchJson<any[]>('/repos'),
+  getRepoDetail: (name: string) => fetchJson<any>(`/repos/${encodeURIComponent(name)}`),
+  getRepoContents: (name: string, path = '') => {
+    const params = new URLSearchParams()
+    if (path) params.set('path', path)
+    const qs = params.toString()
+    return fetchJson<any[]>(`/repos/${encodeURIComponent(name)}/contents${qs ? `?${qs}` : ''}`)
+  },
   getActivity: (username?: string, limit?: number) => {
     const params = new URLSearchParams()
     if (username) params.set('username', username)
     if (limit) params.set('limit', String(limit))
-    return fetchJson<any[]>(`/api/activity?${params}`)
+    return fetchJson<any[]>(`/activity?${params}`)
   },
-  getFollowing: () => fetchJson<any[]>('/api/following'),
+  getFollowing: () => fetchJson<any[]>('/following'),
   getFeed: (limit?: number) => {
     const params = new URLSearchParams()
     if (limit) params.set('limit', String(limit))
-    return fetchJson<any[]>(`/api/feed?${params}`)
+    return fetchJson<any[]>(`/feed?${params}`)
   },
-  getHeatmap: () => fetchJson<any[]>('/api/heatmap'),
-  getStats: () => fetchJson<any>('/api/stats'),
-  getStarHistory: () => fetchJson<any[]>('/api/stars-history'),
-  getHealth: () => fetchJson<any>('/api/health'),
-  getSettings: () => fetchJson<any>('/api/settings'),
+  getHeatmap: () => fetchJson<any[]>('/heatmap'),
+  getStats: () => fetchJson<any>('/stats'),
+  getStarHistory: () => fetchJson<any[]>('/stars-history'),
+  getHealth: () => fetchJson<any>('/health'),
+  getSettings: () => fetchJson<any>('/settings'),
   adminLogin: (password: string) =>
-    fetchJson<any>('/api/admin/login', {
+    fetchJson<any>('/admin/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password }),
     }),
   passkeyRegisterStart: () =>
-    fetchJson<any>('/api/passkey/register/start', { method: 'POST' }),
+    fetchJson<any>('/passkey/register/start', { method: 'POST' }),
   passkeyRegisterFinish: (sessionId: string, credential: unknown, note = '') =>
     fetchJson<any>(
-      `/api/passkey/register/finish?session_id=${encodeURIComponent(sessionId)}&note=${encodeURIComponent(note)}`,
+      `/passkey/register/finish?session_id=${encodeURIComponent(sessionId)}&note=${encodeURIComponent(note)}`,
       { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(credential) },
     ),
-  passkeyLoginStart: () => fetchJson<any>('/api/passkey/login/start', { method: 'POST' }),
+  passkeyLoginStart: () => fetchJson<any>('/passkey/login/start', { method: 'POST' }),
   passkeyLoginFinish: (sessionId: string, credential: unknown) =>
-    fetchJson<any>(`/api/passkey/login/finish?session_id=${encodeURIComponent(sessionId)}`, {
+    fetchJson<any>(`/passkey/login/finish?session_id=${encodeURIComponent(sessionId)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(credential),
     }),
-  passkeyReset: () => fetchJson<any>('/api/passkey/reset', { method: 'POST' }),
+  passkeyReset: () => fetchJson<any>('/passkey/reset', { method: 'POST' }),
   passkeyUpdate: (id: string, note: string) =>
-    fetchJson<any>(`/api/passkey/update?id=${encodeURIComponent(id)}`, {
+    fetchJson<any>(`/passkey/update?id=${encodeURIComponent(id)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ note }),
     }),
   passkeyDelete: (id: string) =>
-    fetchJson<any>(`/api/passkey/delete?id=${encodeURIComponent(id)}`, { method: 'POST' }),
+    fetchJson<any>(`/passkey/delete?id=${encodeURIComponent(id)}`, { method: 'POST' }),
   getAdminSettings: (password: string) =>
-    fetchJson<any>('/api/admin/settings', { headers: { 'X-Admin-Password': password } }),
+    fetchJson<any>('/admin/settings', { headers: { 'X-Admin-Password': password } }),
   saveSettings: (settings: unknown, password = '') =>
-    fetchJson<any>('/api/admin/settings', {
+    fetchJson<any>('/admin/settings', {
       method: 'POST',
       headers: adminHeaders(password),
       body: JSON.stringify(settings),
     }),
-  refreshCache: () => fetchJson<any>('/api/refresh', { method: 'POST' }),
+  refreshCache: () => fetchJson<any>('/refresh', { method: 'POST' }),
 }

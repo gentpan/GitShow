@@ -11,6 +11,7 @@ import {
 import { getCache, refreshCache, getStarHistory } from './cache'
 import { eventsToActivities } from './activities'
 import type { ActivityItem, FollowingItem, MeResponse, Settings } from './types'
+import { buildRepoContents, buildRepoDetail } from './repoDetail'
 import {
   passkeyRegisterStart,
   passkeyRegisterFinish,
@@ -59,6 +60,29 @@ export async function handleApiRequest(request: Request): Promise<Response> {
     }
 
     if (method === 'GET' && path === 'repos') return json(getCache().repos)
+
+    const repoContentsMatch = path.match(/^repos\/([^/]+)\/contents$/)
+    if (method === 'GET' && repoContentsMatch) {
+      const repoName = decodeURIComponent(repoContentsMatch[1])
+      const dirPath = url.searchParams.get('path') || ''
+      try {
+        return json(await buildRepoContents(repoName, dirPath))
+      } catch (e) {
+        const message = e instanceof Error ? e.message : 'repo not found'
+        return err(message, message === 'repo not found' ? 404 : 500)
+      }
+    }
+
+    const repoDetailMatch = path.match(/^repos\/([^/]+)$/)
+    if (method === 'GET' && repoDetailMatch) {
+      const repoName = decodeURIComponent(repoDetailMatch[1])
+      try {
+        return json(await buildRepoDetail(repoName))
+      } catch (e) {
+        const message = e instanceof Error ? e.message : 'repo not found'
+        return err(message, message === 'repo not found' ? 404 : 500)
+      }
+    }
 
     if (method === 'GET' && path === 'activity') {
       const c = getCache()
