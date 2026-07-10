@@ -56,16 +56,16 @@ bun run generate-routes    # 重新生成路由树
 
 ```
 GitShow/
-├── server/           # Nitro API 路由与服务端逻辑
-│   ├── routes/api/ # REST API (/api/*)
-│   ├── utils/      # GitHub、缓存、Passkey
-│   └── plugins/    # 启动时缓存刷新
-├── src/
-│   ├── routes/     # TanStack Router 页面
-│   ├── components/ # React 组件
-│   └── lib/        # 客户端工具
-├── public/         # 静态资源
-└── vite.config.ts
+├── src/              # 前端站点（根目录，TanStack Router 页面路由 /）
+│   ├── routes/       # 页面：/、/projects、/following、/activity、/admin
+│   ├── components/   # React 组件
+│   └── lib/          # 客户端 API 封装（请求 /api/*）
+├── api/              # 后端 API（Nitro 服务目录，路由前缀 /api）
+│   ├── routes/api/   # REST 入口：/api/*
+│   ├── utils/        # GitHub、缓存、Passkey
+│   └── plugins/      # 启动时缓存刷新
+├── public/           # 静态资源
+└── vite.config.ts    # serverDir: 'api'
 ```
 
 ## License
