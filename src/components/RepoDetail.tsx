@@ -151,13 +151,6 @@ export function RepoDetailPage({ name, initialDetail, initialSettings }: RepoDet
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
         <div className="space-y-6 min-w-0">
-          {data.readme_html && (
-            <div className="repo-panel">
-              <h2 className="repo-panel-title">README</h2>
-              <div className="repo-readme" dangerouslySetInnerHTML={{ __html: data.readme_html }} />
-            </div>
-          )}
-
           <div className="repo-panel">
             <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
               <h2 className="repo-panel-title mb-0">目录</h2>
@@ -234,6 +227,13 @@ export function RepoDetailPage({ name, initialDetail, initialSettings }: RepoDet
               )}
             </div>
           </div>
+
+          {data.readme_html && (
+            <div className="repo-panel">
+              <h2 className="repo-panel-title">README</h2>
+              <div className="repo-readme" dangerouslySetInnerHTML={{ __html: data.readme_html }} />
+            </div>
+          )}
         </div>
 
         <div className="space-y-4">
