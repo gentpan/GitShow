@@ -4,20 +4,24 @@ import { api } from '@/lib/api'
 import { themeMap, timeAgo } from '@/lib/utils'
 
 const eventTypes = [
-  { type: 'all', label: '全部' },
-  { type: 'PushEvent', label: 'Push' },
-  { type: 'PullRequestEvent', label: 'PR' },
-  { type: 'IssuesEvent', label: 'Issue' },
-  { type: 'WatchEvent', label: 'Star' },
-  { type: 'ReleaseEvent', label: 'Release' },
+  { type: 'all', label: '全部', icon: 'fas fa-layer-group' },
+  { type: 'PushEvent', label: '提交', icon: 'fas fa-code-commit' },
+  { type: 'PullRequestEvent', label: 'PR', icon: 'fas fa-code-merge' },
+  { type: 'IssuesEvent', label: 'Issue', icon: 'fas fa-circle-dot' },
+  { type: 'CreateEvent', label: '创建', icon: 'fas fa-plus' },
+  { type: 'WatchEvent', label: 'Star', icon: 'fas fa-star' },
+  { type: 'ForkEvent', label: 'Fork', icon: 'fas fa-code-branch' },
+  { type: 'ReleaseEvent', label: '发布', icon: 'fas fa-tag' },
 ]
 
-const typeStyles: Record<string, { bg: string; color: string }> = {
-  PushEvent: { bg: 'rgba(74,222,128,0.15)', color: '#4ade80' },
-  PullRequestEvent: { bg: 'rgba(147,197,253,0.15)', color: '#93c5fd' },
-  IssuesEvent: { bg: 'rgba(251,191,36,0.15)', color: '#fbbf24' },
-  WatchEvent: { bg: 'rgba(244,114,132,0.15)', color: '#f472b6' },
-  ReleaseEvent: { bg: 'rgba(52,211,153,0.15)', color: '#34d399' },
+const typeMap: Record<string, { label: string; bg: string; color: string }> = {
+  PushEvent: { label: 'push', bg: 'rgba(74,222,128,0.15)', color: '#4ade80' },
+  CreateEvent: { label: 'create', bg: 'rgba(96,165,250,0.15)', color: '#60a5fa' },
+  PullRequestEvent: { label: 'PR', bg: 'rgba(147,197,253,0.15)', color: '#93c5fd' },
+  IssuesEvent: { label: 'issue', bg: 'rgba(251,191,36,0.15)', color: '#fbbf24' },
+  WatchEvent: { label: 'star', bg: 'rgba(244,114,132,0.15)', color: '#f472b6' },
+  ForkEvent: { label: 'fork', bg: 'rgba(167,139,250,0.15)', color: '#a78bfa' },
+  ReleaseEvent: { label: 'release', bg: 'rgba(52,211,153,0.15)', color: '#34d399' },
 }
 
 export const Route = createFileRoute('/activity')({ component: ActivityPage })
@@ -29,7 +33,7 @@ function ActivityPage() {
   const [pending, setPending] = useState(true)
 
   useEffect(() => {
-    Promise.all([api.getFeed(50).then(setFeed), api.getSettings().then(setSettings)]).finally(() => setPending(false))
+    Promise.all([api.getActivity(undefined, 50).then(setFeed), api.getSettings().then(setSettings)]).finally(() => setPending(false))
   }, [])
 
   const c = (themeMap[(settings?.theme as keyof typeof themeMap) || 'green'] || themeMap.green).primary
@@ -41,30 +45,40 @@ function ActivityPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-2xl font-bold" style={{ color: '#fafafa' }}>看板</h1>
-        <div className="flex flex-wrap gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h1 className="text-2xl font-bold" style={{ color: '#fafafa' }}>活动看板</h1>
+        <div className="flex items-center gap-2 flex-wrap">
           {eventTypes.map((t) => (
-            <button key={t.type} type="button" className="px-3 py-1.5 text-xs font-medium" style={selectedType === t.type ? { backgroundColor: c, color: '#000' } : { backgroundColor: '#111', color: '#a1a1aa', border: '1px solid rgba(255,255,255,0.1)' }} onClick={() => setSelectedType(t.type)}>{t.label}</button>
+            <button
+              key={t.type}
+              type="button"
+              className={`px-3 py-1.5 text-xs font-medium transition-colors ${selectedType === t.type ? 'active-filter' : 'inactive-filter'}`}
+              onClick={() => setSelectedType(t.type)}
+            >
+              <i className={`${t.icon} mr-1`} />{t.label}
+            </button>
           ))}
         </div>
       </div>
-      <div className="space-y-2">
-        {filtered.map((item) => {
-          const st = typeStyles[item.type] || { bg: 'rgba(161,161,170,0.15)', color: '#a1a1aa' }
-          return (
-            <div key={item.id} className="px-4 py-3 flex items-center gap-3 flex-wrap" style={{ backgroundColor: '#111', border: '1px solid rgba(255,255,255,0.08)' }}>
-              <img src={item.avatar_url} className="w-7 h-7 rounded-full" alt="" />
-              <span className="text-xs px-1.5 py-0.5 font-medium" style={{ backgroundColor: st.bg, color: st.color }}>{item.type.replace('Event', '')}</span>
-              <a href={item.actor_url} target="_blank" rel="noreferrer" className="text-sm hover:underline" style={{ color: c }}>{item.actor}</a>
-              <span style={{ color: '#52525b' }}>{item.action}</span>
-              <a href={item.repo_url} target="_blank" rel="noreferrer" className="text-sm hover:underline" style={{ color: c }}>{item.repo}</a>
-              {item.message && <span className="text-sm truncate max-w-xs" style={{ color: '#a1a1aa' }}>{item.message}</span>}
-              <span className="text-xs ml-auto" style={{ color: '#52525b' }}>{timeAgo(item.created_at)}</span>
-            </div>
-          )
-        })}
-      </div>
+
+      {!filtered.length ? (
+        <div className="text-center py-20" style={{ color: '#a1a1aa' }}>该类型暂无动态</div>
+      ) : (
+        <div className="space-y-2">
+          {filtered.map((item) => {
+            const st = typeMap[item.type] || { label: item.type, bg: 'rgba(161,161,170,0.15)', color: '#a1a1aa' }
+            return (
+              <div key={item.id} className="activity-row flex items-center gap-3 px-4 py-2.5 flex-wrap sm:flex-nowrap">
+                <img src={item.avatar_url} className="w-6 h-6 rounded-full shrink-0" alt="" />
+                <span className="text-xs shrink-0 px-1.5 py-0.5 rounded font-medium" style={{ backgroundColor: st.bg, color: st.color }}>{st.label}</span>
+                <a href={item.repo_url} target="_blank" rel="noreferrer" className="hover:underline text-sm truncate min-w-0" style={{ color: c }}>{item.repo}</a>
+                {item.message && <span className="text-sm truncate max-w-xs min-w-0" style={{ color: '#a1a1aa' }}>{item.message}</span>}
+                <span className="text-xs sm:ml-auto shrink-0" style={{ color: '#52525b' }}>{timeAgo(item.created_at)}</span>
+              </div>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }

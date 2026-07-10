@@ -180,28 +180,28 @@ function AdminPage() {
       <div className="space-y-6">
         <section className="p-6" style={{ backgroundColor: '#111', border: '1px solid rgba(255,255,255,0.08)' }}>
           <h2 className="text-sm font-medium mb-4" style={{ color: '#a1a1aa' }}>网站标题</h2>
-          <input value={form.title || ''} onChange={(e) => setForm({ ...form, title: e.target.value })} className="w-full px-4 py-3 outline-none" style={{ backgroundColor: '#111', color: '#fafafa', border: '1px solid rgba(255,255,255,0.1)' }} placeholder="GitShow" />
+          <input value={form.title || ''} onChange={(e) => setForm({ ...form, title: e.target.value })} className="input-field w-full px-4 py-3 text-base" placeholder="GitShow" />
         </section>
 
         <section className="p-6 space-y-4" style={{ backgroundColor: '#111', border: '1px solid rgba(255,255,255,0.08)' }}>
           <h2 className="text-sm font-medium" style={{ color: '#a1a1aa' }}>GitHub 账号</h2>
           <div>
             <label className="block text-xs mb-1" style={{ color: '#52525b' }}>GitHub 地址</label>
-            <input value={form.github_url || ''} onChange={(e) => setForm({ ...form, github_url: e.target.value })} onBlur={onGithubUrlBlur} className="w-full px-4 py-3 text-sm outline-none" style={{ backgroundColor: '#111', color: '#fafafa', border: '1px solid rgba(255,255,255,0.1)' }} placeholder="https://github.com/gentpan" />
+            <input value={form.github_url || ''} onChange={(e) => setForm({ ...form, github_url: e.target.value })} onBlur={onGithubUrlBlur} className="input-field w-full px-4 py-3 text-sm" placeholder="https://github.com/gentpan" />
           </div>
           {configUsername && (
             <div className="text-xs" style={{ color: '#52525b' }}>识别用户: <span style={{ color: c }}>{configUsername}</span></div>
           )}
           <div>
             <label className="block text-xs mb-1" style={{ color: '#52525b' }}>GitHub Token (ghp_xxx)</label>
-            <input type="password" value={form.github_token || ''} onChange={(e) => { setForm({ ...form, github_token: e.target.value }); setGithubTokenDirty(true) }} className="w-full px-4 py-3 text-sm outline-none" style={{ backgroundColor: '#111', color: '#fafafa', border: '1px solid rgba(255,255,255,0.1)' }} placeholder={origToken ? '已设置，留空保持不变' : 'ghp_xxx'} autoComplete="new-password" />
+            <input type="password" value={form.github_token || ''} onChange={(e) => { setForm({ ...form, github_token: e.target.value }); setGithubTokenDirty(true) }} className="input-field w-full px-4 py-3 text-sm" placeholder={origToken ? '已设置，留空保持不变' : 'ghp_xxx'} autoComplete="new-password" />
           </div>
         </section>
 
         <section className="p-6 space-y-4" style={{ backgroundColor: '#111', border: '1px solid rgba(255,255,255,0.08)' }}>
           <h2 className="text-sm font-medium" style={{ color: '#a1a1aa' }}>右上角联系按钮</h2>
-          <input value={form.contact_label || ''} onChange={(e) => setForm({ ...form, contact_label: e.target.value })} className="w-full px-4 py-3 text-sm outline-none" style={{ backgroundColor: '#111', color: '#fafafa', border: '1px solid rgba(255,255,255,0.1)' }} placeholder="联系" />
-          <input value={form.contact_url || ''} onChange={(e) => setForm({ ...form, contact_url: e.target.value })} className="w-full px-4 py-3 text-sm outline-none" style={{ backgroundColor: '#111', color: '#fafafa', border: '1px solid rgba(255,255,255,0.1)' }} placeholder="https://github.com/your-name" />
+          <input value={form.contact_label || ''} onChange={(e) => setForm({ ...form, contact_label: e.target.value })} className="input-field w-full px-4 py-3 text-sm" placeholder="联系" />
+          <input value={form.contact_url || ''} onChange={(e) => setForm({ ...form, contact_url: e.target.value })} className="input-field w-full px-4 py-3 text-sm" placeholder="https://github.com/your-name" />
         </section>
 
         <section className="p-6" style={{ backgroundColor: '#111', border: '1px solid rgba(255,255,255,0.08)' }}>
@@ -260,7 +260,7 @@ function AdminPage() {
         <section className="p-6" style={{ backgroundColor: '#111', border: '1px solid rgba(255,255,255,0.08)' }}>
           <h2 className="text-sm font-medium mb-4" style={{ color: '#a1a1aa' }}>管理密码</h2>
           <div className="flex gap-3 items-center">
-            <input type="password" value={form.admin_password || ''} onChange={(e) => { setForm({ ...form, admin_password: e.target.value }); setAdminPasswordDirty(true) }} className="flex-1 px-4 py-3 text-sm outline-none" style={{ backgroundColor: '#111', color: '#fafafa', border: '1px solid rgba(255,255,255,0.1)' }} placeholder={origPassword ? '已设置，留空保持不变' : '设置管理密码，留空则无需密码'} autoComplete="new-password" />
+            <input type="password" value={form.admin_password || ''} onChange={(e) => { setForm({ ...form, admin_password: e.target.value }); setAdminPasswordDirty(true) }} className="input-field flex-1 px-4 py-3 text-sm" placeholder={origPassword ? '已设置，留空保持不变' : '设置管理密码，留空则无需密码'} autoComplete="new-password" />
             <span className="text-xs shrink-0" style={{ color: '#52525b' }}>已设置时留空保持不变</span>
           </div>
         </section>
