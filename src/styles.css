@@ -671,3 +671,98 @@ body {
     height: 120px;
   }
 }
+.repo-panel {
+  background-color: #111;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 20px;
+}
+
+.repo-panel-title {
+  color: #fafafa;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.repo-meta dt {
+  color: #71717a;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.repo-meta dd {
+  color: #d4d4d8;
+  margin-top: 2px;
+}
+
+.repo-file-list {
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.repo-file-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 12px;
+  text-align: left;
+  font-size: 13px;
+  color: #d4d4d8;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  transition: background-color 0.15s ease;
+}
+
+.repo-file-row:last-child {
+  border-bottom: 0;
+}
+
+.repo-file-row:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.repo-commit-row {
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  transition: opacity 0.15s ease;
+}
+
+.repo-commit-row:last-child {
+  border-bottom: 0;
+}
+
+.repo-commit-row:hover {
+  opacity: 0.85;
+}
+
+.repo-readme {
+  color: #d4d4d8;
+  font-size: 14px;
+  line-height: 1.6;
+  overflow-x: auto;
+}
+
+.repo-readme h1,
+.repo-readme h2,
+.repo-readme h3 {
+  color: #fafafa;
+  margin: 1.2em 0 0.6em;
+  font-weight: 600;
+}
+
+.repo-readme h1 { font-size: 1.5em; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.3em; }
+.repo-readme h2 { font-size: 1.25em; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.25em; }
+.repo-readme p { margin: 0.75em 0; }
+.repo-readme a { color: var(--theme-primary); text-decoration: underline; }
+.repo-readme code { background: rgba(255,255,255,0.08); padding: 0.15em 0.35em; font-size: 0.9em; }
+.repo-readme pre { background: #0a0a0a; border: 1px solid rgba(255,255,255,0.08); padding: 12px; overflow-x: auto; margin: 0.75em 0; }
+.repo-readme pre code { background: none; padding: 0; }
+.repo-readme ul, .repo-readme ol { padding-left: 1.5em; margin: 0.75em 0; }
+.repo-readme img { max-width: 100%; }
+.repo-readme table { border-collapse: collapse; width: 100%; margin: 0.75em 0; }
+.repo-readme th, .repo-readme td { border: 1px solid rgba(255,255,255,0.1); padding: 6px 10px; }
+.repo-readme blockquote { border-left: 3px solid rgba(255,255,255,0.15); padding-left: 12px; color: #a1a1aa; margin: 0.75em 0; }
+
+.repo-detail-avatar {
+  border-radius: 9999px !important;
+}
