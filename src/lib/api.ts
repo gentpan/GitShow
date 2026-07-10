@@ -14,6 +14,13 @@ const adminHeaders = (password: string) => ({
 export const api = {
   getMe: () => fetchJson<any>('/me'),
   getRepos: () => fetchJson<any[]>('/repos'),
+  getRepoDetail: (name: string) => fetchJson<any>(`/repos/${encodeURIComponent(name)}`),
+  getRepoContents: (name: string, path = '') => {
+    const params = new URLSearchParams()
+    if (path) params.set('path', path)
+    const qs = params.toString()
+    return fetchJson<any[]>(`/repos/${encodeURIComponent(name)}/contents${qs ? `?${qs}` : ''}`)
+  },
   getActivity: (username?: string, limit?: number) => {
     const params = new URLSearchParams()
     if (username) params.set('username', username)
