@@ -1,5 +1,6 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import type { Config, Settings, PublicSettings, PasskeyInfo, PasskeyRecord } from './types'
+import { toBase64URL, toSimpleWebAuthnCredential } from './passkeyCodec'
 
 const CONFIG_PATH = process.env.CONFIG_PATH || 'config.json'
 const SETTINGS_PATH = process.env.SETTINGS_PATH || 'settings.json'
@@ -113,12 +114,8 @@ export function passkeyInfos(st: Settings): PasskeyInfo[] {
     })
   }
   for (let i = 0; i < (st.passkey_credentials || []).length; i++) {
-    const cred = st.passkey_credentials![i] as { id?: string | Uint8Array }
-    const id = typeof cred?.id === 'string'
-      ? cred.id
-      : cred?.id
-        ? Buffer.from(cred.id).toString('base64url')
-        : ''
+    const normalized = toSimpleWebAuthnCredential(st.passkey_credentials![i])
+    const id = normalized?.id || ''
     if (!id || seen.has(id)) continue
     seen.add(id)
     items.push({ id, note: `旧 Passkey ${i + 1}` })
