@@ -5,7 +5,7 @@
 ### Changed
 
 - **重大架构迁移**：Go + Nuxt Vue → TanStack Start + React 19 + TypeScript 7.0 + Bun 全栈
-- 后端逻辑迁移至 `server/utils/`（GitHub API、内存缓存、Passkey）
+- 后端目录由 `server/` 重命名为 `api/`，前端站点仍在项目根目录 `src/`
 - 前端重写为 React 组件与 TanStack Router 文件路由
 - Docker 镜像改为 `oven/bun`，构建产物为 Nitro `.output/`
 
