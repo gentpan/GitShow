@@ -1,26 +1,29 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { RepoDetailPage } from '@/components/RepoDetail'
-import { api } from '@/lib/api'
 import type { PublicSettings, RepoDetailResponse } from '../../api/utils/types'
 
 async function loadProjectDetail(name: string): Promise<{
   detail: RepoDetailResponse
   settings: PublicSettings
 }> {
-  if (import.meta.env.SSR) {
-    const { buildRepoDetail } = await import('../../api/utils/repoDetail')
-    const { getPublicSettings } = await import('../../api/utils/config')
-    const [detail, settings] = await Promise.all([
-      buildRepoDetail(name),
-      Promise.resolve(getPublicSettings()),
-    ])
-    return { detail, settings }
+  const origin = import.meta.env.SSR
+    ? `http://127.0.0.1:${process.env.PORT || 3000}`
+    : ''
+
+  const [detailRes, settingsRes] = await Promise.all([
+    fetch(`${origin}/api/repos/${encodeURIComponent(name)}`),
+    fetch(`${origin}/api/settings`),
+  ])
+
+  if (!detailRes.ok) {
+    throw new Error('repo not found')
   }
 
   const [detail, settings] = await Promise.all([
-    api.getRepoDetail(name),
-    api.getSettings(),
+    detailRes.json() as Promise<RepoDetailResponse>,
+    settingsRes.json() as Promise<PublicSettings>,
   ])
+
   return { detail, settings }
 }
 
