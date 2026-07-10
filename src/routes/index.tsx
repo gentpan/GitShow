@@ -112,8 +112,8 @@ function HomePage() {
 
       <div>
         <h2 className="text-sm font-medium mb-3" style={{ color: '#a1a1aa' }}>贡献热力图</h2>
-        <div className="p-6" style={{ backgroundColor: '#111', border: '1px solid rgba(255,255,255,0.08)' }}>
-          <div className="flex w-full gap-[2px]">
+        <div className="p-6 overflow-x-auto scrollbar-hide" style={{ backgroundColor: '#111', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <div className="flex w-full gap-[2px] min-w-[280px]">
             {heatmapWeeks.map((week, wi) => (
               <div key={wi} className="flex flex-col flex-1 gap-[2px]">
                 {week.map((day: any, di: number) => (
