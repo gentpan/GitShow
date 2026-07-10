@@ -1,35 +1,16 @@
-# Dependencies
-node_modules/
-gitshow
-
-# Build outputs
-.nuxt/
-.output/
-dist/
-dist
-
-# Logs
-*.log
-gitshow.log
-
-# OS
+node_modules
 .DS_Store
-Thumbs.db
-
-# IDE
-.vscode/
-.idea/
-.claude/
-*.swp
-*.swo
-
-# Environment
+dist
+dist-ssr
+*.local
 .env
-.env.local
-
-# Config files with secrets
 config.json
 settings.json
-
-# Runtime data
 star-history.json
+.nitro
+.tanstack
+.wrangler
+.output
+.vinxi
+__unconfig*
+gitshow
