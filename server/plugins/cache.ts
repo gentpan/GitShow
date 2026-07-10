@@ -1,7 +1,8 @@
+import { definePlugin } from 'nitro'
 import { startRefreshLoop } from '../utils/cache'
 import { loadConfig } from '../utils/config'
 
-export default defineNitroPlugin(() => {
+export default definePlugin(() => {
   try {
     const cfg = loadConfig()
     if (!cfg.username || !cfg.token || cfg.token === 'ghp_your_token_here') {

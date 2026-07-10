@@ -7,7 +7,7 @@ export default defineConfig({
   resolve: { tsconfigPaths: true },
   server: { port: 3000 },
   plugins: [
-    nitro({ preset: 'bun' }),
+    nitro({ preset: 'bun', serverDir: 'server' }),
     tanstackStart(),
     viteReact(),
   ],
