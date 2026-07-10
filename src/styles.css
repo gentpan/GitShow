@@ -15,19 +15,16 @@ body {
   font-family: "PingFang SC", "PingFang TC", "Microsoft YaHei", "微软雅黑", sans-serif;
 }
 
-/* 全局直角风格 */
 *, *::before, *::after {
   border-radius: 0 !important;
 }
 
-/* 胶囊导航栏例外 */
 .nav-capsule,
 .nav-capsule .nav-btn,
 .nav-capsule .nav-pill {
   border-radius: 9999px !important;
 }
 
-/* 页面加载圈例外 */
 .loading-spinner {
   border-radius: 9999px !important;
 }
@@ -84,38 +81,29 @@ body {
   color: #f87171;
 }
 
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-/* 项目卡片光晕悬浮 */
 .repo-card {
   background-color: #111;
   border: 1px solid rgba(255,255,255,0.08);
   transition: all 0.35s ease;
   overflow: visible !important;
 }
+
 .repo-card:hover {
   background-color: #1a1a1a;
   border-color: rgba(var(--theme-primary-rgb), 0.5);
-  box-shadow: 0 0 16px rgba(var(--theme-primary-rgb), 0.15), 0 0 48px rgba(var(--theme-primary-rgb), 0.08), 0 0 80px rgba(var(--theme-primary-rgb), 0.04);
+  box-shadow: 0 0 16px rgba(var(--theme-primary-rgb), 0.15), 0 0 48px rgba(var(--theme-primary-rgb), 0.08);
 }
 
-/* 头像主题色发光 */
 .avatar-glow {
   box-shadow: 0 12px 34px rgba(0,0,0,0.42), 0 0 0 1px rgba(255,255,255,0.12);
 }
 
-/* 首页 Hero */
 .hero-card {
   background-color: #111;
   border: 1px solid rgba(255,255,255,0.08);
   overflow: hidden;
 }
+
 .hero-grid {
   display: grid;
   grid-template-columns: 96px minmax(180px, 1fr) minmax(420px, 520px);
@@ -123,6 +111,7 @@ body {
   align-items: stretch;
   min-height: 120px;
 }
+
 .hero-avatar-wrap {
   width: 96px;
   height: 100%;
@@ -131,11 +120,13 @@ body {
   align-items: center;
   justify-content: center;
 }
+
 .hero-avatar {
   width: 84px;
   height: 84px;
   object-fit: cover;
 }
+
 .hero-profile {
   min-width: 0;
   display: flex;
@@ -144,12 +135,14 @@ body {
   gap: 8px;
   padding: 16px 0;
 }
+
 .hero-name {
   color: #fafafa;
   font-size: 30px;
   font-weight: 700;
   line-height: 1.08;
 }
+
 .hero-bio {
   color: #a1a1aa;
   font-size: 14px;
@@ -159,10 +152,12 @@ body {
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
+
 .hero-socials {
   display: flex;
   gap: 8px;
 }
+
 .hero-social-link {
   width: 30px;
   height: 30px;
@@ -172,6 +167,7 @@ body {
   font-size: 14px;
   transition: color 0.15s ease, border-color 0.15s ease;
 }
+
 .hero-stats-panel {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -180,6 +176,7 @@ body {
   border-left: 1px solid rgba(255,255,255,0.08);
   background-color: rgba(0,0,0,0.22);
 }
+
 .hero-stat-item {
   display: flex;
   flex-direction: column;
@@ -190,27 +187,23 @@ body {
   padding: 12px 8px;
   border-right: 1px solid rgba(255,255,255,0.06);
 }
+
 .hero-stat-item:last-child {
   border-right: 0;
 }
+
 .hero-stat-icon {
-  width: auto;
   font-size: 13px;
   text-align: center;
-  flex-shrink: 0;
 }
-.hero-stat-copy {
-  min-width: 0;
-  display: block;
-  text-align: center;
-  width: 100%;
-}
+
 .hero-stat-value {
   color: #fafafa;
   font-size: 18px;
   font-weight: 700;
   line-height: 1;
 }
+
 .hero-stat-label {
   color: #a1a1aa;
   font-size: 11px;
@@ -232,96 +225,55 @@ body {
 }
 
 @media (max-width: 767px) {
-  .hero-card {
-    padding: 18px;
-  }
-  .hero-grid {
-    grid-template-columns: 1fr;
-    gap: 20px;
-    min-height: 0;
-  }
-  .hero-avatar-wrap {
-    width: 96px;
-    height: 96px;
-    padding: 0;
-  }
-  .hero-avatar {
-    width: 88px;
-    height: 88px;
-  }
-  .hero-profile {
-    padding: 0;
-  }
-  .hero-name {
-    font-size: 28px;
-  }
+  .hero-card { padding: 18px; }
+  .hero-grid { grid-template-columns: 1fr; gap: 20px; min-height: 0; }
+  .hero-avatar-wrap { width: 96px; height: 96px; padding: 0; }
+  .hero-avatar { width: 88px; height: 88px; }
+  .hero-profile { padding: 0; }
+  .hero-name { font-size: 28px; }
   .hero-stats-panel {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-rows: none;
     height: auto;
     border: 1px solid rgba(255,255,255,0.08);
   }
-  .hero-stat-item {
-    min-height: 52px;
-    padding: 9px 12px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-  }
-  .hero-stat-item:nth-child(odd) {
-    border-right: 1px solid rgba(255,255,255,0.06);
-  }
-  .hero-stat-copy {
-    display: block;
-  }
-  .hero-stat-label {
-    display: block;
-    margin-top: 4px;
-  }
 }
 
-/* 标签样式 */
-.tag-green {
-  background-color: rgba(var(--theme-primary-rgb), 0.12);
-  border: 1px solid rgba(var(--theme-primary-rgb), 0.35);
-  color: var(--theme-primary);
-  font-size: 12px;
-  font-weight: 500;
-  padding: 2px 10px;
+.active-count {
+  background-color: var(--theme-primary);
+  color: #000;
+  border: 1px solid var(--theme-primary);
 }
 
-/* 统计卡片 */
-.stat-card {
+.inactive-count {
   background-color: #111;
-  border-top: 2px solid rgba(var(--theme-primary-rgb), 0.5);
-  padding: 16px 20px;
-  transition: all 0.25s ease;
-}
-.stat-card:hover {
-  background-color: #1a1a1a;
-  border-top-color: var(--theme-primary);
+  color: #a1a1aa;
+  border: 1px solid rgba(255,255,255,0.1);
 }
 
-/* 语言横条 tooltip */
-.lang-bar-segment {
-  position: relative;
+.repo-row {
+  background-color: #0a0a0a;
+  border: 1px solid transparent;
 }
-.lang-bar-segment::after {
-  content: attr(data-lang);
-  position: absolute;
-  bottom: calc(100% + 6px);
-  left: 50%;
-  transform: translateX(-50%) scale(0.95);
-  padding: 4px 8px;
-  background: #000;
-  border: 1px solid rgba(255,255,255,0.1);
-  color: #fafafa;
-  font-size: 11px;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.15s, transform 0.15s;
-  z-index: 10;
+
+.repo-row:hover {
+  background-color: #111;
 }
-.lang-bar-segment:hover::after {
-  opacity: 1;
-  transform: translateX(-50%) scale(1);
+
+.toggle-on { background-color: var(--theme-primary); }
+.toggle-off { background-color: rgba(255,255,255,0.1); }
+.knob-on { left: 22px; background-color: #000; }
+.knob-off { left: 2px; background-color: #a1a1aa; }
+
+.btn-save {
+  background-color: var(--theme-primary);
+  color: #000;
+}
+
+.btn-save:hover {
+  background-color: var(--theme-primary-dark);
+}
+
+.btn-save:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
