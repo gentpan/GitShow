@@ -52,6 +52,14 @@ function mapCommits(commits: Awaited<ReturnType<typeof getRepoCommits>>): RepoCo
   }))
 }
 
+function sanitizeReadmeHtml(html: string | null): string | null {
+  if (!html) return null
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    // GitHub permalink anchors — not needed on site mirror, cause stray link icons
+    .replace(/<a\b[^>]*\bclass="[^"]*\banchor\b[^"]*"[^>]*>[\s\S]*?<\/a>/gi, '')
+}
+
 export async function buildRepoDetail(name: string): Promise<RepoDetailResponse> {
   const cached = findCachedRepo(name)
   if (!cached) throw new Error('repo not found')
@@ -78,7 +86,7 @@ export async function buildRepoDetail(name: string): Promise<RepoDetailResponse>
       homepage: (detail.homepage as string) || '',
       license: license?.spdx_id ? { spdx_id: license.spdx_id, name: license.name || license.spdx_id } : null,
     },
-    readme_html: readmeHtml,
+    readme_html: sanitizeReadmeHtml(readmeHtml),
     contents: mapContents(contents),
     commits: mapCommits(commits),
   }

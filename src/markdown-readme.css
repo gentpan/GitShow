@@ -42,44 +42,19 @@
   text-align: left;
 }
 
-/* GitHub API: heading + anchor are siblings inside .markdown-heading */
+/* GitHub API: heading wrapper (permalink anchors stripped server-side) */
 .repo-readme .markdown-heading {
   position: relative;
 }
 
-.repo-readme .markdown-heading::after {
-  content: '';
-  display: table;
-  clear: both;
-}
-
 .repo-readme .markdown-heading .heading-element {
   display: block;
-  width: fit-content;
 }
 
-.repo-readme .markdown-heading .anchor {
-  float: left;
-  padding-right: 4px;
-  margin-left: -20px;
-  line-height: 1;
-  color: #4493f8;
-  text-decoration: none;
-  visibility: hidden;
-}
-
-.repo-readme .markdown-heading:hover .anchor,
-.repo-readme .markdown-heading .anchor:focus-visible {
-  visibility: visible;
-}
-
-.repo-readme .markdown-heading .anchor:focus {
-  outline: none;
-}
-
-.repo-readme .markdown-heading .anchor .octicon,
-.repo-readme .markdown-heading .anchor .octicon-link {
-  vertical-align: middle;
+/* Fallback: hide any remaining permalink anchors */
+.repo-readme .markdown-heading .anchor,
+.repo-readme .markdown-body a.anchor {
+  display: none !important;
 }
 
 /* Centered README hero blocks (badges, title, etc.) */
@@ -88,20 +63,8 @@
   margin-right: auto;
 }
 
-.repo-readme [align='center'] .markdown-heading .anchor {
-  float: none;
-  margin-left: 0;
-  display: inline-block;
-  vertical-align: middle;
-  visibility: hidden;
-}
-
-.repo-readme [align='center'] .markdown-heading:hover .anchor {
-  visibility: visible;
-}
-
 .repo-readme [align='center'] .markdown-heading {
-  display: inline-block;
+  display: block;
   width: 100%;
 }
 
