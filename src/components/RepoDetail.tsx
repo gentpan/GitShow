@@ -229,8 +229,7 @@ export function RepoDetailPage({ name, initialDetail, initialSettings }: RepoDet
           </div>
 
           {data.readme_html && (
-            <div className="repo-panel">
-              <h2 className="repo-panel-title">README</h2>
+            <div className="repo-panel repo-readme-panel">
               <div className="repo-readme" dangerouslySetInnerHTML={{ __html: data.readme_html }} />
             </div>
           )}
