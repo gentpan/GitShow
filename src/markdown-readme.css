@@ -65,19 +65,21 @@
   line-height: 1;
   color: #4493f8;
   text-decoration: none;
+  visibility: hidden;
+}
+
+.repo-readme .markdown-heading:hover .anchor,
+.repo-readme .markdown-heading .anchor:focus-visible {
+  visibility: visible;
 }
 
 .repo-readme .markdown-heading .anchor:focus {
   outline: none;
 }
 
+.repo-readme .markdown-heading .anchor .octicon,
 .repo-readme .markdown-heading .anchor .octicon-link {
-  visibility: hidden;
   vertical-align: middle;
-}
-
-.repo-readme .markdown-heading:hover .anchor .octicon-link {
-  visibility: visible;
 }
 
 /* Centered README hero blocks (badges, title, etc.) */
@@ -91,6 +93,11 @@
   margin-left: 0;
   display: inline-block;
   vertical-align: middle;
+  visibility: hidden;
+}
+
+.repo-readme [align='center'] .markdown-heading:hover .anchor {
+  visibility: visible;
 }
 
 .repo-readme [align='center'] .markdown-heading {
