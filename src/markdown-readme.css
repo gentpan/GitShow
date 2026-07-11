@@ -1,0 +1,93 @@
+/* GitHub README rendering — pairs with HTML from GitHub readme API */
+@import 'github-markdown-css/github-markdown-dark.css';
+
+.repo-readme {
+  overflow-x: auto;
+}
+
+/* Undo site-wide square corners inside README */
+.repo-readme,
+.repo-readme *,
+.repo-readme *::before,
+.repo-readme *::after {
+  border-radius: revert !important;
+}
+
+.repo-readme .markdown-body {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  background-color: transparent;
+  font-size: 14px;
+}
+
+.repo-readme .container-lg {
+  max-width: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* GitHub API wraps headings in .markdown-heading with sibling anchor links */
+.repo-readme .markdown-heading {
+  position: relative;
+}
+
+.repo-readme .markdown-heading .heading-element {
+  display: inline;
+}
+
+.repo-readme .markdown-heading .anchor {
+  float: left;
+  padding-right: 4px;
+  margin-left: -20px;
+  line-height: 1;
+  color: #4493f8;
+  text-decoration: none;
+}
+
+.repo-readme .markdown-heading .anchor:focus {
+  outline: none;
+}
+
+.repo-readme .markdown-heading .anchor .octicon-link {
+  visibility: hidden;
+  vertical-align: middle;
+}
+
+.repo-readme .markdown-heading:hover .anchor .octicon-link {
+  visibility: visible;
+}
+
+.repo-readme .markdown-body .highlight {
+  margin-bottom: 16px;
+}
+
+.repo-readme .markdown-body .highlight pre {
+  margin: 0;
+  word-break: normal;
+  white-space: pre;
+  overflow: auto;
+}
+
+.repo-readme .markdown-body img {
+  max-width: 100%;
+  box-sizing: content-box;
+  background-color: #0d1117;
+}
+
+.repo-readme .markdown-body table {
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  overflow: auto;
+}
+
+.repo-readme .markdown-body a {
+  color: #4493f8;
+}
+
+.repo-readme .markdown-body a:hover {
+  text-decoration: underline;
+}
