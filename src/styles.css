@@ -684,6 +684,21 @@ body {
   margin-bottom: 12px;
 }
 
+.repo-readme-panel {
+  padding: 0;
+  overflow: hidden;
+}
+
+.repo-readme-panel .repo-readme {
+  padding: 24px 32px;
+}
+
+@media (max-width: 767px) {
+  .repo-readme-panel .repo-readme {
+    padding: 16px;
+  }
+}
+
 .repo-meta dt {
   color: #71717a;
   font-size: 11px;

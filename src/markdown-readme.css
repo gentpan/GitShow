@@ -20,22 +20,42 @@
   margin: 0;
   padding: 0;
   background-color: transparent;
-  font-size: 14px;
 }
 
-.repo-readme .container-lg {
+.repo-readme .container-lg,
+.repo-readme #readme {
   max-width: none;
   padding: 0;
   margin: 0;
 }
 
-/* GitHub API wraps headings in .markdown-heading with sibling anchor links */
+/* Legacy align attribute (common in GitHub README headers) */
+.repo-readme .markdown-body [align='center'] {
+  text-align: center;
+}
+
+.repo-readme .markdown-body [align='right'] {
+  text-align: right;
+}
+
+.repo-readme .markdown-body [align='left'] {
+  text-align: left;
+}
+
+/* GitHub API: heading + anchor are siblings inside .markdown-heading */
 .repo-readme .markdown-heading {
   position: relative;
 }
 
+.repo-readme .markdown-heading::after {
+  content: '';
+  display: table;
+  clear: both;
+}
+
 .repo-readme .markdown-heading .heading-element {
-  display: inline;
+  display: block;
+  width: fit-content;
 }
 
 .repo-readme .markdown-heading .anchor {
@@ -58,6 +78,36 @@
 
 .repo-readme .markdown-heading:hover .anchor .octicon-link {
   visibility: visible;
+}
+
+/* Centered README hero blocks (badges, title, etc.) */
+.repo-readme [align='center'] .markdown-heading .heading-element {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.repo-readme [align='center'] .markdown-heading .anchor {
+  float: none;
+  margin-left: 0;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.repo-readme [align='center'] .markdown-heading {
+  display: inline-block;
+  width: 100%;
+}
+
+.repo-readme [align='center'] p {
+  line-height: 1.6;
+}
+
+.repo-readme .markdown-body a:has(> img) {
+  display: inline-block;
+  line-height: 0;
+  vertical-align: middle;
+  margin: 2px;
+  text-decoration: none;
 }
 
 .repo-readme .markdown-body .highlight {
@@ -90,4 +140,61 @@
 
 .repo-readme .markdown-body a:hover {
   text-decoration: underline;
+}
+
+/* Tailwind preflight resets heading size/weight — restore GitHub typography */
+.repo-readme .markdown-body :is(h1, h2, h3, h4, h5, h6) {
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.repo-readme .markdown-body h1 {
+  font-size: 2em;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid #3d444db3;
+}
+
+.repo-readme .markdown-body h2 {
+  font-size: 1.5em;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid #3d444db3;
+}
+
+.repo-readme .markdown-body h3 {
+  font-size: 1.25em;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.repo-readme .markdown-body h4 {
+  font-size: 1em;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.repo-readme .markdown-body h5 {
+  font-size: 0.875em;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.repo-readme .markdown-body h6 {
+  font-size: 0.85em;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  color: #9198a1;
+}
+
+.repo-readme .markdown-body ul,
+.repo-readme .markdown-body ol {
+  list-style: revert;
+  padding-left: 2em;
+}
+
+.repo-readme .markdown-body li + li {
+  margin-top: 0.25em;
 }
