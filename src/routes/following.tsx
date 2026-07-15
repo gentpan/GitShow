@@ -1,21 +1,25 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useEffect, useMemo, useState } from 'react'
-import { api } from '@/lib/api'
+import { useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { getFollowing, getSettings } from '@/server/api'
 import { langColor, themeMap, timeAgo } from '@/lib/utils'
 
 export const Route = createFileRoute('/following')({ component: FollowingPage })
 
 function FollowingPage() {
-  const [following, setFollowing] = useState<any[]>([])
-  const [settings, setSettings] = useState<any>(null)
-  const [pending, setPending] = useState(true)
+  const { data: following, isPending: followingPending } = useQuery({
+    queryKey: ['following'],
+    queryFn: () => getFollowing(),
+  })
+  const { data: settings, isPending: settingsPending } = useQuery({
+    queryKey: ['settings'],
+    queryFn: () => getSettings(),
+  })
 
-  useEffect(() => {
-    Promise.all([api.getFollowing().then(setFollowing), api.getSettings().then(setSettings)]).finally(() => setPending(false))
-  }, [])
+  const pending = followingPending || settingsPending
 
   const c = (themeMap[(settings?.theme as keyof typeof themeMap) || 'green'] || themeMap.green).primary
-  const sorted = useMemo(() => [...following].sort((a, b) => +new Date(b.last_active || 0) - +new Date(a.last_active || 0)), [following])
+  const sorted = useMemo(() => [...(following || [])].sort((a: any, b: any) => +new Date(b.last_active || 0) - +new Date(a.last_active || 0)), [following])
 
   if (pending) {
     return (
@@ -38,7 +42,7 @@ function FollowingPage() {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold" style={{ color: '#fafafa' }}>关注的人</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {sorted.map((user) => (
+        {sorted.map((user: any) => (
           <div
             key={user.username}
             className="p-5 transition-colors"

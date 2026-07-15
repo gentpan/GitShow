@@ -17,7 +17,7 @@ export interface PasskeyRecord {
   note: string
   created_at?: string
   last_used_at?: string
-  credential: unknown
+  credential: any
 }
 
 export interface PasskeyInfo {
@@ -40,7 +40,7 @@ export interface Settings {
   theme: string
   admin_password: string
   passkeys?: PasskeyRecord[]
-  passkey_credentials?: unknown[]
+  passkey_credentials?: any[]
 }
 
 export interface PublicSettings {

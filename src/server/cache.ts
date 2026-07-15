@@ -25,6 +25,7 @@ let cache: CacheData = {
 }
 
 let refreshing = false
+let lastRefresh = 0
 
 export function getCache(): CacheData {
   return cache
@@ -125,11 +126,19 @@ export async function refreshCache(): Promise<void> {
 
     next.lastUpdated = new Date().toISOString()
     cache = next
+    lastRefresh = Date.now()
     recordStarHistory(next.totalStars)
     console.log(`[cache] refreshed in ${Date.now() - start}ms`)
   } finally {
     refreshing = false
   }
+}
+
+export async function getCacheWithRefresh(): Promise<CacheData> {
+  if (Date.now() - lastRefresh > 30 * 60 * 1000) {
+    refreshCache().catch(console.error)
+  }
+  return cache
 }
 
 export function startRefreshLoop() {

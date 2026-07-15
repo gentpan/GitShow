@@ -1,6 +1,6 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { useEffect, useMemo, useState } from 'react'
-import { api } from '@/lib/api'
+import { getRepos, getSettings } from '@/server/api'
 import { langColor, repoIcon, sortLangPct, themeMap, timeAgo } from '@/lib/utils'
 
 export const Route = createFileRoute('/projects/')({ component: ProjectsPage })
@@ -11,7 +11,7 @@ function ProjectsPage() {
   const [pending, setPending] = useState(true)
 
   useEffect(() => {
-    Promise.all([api.getRepos().then(setRepos), api.getSettings().then(setSettings)]).finally(() =>
+    Promise.all([getRepos().then(setRepos), getSettings().then(setSettings)]).finally(() =>
       setPending(false),
     )
   }, [])

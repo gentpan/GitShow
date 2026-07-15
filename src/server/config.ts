@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import type { Config, Settings, PublicSettings, PasskeyInfo, PasskeyRecord } from './types'
-import { toBase64URL, toSimpleWebAuthnCredential } from './passkeyCodec'
+import { toSimpleWebAuthnCredential } from './passkeyCodec'
 
 const CONFIG_PATH = process.env.CONFIG_PATH || 'config.json'
 const SETTINGS_PATH = process.env.SETTINGS_PATH || 'settings.json'
@@ -76,7 +76,6 @@ export function getToken(): string {
 
 export function getPublicSettings(): PublicSettings {
   const st = loadSettings()
-  const passkeys = st.passkeys || []
   return {
     title: st.title,
     github_username: st.github_username,

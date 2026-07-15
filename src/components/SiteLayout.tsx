@@ -1,6 +1,6 @@
 import { Link, useRouterState } from '@tanstack/react-router'
 import { useEffect, useMemo, useState } from 'react'
-import { api } from '@/lib/api'
+import { getSettings, getMe, adminLogin } from '@/server/api'
 import { adminAuth, passkey } from '@/lib/auth'
 import { darkenColor, themeMap } from '@/lib/utils'
 
@@ -24,8 +24,8 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
   const [loggedIn, setLoggedIn] = useState(false)
 
   useEffect(() => {
-    api.getSettings().then(setSettings).catch(() => {})
-    api.getMe().then(setMe).catch(() => {})
+    getSettings().then(setSettings).catch(() => {})
+    getMe().then(setMe).catch(() => {})
     setLoggedIn(adminAuth.isLoggedIn() || pathname === '/admin')
   }, [pathname])
 
@@ -62,7 +62,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
 
   async function login() {
     try {
-      await api.adminLogin(password)
+      await adminLogin({ data: { password } })
       adminAuth.login()
       sessionStorage.setItem('admin_password', password)
       setPassword('')

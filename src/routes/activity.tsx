@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useEffect, useMemo, useState } from 'react'
-import { api } from '@/lib/api'
+import { useMemo, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { getActivity, getSettings } from '@/server/api'
 import { themeMap, timeAgo } from '@/lib/utils'
 
 const eventTypes = [
@@ -27,17 +28,21 @@ const typeMap: Record<string, { label: string; bg: string; color: string }> = {
 export const Route = createFileRoute('/activity')({ component: ActivityPage })
 
 function ActivityPage() {
-  const [feed, setFeed] = useState<any[]>([])
-  const [settings, setSettings] = useState<any>(null)
   const [selectedType, setSelectedType] = useState('all')
-  const [pending, setPending] = useState(true)
 
-  useEffect(() => {
-    Promise.all([api.getActivity(undefined, 50).then(setFeed), api.getSettings().then(setSettings)]).finally(() => setPending(false))
-  }, [])
+  const { data: feed, isPending: feedPending } = useQuery({
+    queryKey: ['activity'],
+    queryFn: () => getActivity({ data: { limit: 50 } }),
+  })
+  const { data: settings, isPending: settingsPending } = useQuery({
+    queryKey: ['settings'],
+    queryFn: () => getSettings(),
+  })
+
+  const pending = feedPending || settingsPending
 
   const c = (themeMap[(settings?.theme as keyof typeof themeMap) || 'green'] || themeMap.green).primary
-  const filtered = useMemo(() => selectedType === 'all' ? feed : feed.filter((i) => i.type === selectedType), [feed, selectedType])
+  const filtered = useMemo(() => selectedType === 'all' ? (feed || []) : (feed || []).filter((i: any) => i.type === selectedType), [feed, selectedType])
 
   if (pending) {
     return <div className="flex items-center justify-center py-20"><div className="loading-spinner w-8 h-8 border-2 animate-spin" style={{ borderColor: c, borderTopColor: 'transparent' }} /></div>
@@ -65,7 +70,7 @@ function ActivityPage() {
         <div className="text-center py-20" style={{ color: '#a1a1aa' }}>该类型暂无动态</div>
       ) : (
         <div className="space-y-2">
-          {filtered.map((item) => {
+          {filtered.map((item: any) => {
             const st = typeMap[item.type] || { label: item.type, bg: 'rgba(161,161,170,0.15)', color: '#a1a1aa' }
             return (
               <div key={item.id} className="activity-row flex items-center gap-3 px-4 py-2.5 flex-wrap sm:flex-nowrap">
