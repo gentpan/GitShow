@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { ContributionGraph } from '@/components/home/ContributionGraph'
 import { ExternalContributions } from '@/components/home/ExternalContributions'
 import { LanguageChart } from '@/components/home/LanguageChart'
@@ -8,30 +9,37 @@ import { Sidebar } from '@/components/home/Sidebar'
 import { StatsGrid } from '@/components/home/StatsGrid'
 import { TechStack } from '@/components/home/TechStack'
 import { Card } from '@/components/home/ui/Card'
-import { api } from '@/lib/api'
+import { getMe, getRepos, getActivity, getHeatmap, getSettings } from '@/server/api'
 import { aggregateLanguages, deriveExternalContributions } from '@/lib/homeUtils'
 import { themeMap } from '@/lib/utils'
 
 export const Route = createFileRoute('/')({ component: HomePage })
 
 function HomePage() {
-  const [me, setMe] = useState<any>(null)
-  const [allRepos, setAllRepos] = useState<any[]>([])
-  const [activity, setActivity] = useState<any[]>([])
-  const [heatmap, setHeatmap] = useState<any[]>([])
-  const [settings, setSettings] = useState<any>(null)
-  const [pending, setPending] = useState(true)
   const [sortBy, setSortBy] = useState<'stars' | 'updated'>('stars')
 
-  useEffect(() => {
-    Promise.all([
-      api.getMe().then(setMe),
-      api.getRepos().then(setAllRepos),
-      api.getActivity(undefined, 30).then(setActivity),
-      api.getHeatmap().then(setHeatmap),
-      api.getSettings().then(setSettings),
-    ]).finally(() => setPending(false))
-  }, [])
+  const { data: me, isPending: mePending } = useQuery({
+    queryKey: ['me'],
+    queryFn: () => getMe(),
+  })
+  const { data: allRepos, isPending: reposPending } = useQuery({
+    queryKey: ['repos'],
+    queryFn: () => getRepos(),
+  })
+  const { data: activity, isPending: activityPending } = useQuery({
+    queryKey: ['activity'],
+    queryFn: () => getActivity({ data: { limit: 30 } }),
+  })
+  const { data: heatmap, isPending: heatmapPending } = useQuery({
+    queryKey: ['heatmap'],
+    queryFn: () => getHeatmap(),
+  })
+  const { data: settings, isPending: settingsPending } = useQuery({
+    queryKey: ['settings'],
+    queryFn: () => getSettings(),
+  })
+
+  const pending = mePending || reposPending || activityPending || heatmapPending || settingsPending
 
   const theme = themeMap[(settings?.theme as keyof typeof themeMap) || 'green'] || themeMap.green
   const accent = theme.primary
@@ -40,8 +48,8 @@ function HomePage() {
     const count = settings?.homepage_repo_count || 6
     const selected: string[] = settings?.homepage_repos || []
     let list = selected.length
-      ? selected.map((name: string) => allRepos.find((x) => x.name === name)).filter(Boolean)
-      : [...allRepos]
+      ? selected.map((name: string) => allRepos?.find((x: any) => x.name === name)).filter(Boolean)
+      : [...(allRepos || [])]
     if (sortBy === 'stars') {
       list = [...list].sort((a: any, b: any) => b.stargazers_count - a.stargazers_count)
     } else {
@@ -50,11 +58,11 @@ function HomePage() {
     return list.slice(0, count)
   }, [allRepos, settings, sortBy])
 
-  const languages = useMemo(() => aggregateLanguages(allRepos), [allRepos])
+  const languages = useMemo(() => aggregateLanguages(allRepos || []), [allRepos])
 
-  const externalContribs = useMemo(() => deriveExternalContributions(activity), [activity])
-  const totalPRs = useMemo(() => activity.filter((a) => a.type === 'PullRequestEvent').length, [activity])
-  const totalCommits = useMemo(() => activity.filter((a) => a.type === 'PushEvent').length, [activity])
+  const externalContribs = useMemo(() => deriveExternalContributions(activity || []), [activity])
+  const totalPRs = useMemo(() => (activity || []).filter((a: any) => a.type === 'PullRequestEvent').length, [activity])
+  const totalCommits = useMemo(() => (activity || []).filter((a: any) => a.type === 'PushEvent').length, [activity])
 
   if (pending) {
     return (
@@ -84,9 +92,9 @@ function HomePage() {
             </p>
           </Card>
 
-          <StatsGrid me={me} heatmap={heatmap} accent={accent} />
+          <StatsGrid me={me} heatmap={heatmap || []} accent={accent} />
 
-          <ContributionGraph heatmap={heatmap} accent={accent} />
+          <ContributionGraph heatmap={heatmap || []} accent={accent} />
 
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-3">

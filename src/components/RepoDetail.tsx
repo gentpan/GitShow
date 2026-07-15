@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
-import { api } from '@/lib/api'
-import type { PublicSettings, RepoDetailResponse } from '../../api/utils/types'
+import { getRepoDetailFn, getRepoContentsFn, getSettings } from '@/server/api'
+import type { PublicSettings, RepoDetailResponse } from '@/server/types'
 import { formatNumber, langColor, repoIcon, sortLangPct, themeMap, timeAgo } from '@/lib/utils'
 
 function formatSize(bytes: number) {
@@ -38,7 +38,7 @@ export function RepoDetailPage({ name, initialDetail, initialSettings }: RepoDet
 
     setPending(true)
     setError('')
-    Promise.all([api.getRepoDetail(name), api.getSettings()])
+    Promise.all([getRepoDetailFn({ data: { name } }), getSettings()])
       .then(([detail, st]) => {
         setData(detail)
         setSettings(st)
@@ -56,7 +56,7 @@ export function RepoDetailPage({ name, initialDetail, initialSettings }: RepoDet
   async function openDir(path: string) {
     setDirPending(true)
     try {
-      const items = await api.getRepoContents(name, path)
+      const items = await getRepoContentsFn({ data: { name, path } })
       setContents(items)
       setCurrentPath(path)
     } catch {

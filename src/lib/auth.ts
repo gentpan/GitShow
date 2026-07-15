@@ -1,3 +1,10 @@
+import {
+  passkeyRegisterStartFn,
+  passkeyRegisterFinishFn,
+  passkeyLoginStartFn,
+  passkeyLoginFinishFn,
+} from '@/server/api'
+
 const base64UrlToBuffer = (value: string) => {
   const padded = value.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(value.length / 4) * 4, '=')
   const binary = atob(padded)
@@ -67,23 +74,31 @@ const credentialToJSON = (credential: PublicKeyCredential) => {
 
 export const passkey = {
   isSupported: () => typeof window !== 'undefined' && !!window.PublicKeyCredential,
+  prepareCreationOptions,
+  prepareRequestOptions,
+  credentialToJSON,
   registerPasskey: async (note = '') => {
-    const { api } = await import('./api')
-    const start = await api.passkeyRegisterStart()
+    const start = await passkeyRegisterStartFn()
     const credential = await navigator.credentials.create({
       publicKey: prepareCreationOptions(start.options),
     })
     if (!credential) throw new Error('passkey registration cancelled')
-    return api.passkeyRegisterFinish(start.session_id, credentialToJSON(credential as PublicKeyCredential), note)
+    return passkeyRegisterFinishFn({ data: {
+      sessionId: start.session_id,
+      credential: credentialToJSON(credential as PublicKeyCredential),
+      note,
+    } })
   },
   loginWithPasskey: async () => {
-    const { api } = await import('./api')
-    const start = await api.passkeyLoginStart()
+    const start = await passkeyLoginStartFn()
     const credential = await navigator.credentials.get({
       publicKey: prepareRequestOptions(start.options),
     })
     if (!credential) throw new Error('passkey login cancelled')
-    return api.passkeyLoginFinish(start.session_id, credentialToJSON(credential as PublicKeyCredential))
+    return passkeyLoginFinishFn({ data: {
+      sessionId: start.session_id,
+      credential: credentialToJSON(credential as PublicKeyCredential),
+    } })
   },
 }
 

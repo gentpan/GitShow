@@ -51,7 +51,7 @@ export function toSimpleWebAuthnCredential(raw: unknown): WebAuthnCredential | n
 
   return {
     id: toBase64URL(idRaw as string | Uint8Array | Buffer),
-    publicKey,
+    publicKey: publicKey as Uint8Array<ArrayBuffer>,
     counter,
     transports,
   }

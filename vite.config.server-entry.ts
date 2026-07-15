@@ -3,9 +3,6 @@ import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
-  server: {
-    port: 3000,
-  },
   resolve: {
     tsconfigPaths: true,
   },
@@ -13,4 +10,11 @@ export default defineConfig({
     tanstackStart(),
     react(),
   ],
+  build: {
+    ssr: true,
+    outDir: 'dist/server',
+    rollupOptions: {
+      input: './src/entry-server.tsx',
+    },
+  },
 })

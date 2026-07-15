@@ -56,7 +56,6 @@ function sanitizeReadmeHtml(html: string | null): string | null {
   if (!html) return null
   return html
     .replace(/<script[\s\S]*?<\/script>/gi, '')
-    // GitHub permalink anchors — not needed on site mirror, cause stray link icons
     .replace(/<a\b[^>]*\bclass="[^"]*\banchor\b[^"]*"[^>]*>[\s\S]*?<\/a>/gi, '')
 }
 

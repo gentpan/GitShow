@@ -1,18 +1,26 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { api } from '@/lib/api'
+import { useCallback, useMemo, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { adminAuth, passkey } from '@/lib/auth'
 import { langColor, themeMap, timeAgo } from '@/lib/utils'
+import {
+  getRepos,
+  getHealth,
+  getAdminSettings,
+  saveSettingsFn,
+  refreshCacheFn,
+  passkeyRegisterStartFn,
+  passkeyRegisterFinishFn,
+  passkeyResetFn,
+  passkeyUpdateFn,
+  passkeyDeleteFn,
+} from '@/server/api'
 
 export const Route = createFileRoute('/admin')({ component: AdminPage })
 
 const COUNT_OPTIONS = [4, 6, 8, 10]
 
 function AdminPage() {
-  const [settings, setSettings] = useState<any>(null)
-  const [repos, setRepos] = useState<any[]>([])
-  const [health, setHealth] = useState<any>(null)
-  const [pending, setPending] = useState(true)
   const [form, setForm] = useState<any>({})
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -27,6 +35,21 @@ function AdminPage() {
   const [origPassword, setOrigPassword] = useState('')
   const [githubTokenDirty, setGithubTokenDirty] = useState(false)
   const [adminPasswordDirty, setAdminPasswordDirty] = useState(false)
+
+  const { data: settings, isPending: settingsPending, refetch: refetchSettings } = useQuery({
+    queryKey: ['adminSettings'],
+    queryFn: () => getAdminSettings(),
+  })
+  const { data: repos, isPending: reposPending } = useQuery({
+    queryKey: ['repos'],
+    queryFn: () => getRepos(),
+  })
+  const { data: health, isPending: healthPending } = useQuery({
+    queryKey: ['health'],
+    queryFn: () => getHealth(),
+  })
+
+  const pending = settingsPending || reposPending || healthPending
 
   const c = (themeMap[(form.theme as keyof typeof themeMap) || 'green'] || themeMap.green).primary
   const passkeyItems = settings?.passkey_items || []
@@ -61,24 +84,13 @@ function AdminPage() {
     setPasskeyNotes(notes)
   }, [adminPasswordDirty, form.admin_password, form.github_token, githubTokenDirty])
 
-  const load = useCallback(async () => {
+  useMemo(() => {
     adminAuth.login()
-    const [st, rs, h] = await Promise.all([
-      api.getAdminSettings(''),
-      api.getRepos(),
-      api.getHealth(),
-    ])
-    setSettings(st)
-    setRepos(rs)
-    setHealth(h)
-    applySettings(st)
-    setPending(false)
-  }, [applySettings])
-
-  useEffect(() => { load().catch(() => setPending(false)) }, [load])
+    applySettings(settings)
+  }, [settings, applySettings])
 
   const isSelected = (name: string) => (form.homepage_repos || []).includes(name)
-  const allSelected = repos.length > 0 && repos.every((r) => isSelected(r.name))
+  const allSelected = repos && repos.length > 0 && repos.every((r: any) => isSelected(r.name))
 
   const toggleRepo = (name: string) => {
     setForm((f: any) => ({
@@ -92,7 +104,7 @@ function AdminPage() {
   const toggleAll = () => {
     setForm((f: any) => ({
       ...f,
-      homepage_repos: allSelected ? [] : repos.map((r) => r.name),
+      homepage_repos: allSelected ? [] : repos?.map((r: any) => r.name),
     }))
   }
 
@@ -120,7 +132,7 @@ function AdminPage() {
     setSaved(false)
     setError('')
     try {
-      await api.saveSettings({
+      await saveSettingsFn({ data: {
         title: form.title,
         github_username: configUsername || form.github_username,
         github_url: form.github_url,
@@ -132,11 +144,11 @@ function AdminPage() {
         social_links: form.social_links,
         theme: form.theme,
         admin_password: adminPasswordDirty ? form.admin_password : origPassword,
-      }, '')
+      } })
       setGithubTokenDirty(false)
       setAdminPasswordDirty(false)
       setSaved(true)
-      await load()
+      await refetchSettings()
       setTimeout(() => setSaved(false), 3000)
     } catch {
       setError('保存失败')
@@ -148,8 +160,8 @@ function AdminPage() {
   const refresh = async () => {
     setRefreshing(true)
     try {
-      await api.refreshCache()
-      await load()
+      await refreshCacheFn()
+      await refetchSettings()
     } finally {
       setRefreshing(false)
     }
@@ -239,7 +251,7 @@ function AdminPage() {
             <button type="button" className="text-xs" style={{ color: '#16a34a' }} onClick={toggleAll}>{allSelected ? '取消全选' : '全选'}</button>
           </div>
           <div className="space-y-2 max-h-80 overflow-y-auto">
-            {repos.map((repo) => (
+            {repos?.map((repo: any) => (
               <div key={repo.id} className="repo-row flex items-center justify-between px-4 py-3 cursor-pointer" onClick={() => toggleRepo(repo.name)}>
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-2 h-2 shrink-0" style={{ backgroundColor: repo.language ? langColor(repo.language) : '#52525b' }} />
@@ -275,10 +287,19 @@ function AdminPage() {
             <button type="button" className="px-4 py-2 text-sm font-medium shrink-0 btn-save" disabled={passkeyBusy || !passkey.isSupported()} onClick={async () => {
               setPasskeyBusy(true); setPasskeyMsg(''); setPasskeyErr(false)
               try {
-                await passkey.registerPasskey(newPasskeyNote)
+                const start = await passkeyRegisterStartFn()
+                const credential = await navigator.credentials.create({
+                  publicKey: passkey.prepareCreationOptions(start.options),
+                })
+                if (!credential) throw new Error('passkey registration cancelled')
+                await passkeyRegisterFinishFn({ data: {
+                  sessionId: start.session_id,
+                  credential: passkey.credentialToJSON(credential as PublicKeyCredential),
+                  note: newPasskeyNote,
+                } })
                 setNewPasskeyNote('')
                 setPasskeyMsg('Passkey 已添加')
-                await load()
+                await refetchSettings()
               } catch { setPasskeyErr(true); setPasskeyMsg('Passkey 添加失败') }
               finally { setPasskeyBusy(false) }
             }}>
@@ -297,14 +318,14 @@ function AdminPage() {
               <div className="flex items-center gap-2 shrink-0">
                 <button type="button" className="px-3 py-2 text-xs" style={{ backgroundColor: '#111', color: '#a1a1aa', border: '1px solid rgba(255,255,255,0.1)' }} disabled={passkeyBusy} onClick={async () => {
                   setPasskeyBusy(true)
-                  try { await api.passkeyUpdate(item.id, passkeyNotes[item.id] ?? item.note ?? ''); setPasskeyMsg('Passkey 备注已保存'); await load() }
+                  try { await passkeyUpdateFn({ data: { id: item.id, note: passkeyNotes[item.id] ?? item.note ?? '' } }); setPasskeyMsg('Passkey 备注已保存'); await refetchSettings() }
                   catch { setPasskeyErr(true); setPasskeyMsg('备注保存失败') }
                   finally { setPasskeyBusy(false) }
                 }}>保存备注</button>
                 <button type="button" className="px-3 py-2 text-xs" style={{ backgroundColor: '#111', color: '#ef4444', border: '1px solid rgba(239,68,68,0.3)' }} disabled={passkeyBusy} onClick={async () => {
                   if (!confirm(`删除 Passkey「${item.note || 'Passkey'}」？`)) return
                   setPasskeyBusy(true)
-                  try { await api.passkeyDelete(item.id); setPasskeyMsg('Passkey 已删除'); await load() }
+                  try { await passkeyDeleteFn({ data: { id: item.id } }); setPasskeyMsg('Passkey 已删除'); await refetchSettings() }
                   catch { setPasskeyErr(true); setPasskeyMsg('删除失败') }
                   finally { setPasskeyBusy(false) }
                 }}>删除</button>
@@ -321,7 +342,7 @@ function AdminPage() {
               <button type="button" className="px-3 py-2 text-xs shrink-0" style={{ backgroundColor: '#111', color: '#ef4444', border: '1px solid rgba(239,68,68,0.3)' }} disabled={passkeyBusy} onClick={async () => {
                 if (!confirm('确定清除全部 Passkey？')) return
                 setPasskeyBusy(true)
-                try { await api.passkeyReset(); setPasskeyMsg('Passkey 已清除'); await load() }
+                try { await passkeyResetFn(); setPasskeyMsg('Passkey 已清除'); await refetchSettings() }
                 catch { setPasskeyErr(true); setPasskeyMsg('清除失败') }
                 finally { setPasskeyBusy(false) }
               }}>清除全部</button>
