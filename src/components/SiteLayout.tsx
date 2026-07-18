@@ -162,7 +162,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
               <GitShowLogo className="nav-brand-logo" title={brand} />
             </Link>
 
-            <nav className="nav-links hidden sm:flex" aria-label={t('nav.ariaMain')}>
+            <nav className="nav-links" aria-label={t('nav.ariaMain')}>
               {navLinks.map((link) => (
                 <Link
                   key={link.path}
@@ -177,7 +177,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
               ))}
             </nav>
 
-            <div className="hidden sm:flex items-center gap-3">
+            <div className="nav-actions">
               {langSwitch}
               <a href={contactUrl} target="_blank" rel="noreferrer" className="contact-btn">
                 <i className="fas fa-paper-plane text-xs" />
@@ -187,7 +187,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
 
             <button
               type="button"
-              className="btn-icon sm:hidden"
+              className="btn-icon nav-menu-toggle"
               aria-label={mobileOpen ? t('nav.closeMenu') : t('nav.openMenu')}
               aria-expanded={mobileOpen}
               onClick={() => setMobileOpen(!mobileOpen)}
@@ -197,7 +197,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
           </div>
 
           {mobileOpen && (
-            <div className="mobile-menu-panel sm:hidden">
+            <div className="mobile-menu-panel">
               <div className="gs-container py-3 space-y-1">
                 {navLinks.map((link) => (
                   <Link

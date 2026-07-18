@@ -554,9 +554,31 @@ a {
 }
 
 .nav-links {
-  display: flex;
+  display: none;
   align-items: center;
   gap: 28px;
+}
+
+.nav-actions {
+  display: none;
+  align-items: center;
+  gap: 12px;
+}
+
+.nav-menu-toggle {
+  display: inline-flex;
+}
+
+@media (min-width: 640px) {
+  .nav-links,
+  .nav-actions {
+    display: flex;
+  }
+
+  .nav-menu-toggle,
+  .mobile-menu-panel {
+    display: none !important;
+  }
 }
 
 .nav-link {
