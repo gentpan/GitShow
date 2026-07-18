@@ -7,6 +7,7 @@ dist-ssr
 config.json
 settings.json
 star-history.json
+data/
 .nitro
 .tanstack
 .wrangler

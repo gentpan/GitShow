@@ -14,38 +14,36 @@ export interface ProfileTagInput {
   yearsActive: number
   topLanguage?: string | null
   languageCount?: number
-  /** Current consecutive contribution days ending today/yesterday */
   streakDays?: number
-  /** Days with ≥1 contribution in the last year */
   activeDays?: number
-  /** Share of contributions that fell on Sat/Sun (0–1) */
   weekendShare?: number
 }
 
 const LANGUAGE_CATEGORIES: Record<string, { languages: string[]; icon: string }> = {
-  'Full-Stack': {
+  全栈: {
     languages: ['TypeScript', 'JavaScript', 'Python', 'Ruby', 'PHP'],
     icon: 'fas fa-layer-group',
   },
-  Systems: {
+  系统: {
     languages: ['Rust', 'Go', 'C', 'C++'],
     icon: 'fas fa-microchip',
   },
-  Mobile: {
+  移动端: {
     languages: ['Swift', 'Kotlin', 'Dart'],
     icon: 'fas fa-mobile-screen',
   },
-  'Data Science': {
+  数据: {
     languages: ['R', 'Julia'],
     icon: 'fas fa-chart-line',
   },
-  DevOps: {
+  运维: {
     languages: ['Shell', 'Dockerfile', 'HCL'],
     icon: 'fas fa-server',
   },
 }
 
-const MAX_TAGS = 8
+/** Keep homepage badges tight and professional. */
+const MAX_TAGS = 4
 
 function languageCategory(language: string): ProfileTag | null {
   for (const [label, meta] of Object.entries(LANGUAGE_CATEGORIES)) {
@@ -60,102 +58,39 @@ function pushUnique(tags: ProfileTag[], tag: ProfileTag) {
   if (!tags.some((t) => t.label === tag.label)) tags.push(tag)
 }
 
-/** Profile tags with icons — checkmygit rules + extended activity/stack badges. */
+/** Professional profile tags (max 4). */
 export function generateProfileTags(input: ProfileTagInput): ProfileTag[] {
   const tags: ProfileTag[] = []
 
-  // Stars
-  if (input.totalStars > 5000) {
-    pushUnique(tags, { label: 'Star Magnet', icon: 'fas fa-sun' })
-  } else if (input.totalStars > 1000) {
-    pushUnique(tags, { label: 'Popular Creator', icon: 'fas fa-fire' })
+  if (input.totalStars > 1000) {
+    pushUnique(tags, { label: '高星作者', icon: 'fas fa-fire' })
   } else if (input.totalStars > 100) {
-    pushUnique(tags, { label: 'Rising Star', icon: 'fas fa-star' })
+    pushUnique(tags, { label: '新锐项目', icon: 'fas fa-star' })
   }
 
-  // Repos
-  if (input.totalRepos > 100) {
-    pushUnique(tags, { label: 'Repo Factory', icon: 'fas fa-warehouse' })
-  } else if (input.totalRepos > 50) {
-    pushUnique(tags, { label: 'Prolific', icon: 'fas fa-code' })
-  } else if (input.totalRepos > 20) {
-    pushUnique(tags, { label: 'Builder', icon: 'fas fa-hammer' })
-  }
-
-  // Forks received
-  if ((input.totalForks || 0) > 200) {
-    pushUnique(tags, { label: 'Forked Often', icon: 'fas fa-code-branch' })
-  } else if ((input.totalForks || 0) > 50) {
-    pushUnique(tags, { label: 'Reusable', icon: 'fas fa-recycle' })
-  }
-
-  // Followers
-  if (input.followers > 1000) {
-    pushUnique(tags, { label: 'Influencer', icon: 'fas fa-bullhorn' })
-  } else if (input.followers > 100) {
-    pushUnique(tags, { label: 'Community Member', icon: 'fas fa-user-group' })
-  }
-
-  // Following / network
-  if ((input.following || 0) > 200) {
-    pushUnique(tags, { label: 'Networker', icon: 'fas fa-share-nodes' })
-  }
-
-  // Language category only (e.g. Full-Stack) — no per-language specialist badges
   if (input.topLanguage) {
     const cat = languageCategory(input.topLanguage)
     if (cat) pushUnique(tags, cat)
   }
 
-  // Polyglot / focused stack
-  if ((input.languageCount || 0) >= 6) {
-    pushUnique(tags, { label: 'Polyglot', icon: 'fas fa-globe' })
-  } else if ((input.languageCount || 0) >= 4) {
-    pushUnique(tags, { label: 'Multi-Stack', icon: 'fas fa-cubes' })
-  }
-
-  // Yearly contributions
-  if (input.totalContributions > 2000) {
-    pushUnique(tags, { label: 'Contribution Beast', icon: 'fas fa-dragon' })
-  } else if (input.totalContributions > 1000) {
-    pushUnique(tags, { label: 'Highly Active', icon: 'fas fa-bolt' })
+  if (input.totalContributions > 1000) {
+    pushUnique(tags, { label: '高活跃', icon: 'fas fa-bolt' })
   } else if (input.totalContributions > 365) {
-    pushUnique(tags, { label: 'Consistent', icon: 'fas fa-calendar-check' })
-  } else if (input.totalContributions > 100) {
-    pushUnique(tags, { label: 'Getting Started', icon: 'fas fa-seedling' })
+    pushUnique(tags, { label: '持续贡献', icon: 'fas fa-calendar-check' })
   }
 
-  // Commits
-  if ((input.totalCommits || 0) > 2000) {
-    pushUnique(tags, { label: 'Commit Machine', icon: 'fas fa-terminal' })
-  } else if ((input.totalCommits || 0) > 500) {
-    pushUnique(tags, { label: 'Ship Often', icon: 'fas fa-rocket' })
+  if (input.yearsActive > 5) {
+    pushUnique(tags, { label: '资深开发', icon: 'fas fa-medal' })
   }
 
-  // Streak
-  if ((input.streakDays || 0) >= 30) {
-    pushUnique(tags, { label: 'On Fire', icon: 'fas fa-fire-flame-curved' })
-  } else if ((input.streakDays || 0) >= 7) {
-    pushUnique(tags, { label: 'Week Streak', icon: 'fas fa-link' })
+  if ((input.languageCount || 0) >= 6) {
+    pushUnique(tags, { label: '多语言', icon: 'fas fa-globe' })
   }
 
-  // Active day coverage in last year
-  if ((input.activeDays || 0) >= 200) {
-    pushUnique(tags, { label: 'Everyday Coder', icon: 'fas fa-calendar-day' })
-  }
-
-  // Weekend warrior
-  if ((input.weekendShare || 0) >= 0.35 && input.totalContributions > 100) {
-    pushUnique(tags, { label: 'Weekend Warrior', icon: 'fas fa-mug-hot' })
-  }
-
-  // Tenure
-  if (input.yearsActive > 10) {
-    pushUnique(tags, { label: 'OG', icon: 'fas fa-landmark' })
-  } else if (input.yearsActive > 5) {
-    pushUnique(tags, { label: 'Veteran', icon: 'fas fa-medal' })
-  } else if (input.yearsActive > 0 && input.yearsActive < 1) {
-    pushUnique(tags, { label: 'Newcomer', icon: 'fas fa-baby' })
+  if (input.followers > 1000) {
+    pushUnique(tags, { label: '社区影响力', icon: 'fas fa-bullhorn' })
+  } else if (input.followers > 100) {
+    pushUnique(tags, { label: '社区成员', icon: 'fas fa-user-group' })
   }
 
   return tags.slice(0, MAX_TAGS)
@@ -168,7 +103,6 @@ export function getYearsActiveFromCreatedAt(createdAt?: string | null): number {
   return Math.max(0, (Date.now() - start) / (365.25 * 24 * 3600 * 1000))
 }
 
-/** Current streak: consecutive days with contributions ending at the latest heatmap day. */
 export function getContributionStreak(heatmap: { date?: string; count?: number }[]): number {
   if (!heatmap.length) return 0
   const days = [...heatmap]
@@ -187,7 +121,6 @@ export function getContributionStreak(heatmap: { date?: string; count?: number }
     const expected = new Date(today)
     expected.setDate(today.getDate() - streak)
     if (dayDate.getTime() !== expected.getTime()) {
-      // allow streak to start from yesterday if today is still 0
       if (streak === 0 && day.count && day.count > 0) {
         const yesterday = new Date(today)
         yesterday.setDate(today.getDate() - 1)
@@ -223,3 +156,5 @@ export function getWeekendContributionShare(
   if (!total) return 0
   return weekend / total
 }
+
+export { LANGUAGE_CATEGORIES }

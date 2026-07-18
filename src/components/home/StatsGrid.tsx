@@ -1,5 +1,5 @@
 import { Card } from '@/components/home/ui/Card'
-import { getYearsActive } from '@/lib/homeUtils'
+import { getYearsActiveFromCreatedAt } from '@/lib/profileTags'
 import { formatNumber } from '@/lib/utils'
 
 interface StatsGridProps {
@@ -8,29 +8,29 @@ interface StatsGridProps {
   accent: string
 }
 
-export function StatsGrid({ me, heatmap, accent }: StatsGridProps) {
+export function StatsGrid({ me, accent }: StatsGridProps) {
   const stats = me?.stats
-  const yearsActive = getYearsActive(heatmap)
+  const yearsActive = Math.max(1, Math.floor(getYearsActiveFromCreatedAt(me?.user?.created_at) || 1))
 
   const items = [
     {
-      label: 'Total Repos',
+      label: '公开仓库',
       value: stats?.total_repos ?? 0,
       icon: 'fas fa-folder',
     },
     {
-      label: 'Total Stars',
+      label: '获得 Star',
       value: stats?.total_stars ?? 0,
       icon: 'fas fa-star',
       accent: true,
     },
     {
-      label: 'Followers',
+      label: '关注者',
       value: me?.user?.followers ?? 0,
       icon: 'fas fa-users',
     },
     {
-      label: 'Years Active',
+      label: '活跃年限',
       value: yearsActive,
       icon: 'fas fa-calendar',
     },

@@ -1,7 +1,8 @@
 import { Link, useRouterState } from '@tanstack/react-router'
 import { useEffect, useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { getSettings, getMe, adminLogin } from '@/server/api'
+import { getSettings, getMe, adminLogin, getPageviews, recordPageview } from '@/server/api'
+import { formatNumber } from '@/lib/utils'
 import { adminAuth, passkey } from '@/lib/auth'
 import { darkenColor, themeMap } from '@/lib/utils'
 import { GitShowFooterLogo } from '@/components/GitShowFooterLogo'
@@ -34,10 +35,25 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
     queryKey: ['me'],
     queryFn: () => getMe(),
   })
+  const { data: pageviews, refetch: refetchPageviews } = useQuery({
+    queryKey: ['pageviews'],
+    queryFn: () => getPageviews(),
+    staleTime: 60_000,
+  })
 
   useEffect(() => {
     setLoggedIn(adminAuth.isLoggedIn())
   }, [pathname])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const key = 'gitshow_pv_session'
+    if (sessionStorage.getItem(key)) return
+    sessionStorage.setItem(key, '1')
+    recordPageview()
+      .then(() => refetchPageviews())
+      .catch(() => {})
+  }, [refetchPageviews])
 
   useEffect(() => {
     let lastY = window.scrollY
@@ -205,7 +221,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
                 © {new Date().getFullYear()} {brand}
               </span>
               <span>·</span>
-              <span>build with</span>
+              <span>基于</span>
               <a
                 href="https://github.com/gentpan/GitShow"
                 target="_blank"
@@ -215,6 +231,11 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
               >
                 <GitShowFooterLogo className="footer-gitshow-logo" />
               </a>
+              <span>·</span>
+              <span className="footer-pageviews" title="站点浏览量">
+                <i className="fas fa-eye" aria-hidden />
+                {formatNumber(pageviews?.total || 0)}
+              </span>
             </div>
             <div className="flex items-center gap-2">
               {(settings?.social_links || []).map((link: any, i: number) => (

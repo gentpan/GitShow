@@ -10,7 +10,11 @@ import { StatsGrid } from '@/components/home/StatsGrid'
 import { TechStack } from '@/components/home/TechStack'
 import { Card } from '@/components/home/ui/Card'
 import { getMe, getRepos, getActivity, getHeatmap, getSettings } from '@/server/api'
-import { aggregateLanguages, deriveExternalContributions } from '@/lib/homeUtils'
+import {
+  aggregateLanguages,
+  deriveExternalContributions,
+  deriveFocusAreas,
+} from '@/lib/homeUtils'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { themeMap } from '@/lib/utils'
 
@@ -29,8 +33,8 @@ function HomePage() {
     queryFn: () => getRepos(),
   })
   const { data: activity, isPending: activityPending } = useQuery({
-    queryKey: ['activity', 30],
-    queryFn: () => getActivity({ data: { limit: 30 } }),
+    queryKey: ['activity', 50],
+    queryFn: () => getActivity({ data: { limit: 50 } }),
   })
   const { data: heatmap, isPending: heatmapPending } = useQuery({
     queryKey: ['heatmap'],
@@ -60,34 +64,44 @@ function HomePage() {
     return list.slice(0, count)
   }, [allRepos, settings, sortBy])
 
-  const languages = useMemo(() => aggregateLanguages(allRepos || []), [allRepos])
+  const languages = useMemo(() => aggregateLanguages(allRepos || [], 20), [allRepos])
   const topLanguages = useMemo(() => languages.slice(0, 5), [languages])
+  const focusAreas = useMemo(() => deriveFocusAreas(languages), [languages])
 
-  // Keep selection in sync when language list loads/changes
-  const resolvedActiveLanguage = activeLanguage && topLanguages.some((l) => l.name === activeLanguage)
-    ? activeLanguage
-    : topLanguages[0]?.name || null
+  const resolvedActiveLanguage =
+    activeLanguage && topLanguages.some((l) => l.name === activeLanguage)
+      ? activeLanguage
+      : topLanguages[0]?.name || null
 
   const totalForks = useMemo(
     () => (allRepos || []).reduce((sum: number, r: any) => sum + (r.forks_count || 0), 0),
     [allRepos],
   )
 
-  const externalContribs = useMemo(() => deriveExternalContributions(activity || []), [activity])
+  const selfUsername = me?.user?.login || settings?.github_username || ''
+  const externalContribs = useMemo(
+    () => deriveExternalContributions(activity || [], selfUsername),
+    [activity, selfUsername],
+  )
   const totalPRs = useMemo(
-    () => (activity || []).filter((a: any) => a.type === 'PullRequestEvent').length,
-    [activity],
+    () =>
+      externalContribs.reduce((sum, c) => sum + c.prCount, 0),
+    [externalContribs],
   )
   const totalCommits = useMemo(
-    () => (activity || []).filter((a: any) => a.type === 'PushEvent').length,
-    [activity],
+    () => externalContribs.reduce((sum, c) => sum + c.commitCount, 0),
+    [externalContribs],
   )
 
   if (pending) {
     return <LoadingSpinner className="home-page" />
   }
 
-  const displayName = me?.user?.name || me?.user?.login || settings?.github_username || 'Developer'
+  const displayName = me?.user?.name || me?.user?.login || settings?.github_username || '开发者'
+  const bioHint = me?.user?.bio?.trim()
+  const welcomeLine = bioHint
+    ? bioHint
+    : '开源贡献、技术栈与精选项目，记录持续构建的过程。'
 
   return (
     <div className="home-page animate-fade-in">
@@ -105,31 +119,27 @@ function HomePage() {
         <div className="home-lattice-main">
           <section className="home-lattice-block">
             <Card padding="none" className="home-welcome-card overflow-hidden">
-              <h1 className="gs-h3 mb-2">Welcome to {displayName}&apos;s Hub</h1>
+              <h1 className="gs-h3 mb-2">{displayName} 的开发者主页</h1>
               <p className="gs-body-sm" style={{ color: 'var(--home-text-secondary)', maxWidth: 560 }}>
-                Open source contributions, tech stack, and notable projects.
+                {welcomeLine}
               </p>
             </Card>
           </section>
 
           <section className="home-lattice-block space-y-3">
-            <h2 className="gs-h4 px-1">Overview</h2>
+            <h2 className="gs-h4 px-1">概览</h2>
             <StatsGrid me={me} heatmap={heatmap || []} accent={accent} />
           </section>
 
           <section className="home-lattice-block space-y-3">
-            <h2 className="gs-h4 px-1">Contributions</h2>
+            <h2 className="gs-h4 px-1">贡献</h2>
             <ContributionGraph heatmap={heatmap || []} />
           </section>
 
           <section className="home-lattice-block space-y-3">
-            <h2 className="gs-h4 px-1">Tech Stack & Languages</h2>
+            <h2 className="gs-h4 px-1">技术栈与语言</h2>
             <div className="grid md:grid-cols-2 gap-4">
-              <TechStack
-                languages={topLanguages}
-                activeLanguage={resolvedActiveLanguage}
-                onActiveLanguageChange={setActiveLanguage}
-              />
+              <TechStack focusAreas={focusAreas} />
               <LanguageChart
                 languages={topLanguages}
                 activeLanguage={resolvedActiveLanguage}
@@ -152,21 +162,21 @@ function HomePage() {
           {repos.length > 0 && (
             <section className="home-lattice-block space-y-4">
               <div className="flex items-center justify-between gap-4 flex-wrap">
-                <h2 className="gs-h4">Notable Projects</h2>
+                <h2 className="gs-h4">精选项目</h2>
                 <div className="flex items-center gap-2 text-xs">
                   <button
                     type="button"
                     className={`home-sort-btn px-4 py-2 transition-colors ${sortBy === 'stars' ? 'home-sort-active' : ''}`}
                     onClick={() => setSortBy('stars')}
                   >
-                    Most Stars
+                    按 Star
                   </button>
                   <button
                     type="button"
                     className={`home-sort-btn px-4 py-2 transition-colors ${sortBy === 'updated' ? 'home-sort-active' : ''}`}
                     onClick={() => setSortBy('updated')}
                   >
-                    Recently Updated
+                    最近更新
                   </button>
                 </div>
               </div>

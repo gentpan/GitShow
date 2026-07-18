@@ -192,6 +192,16 @@ export const getSettings = createServerFn({ method: 'GET' }).handler(
   }
 )
 
+export const getPageviews = createServerFn({ method: 'GET' }).handler(async () => {
+  const { getPageviews: readPageviews } = await import('./pageviews')
+  return { total: readPageviews() }
+})
+
+export const recordPageview = createServerFn({ method: 'POST' }).handler(async () => {
+  const { incrementPageviews } = await import('./pageviews')
+  return { total: incrementPageviews() }
+})
+
 export const adminLogin = createServerFn({ method: 'POST' })
   .validator((d: { password: string }) => d)
   .handler(async ({ data }) => {
