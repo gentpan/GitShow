@@ -123,7 +123,13 @@ export function passkeyInfos(st: Settings): PasskeyInfo[] {
 }
 
 export function hasPasskeys(st: Settings): boolean {
-  return (st.passkeys?.length || 0) > 0 || (st.passkey_credentials?.length || 0) > 0
+  for (const pk of st.passkeys || []) {
+    if (toSimpleWebAuthnCredential(pk.credential)) return true
+  }
+  for (const legacy of st.passkey_credentials || []) {
+    if (toSimpleWebAuthnCredential(legacy)) return true
+  }
+  return false
 }
 
 export function validateAdminPassword(password: string): boolean {
