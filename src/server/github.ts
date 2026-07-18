@@ -1,7 +1,18 @@
 import { getToken } from './config'
 import type { GitHubEvent, GitHubRepo, GitHubUser, HeatmapDay } from './types'
 
+let apiCallCount = 0
+
+export function resetApiCallCount() {
+  apiCallCount = 0
+}
+
+export function getApiCallCount() {
+  return apiCallCount
+}
+
 async function githubRequest(method: string, url: string, body?: unknown): Promise<unknown> {
+  apiCallCount += 1
   const token = getToken()
   const headers: Record<string, string> = {
     Accept: 'application/vnd.github.v3+json',
@@ -27,7 +38,7 @@ export async function getUser(username: string): Promise<GitHubUser> {
   return githubRequest('GET', `https://api.github.com/users/${username}`) as Promise<GitHubUser>
 }
 
-async function getUserRepos(username: string): Promise<GitHubRepo[]> {
+export async function getUserRepos(username: string): Promise<GitHubRepo[]> {
   const url = `https://api.github.com/users/${username}/repos?sort=updated&per_page=100&type=owner`
   const repos = (await githubRequest('GET', url)) as GitHubRepo[]
   return repos.filter((r) => !r.private)
@@ -144,7 +155,14 @@ export async function getContributions(username: string): Promise<{ days: Heatma
   return { days, totalCommits: cc.totalCommitContributions }
 }
 
-export async function enrichRepos(repos: GitHubRepo[], defaultOwner: string): Promise<void> {
+export async function enrichRepos(
+  repos: GitHubRepo[],
+  defaultOwner: string,
+  options?: { releaseRepoNames?: string[] },
+): Promise<void> {
+  // latest release is only shown on project cards; skip for unselected repos
+  // to avoid burning quota on /releases/latest 404s.
+  const releaseSet = new Set(options?.releaseRepoNames || [])
   await Promise.all(
     repos.map(async (repo, idx) => {
       let owner = defaultOwner
@@ -154,9 +172,13 @@ export async function enrichRepos(repos: GitHubRepo[], defaultOwner: string): Pr
         owner = o
         repoName = n
       }
+      const wantRelease =
+        releaseSet.has(repo.name) ||
+        releaseSet.has(repo.full_name) ||
+        releaseSet.has(`${owner}/${repoName}`)
       const [langs, tag] = await Promise.all([
         getRepoLanguages(owner, repoName).catch(() => ({} as Record<string, number>)),
-        getLatestRelease(owner, repoName).catch(() => ''),
+        wantRelease ? getLatestRelease(owner, repoName).catch(() => '') : Promise.resolve(''),
       ])
       const total = Object.values(langs).reduce((a, b) => a + b, 0)
       const pct: Record<string, number> = {}

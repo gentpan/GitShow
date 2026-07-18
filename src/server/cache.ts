@@ -1,15 +1,26 @@
 import { readFileSync, writeFileSync, existsSync } from 'node:fs'
-import { loadConfig, getUsername } from './config'
+import { loadConfig, loadSettings, getUsername } from './config'
 import {
   getUser,
   getRepos,
+  getUserRepos,
   getAllEvents,
+  getEvents,
   getContributions,
   getUserFollowing,
   enrichRepos,
   buildHeatmapFromEvents,
+  resetApiCallCount,
+  getApiCallCount,
 } from './github'
 import type { CacheData, FollowingCache, StarHistoryPoint } from './types'
+
+/** Full GitHub sync interval. Portfolio data does not need sub-hour freshness. */
+export const CACHE_TTL_MS = 60 * 60 * 1000
+
+const FOLLOWING_SYNC_LIMIT = 20
+const FOLLOWING_EVENT_PAGES = 1
+const FOLLOWING_REPO_LIMIT = 5
 
 let cache: CacheData = {
   user: null,
@@ -65,7 +76,9 @@ export async function refreshCache(): Promise<void> {
   refreshPromise = (async () => {
     console.log('[cache] refreshing...')
     const start = Date.now()
+    resetApiCallCount()
     const cfg = loadConfig()
+    const settings = loadSettings()
     const username = getUsername()
     const next: CacheData = {
       user: null,
@@ -85,7 +98,10 @@ export async function refreshCache(): Promise<void> {
     next.repos = repos
     next.totalStars = repos.reduce((s, r) => s + r.stargazers_count, 0)
     next.totalRepos = repos.length
-    await enrichRepos(repos, username)
+    // Languages for all repos (tech stack); releases only for selected project cards.
+    await enrichRepos(repos, username, {
+      releaseRepoNames: settings.homepage_repos || [],
+    })
 
     const events = await getAllEvents(username).catch(() => [])
     next.events = events
@@ -103,22 +119,27 @@ export async function refreshCache(): Promise<void> {
 
     let followingNames = cfg.following?.length ? cfg.following : []
     if (!followingNames.length) {
-      followingNames = await getUserFollowing(username, 20).catch(() => [])
+      followingNames = await getUserFollowing(username, FOLLOWING_SYNC_LIMIT).catch(() => [])
+    } else {
+      followingNames = followingNames.slice(0, FOLLOWING_SYNC_LIMIT)
     }
     next.followingNames = followingNames
 
     await Promise.all(
       followingNames.map(async (name) => {
         try {
+          // Light sync: avoid getRepos() which also re-fetches the authed user's org repos.
           const [user, fe, fr] = await Promise.all([
             getUser(name),
-            getAllEvents(name).catch(() => []),
-            getRepos(name).catch(() => []),
+            getEvents(name, FOLLOWING_EVENT_PAGES).catch(() => []),
+            getUserRepos(name)
+              .then((list) => list.slice(0, FOLLOWING_REPO_LIMIT))
+              .catch(() => []),
           ])
           next.following[name] = {
             user,
             events: fe,
-            repos: fr.slice(0, 5),
+            repos: fr,
           }
         } catch (err) {
           console.error(`[cache] following ${name}:`, err)
@@ -130,7 +151,9 @@ export async function refreshCache(): Promise<void> {
     cache = next
     lastRefresh = Date.now()
     recordStarHistory(next.totalStars)
-    console.log(`[cache] refreshed in ${Date.now() - start}ms`)
+    console.log(
+      `[cache] refreshed in ${Date.now() - start}ms · github_calls=${getApiCallCount()} · repos=${next.totalRepos} · following=${followingNames.length}`,
+    )
   })().finally(() => {
     refreshPromise = null
   })
@@ -145,7 +168,7 @@ export async function getCacheWithRefresh(): Promise<CacheData> {
     return cache
   }
   // Stale cache: serve current data and refresh in the background.
-  if (Date.now() - lastRefresh > 30 * 60 * 1000) {
+  if (Date.now() - lastRefresh > CACHE_TTL_MS) {
     refreshCache().catch(console.error)
   }
   return cache
@@ -153,7 +176,7 @@ export async function getCacheWithRefresh(): Promise<CacheData> {
 
 export function startRefreshLoop() {
   refreshCache().catch(console.error)
-  setInterval(() => refreshCache().catch(console.error), 30 * 60 * 1000)
+  setInterval(() => refreshCache().catch(console.error), CACHE_TTL_MS)
 }
 
 export type { FollowingCache }
