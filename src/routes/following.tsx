@@ -3,11 +3,13 @@ import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getFollowing } from '@/server/api'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
+import { useI18n } from '@/lib/i18n'
 import { langColor, timeAgo } from '@/lib/utils'
 
 export const Route = createFileRoute('/following')({ component: FollowingPage })
 
 function FollowingPage() {
+  const { t, locale } = useI18n()
   const { data: following, isPending: pending } = useQuery({
     queryKey: ['following'],
     queryFn: () => getFollowing(),
@@ -29,8 +31,8 @@ function FollowingPage() {
     return (
       <div className="page-header">
         <div>
-          <h1 className="page-title">关注的人</h1>
-          <p className="page-subtitle">暂无关注数据</p>
+          <h1 className="page-title">{t('following.title')}</h1>
+          <p className="page-subtitle">{t('following.empty')}</p>
         </div>
       </div>
     )
@@ -40,8 +42,8 @@ function FollowingPage() {
     <div className="space-y-8">
       <div className="page-header">
         <div>
-          <h1 className="page-title">关注的人</h1>
-          <p className="page-subtitle">追踪关注对象的活跃与项目</p>
+          <h1 className="page-title">{t('following.title')}</h1>
+          <p className="page-subtitle">{t('following.subtitle')}</p>
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -68,13 +70,15 @@ function FollowingPage() {
             </div>
 
             <div className="mt-3 text-xs" style={{ color: 'var(--gs-text-secondary)' }}>
-              {user.last_active ? `最近活跃: ${timeAgo(user.last_active)}` : '近期无活动'}
+              {user.last_active
+                ? t('following.lastActive', { time: timeAgo(user.last_active, locale) })
+                : t('following.noActivity')}
             </div>
 
             {user.recent_repos?.length > 0 && (
               <div className="mt-4">
                 <div className="text-xs font-medium mb-2" style={{ color: 'var(--gs-text-secondary)' }}>
-                  最近仓库
+                  {t('following.recentRepos')}
                 </div>
                 <div className="space-y-1.5">
                   {user.recent_repos.slice(0, 3).map((repo: any) => (
@@ -117,7 +121,7 @@ function FollowingPage() {
             {user.recent_events?.length > 0 && (
               <div className="mt-4">
                 <div className="text-xs font-medium mb-2" style={{ color: 'var(--gs-text-secondary)' }}>
-                  最近提交
+                  {t('following.recentCommits')}
                 </div>
                 <div className="space-y-2">
                   {user.recent_events.slice(0, 2).map((evt: any) => (
@@ -126,7 +130,7 @@ function FollowingPage() {
                         {evt.message || `pushed to ${evt.repo}`}
                       </div>
                       <div className="mt-0.5" style={{ color: 'var(--gs-text-secondary)' }}>
-                        {evt.repo} · {timeAgo(evt.created_at)}
+                        {evt.repo} · {timeAgo(evt.created_at, locale)}
                       </div>
                     </div>
                   ))}

@@ -1,5 +1,6 @@
 import { Badge } from '@/components/home/ui/Badge'
 import type { ExternalContrib } from '@/lib/homeUtils'
+import { useI18n } from '@/lib/i18n'
 import { formatNumber } from '@/lib/utils'
 
 interface ExternalContributionsProps {
@@ -15,15 +16,16 @@ export function ExternalContributions({
   totalCommits,
   accent,
 }: ExternalContributionsProps) {
+  const { t } = useI18n()
   if (!contributions.length) return null
 
   return (
     <section className="space-y-4">
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h2 className="gs-h4">近期参与</h2>
+          <h2 className="gs-h4">{t('external.title')}</h2>
           <p className="gs-caption mt-1" style={{ color: 'var(--home-text-tertiary)' }}>
-            最近动态中对他人仓库的贡献
+            {t('external.subtitle')}
           </p>
         </div>
         <div className="flex items-center gap-3 text-xs text-[var(--home-text-secondary)]">
@@ -31,13 +33,13 @@ export function ExternalContributions({
             <span className="font-semibold" style={{ color: accent }}>
               {formatNumber(totalPRs)}
             </span>{' '}
-            PR
+            {t('external.prs')}
           </span>
           <span>
             <span className="font-semibold" style={{ color: accent }}>
               {formatNumber(totalCommits)}
             </span>{' '}
-            提交
+            {t('external.commits')}
           </span>
         </div>
       </div>
@@ -59,20 +61,20 @@ export function ExternalContributions({
             </div>
 
             <p className="text-xs text-[var(--home-text-secondary)] mb-3">
-              参与 @{contrib.owner}
+              {t('external.to', { owner: contrib.owner })}
             </p>
 
             <div className="flex items-center gap-3 text-xs text-[var(--home-text-tertiary)]">
               {contrib.prCount > 0 && (
                 <span className="flex items-center gap-1">
                   <i className="fas fa-code-pull-request" />
-                  {contrib.prCount} PR
+                  {contrib.prCount} {t('external.prs')}
                 </span>
               )}
               {contrib.commitCount > 0 && (
                 <span className="flex items-center gap-1">
                   <i className="fas fa-code-commit" />
-                  {contrib.commitCount} 提交
+                  {contrib.commitCount} {t('external.commits')}
                 </span>
               )}
             </div>

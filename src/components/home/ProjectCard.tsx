@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { Badge } from '@/components/home/ui/Badge'
+import { useI18n } from '@/lib/i18n'
 import { formatNumber, langColor, timeAgo } from '@/lib/utils'
 
 interface ProjectCardProps {
@@ -8,6 +9,7 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ repo, accent }: ProjectCardProps) {
+  const { t, locale } = useI18n()
   const lang = repo.language
 
   return (
@@ -34,7 +36,7 @@ export function ProjectCard({ repo, accent }: ProjectCardProps) {
         </div>
 
         <p className="text-sm text-[var(--home-text-secondary)] line-clamp-2 min-h-[40px] mb-3">
-          {repo.description || 'No description available for this repository.'}
+          {repo.description || t('project.noDescription')}
         </p>
 
         <div className="flex items-center justify-between gap-3 text-xs text-[var(--home-text-tertiary)]">
@@ -57,7 +59,7 @@ export function ProjectCard({ repo, accent }: ProjectCardProps) {
               {formatNumber(repo.forks_count)}
             </span>
           </div>
-          {repo.updated_at && <span>{timeAgo(repo.updated_at)}</span>}
+          {repo.updated_at && <span>{timeAgo(repo.updated_at, locale)}</span>}
         </div>
       </div>
     </Link>

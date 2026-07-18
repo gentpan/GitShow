@@ -12,11 +12,13 @@ import { Card } from '@/components/home/ui/Card'
 import { getMe, getRepos, getActivity, getHeatmap, getSettings } from '@/server/api'
 import { aggregateLanguages, deriveExternalContributions } from '@/lib/homeUtils'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
+import { useI18n } from '@/lib/i18n'
 import { themeMap } from '@/lib/utils'
 
 export const Route = createFileRoute('/')({ component: HomePage })
 
 function HomePage() {
+  const { t } = useI18n()
   const [sortBy, setSortBy] = useState<'stars' | 'updated'>('stars')
 
   const { data: me, isPending: mePending } = useQuery({
@@ -86,11 +88,10 @@ function HomePage() {
     return <LoadingSpinner className="home-page" />
   }
 
-  const displayName = me?.user?.name || me?.user?.login || settings?.github_username || '开发者'
+  const displayName =
+    me?.user?.name || me?.user?.login || settings?.github_username || t('home.fallbackName')
   const bioHint = me?.user?.bio?.trim()
-  const welcomeLine = bioHint
-    ? bioHint
-    : '开源贡献、技术栈与精选项目，记录持续构建的过程。'
+  const welcomeLine = bioHint || t('home.welcomeFallback')
 
   return (
     <div className="home-page animate-fade-in">
@@ -108,7 +109,7 @@ function HomePage() {
         <div className="home-lattice-main">
           <section className="home-lattice-block">
             <Card padding="none" className="home-welcome-card overflow-hidden">
-              <h1 className="gs-h3 mb-2">{displayName} 的开发者主页</h1>
+              <h1 className="gs-h3 mb-2">{t('home.welcomeTitle', { name: displayName })}</h1>
               <p className="gs-body-sm" style={{ color: 'var(--home-text-secondary)', maxWidth: 560 }}>
                 {welcomeLine}
               </p>
@@ -116,17 +117,17 @@ function HomePage() {
           </section>
 
           <section className="home-lattice-block space-y-3">
-            <h2 className="gs-h4 px-1">概览</h2>
+            <h2 className="gs-h4 px-1">{t('home.overview')}</h2>
             <StatsGrid me={me} heatmap={heatmap || []} accent={accent} />
           </section>
 
           <section className="home-lattice-block space-y-3">
-            <h2 className="gs-h4 px-1">贡献</h2>
+            <h2 className="gs-h4 px-1">{t('home.contributions')}</h2>
             <ContributionGraph heatmap={heatmap || []} />
           </section>
 
           <section className="home-lattice-block space-y-3">
-            <h2 className="gs-h4 px-1">技术栈与语言</h2>
+            <h2 className="gs-h4 px-1">{t('home.techStack')}</h2>
             <div className="grid md:grid-cols-2 gap-4">
               <TechStack languages={languages} />
               <LanguageChart languages={topLanguages} />
@@ -147,21 +148,21 @@ function HomePage() {
           {repos.length > 0 && (
             <section className="home-lattice-block space-y-4">
               <div className="flex items-center justify-between gap-4 flex-wrap">
-                <h2 className="gs-h4">精选项目</h2>
+                <h2 className="gs-h4">{t('home.featured')}</h2>
                 <div className="flex items-center gap-2 text-xs">
                   <button
                     type="button"
                     className={`home-sort-btn px-4 py-2 transition-colors ${sortBy === 'stars' ? 'home-sort-active' : ''}`}
                     onClick={() => setSortBy('stars')}
                   >
-                    按 Star
+                    {t('home.sortStars')}
                   </button>
                   <button
                     type="button"
                     className={`home-sort-btn px-4 py-2 transition-colors ${sortBy === 'updated' ? 'home-sort-active' : ''}`}
                     onClick={() => setSortBy('updated')}
                   >
-                    最近更新
+                    {t('home.sortUpdated')}
                   </button>
                 </div>
               </div>

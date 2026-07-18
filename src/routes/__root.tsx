@@ -2,6 +2,7 @@ import { HeadContent, Outlet, Scripts, createRootRoute } from '@tanstack/react-r
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useState } from 'react'
 import { SiteLayout } from '@/components/SiteLayout'
+import { I18nProvider } from '@/lib/i18n'
 import { getSettings } from '@/server/api'
 import appCss from '@/styles.css?url'
 import markdownReadmeCss from '@/markdown-readme.css?url'
@@ -54,7 +55,9 @@ function RootComponent() {
       <head><HeadContent /></head>
       <body>
         <QueryClientProvider client={queryClient}>
-          <SiteLayout><Outlet /></SiteLayout>
+          <I18nProvider>
+            <SiteLayout><Outlet /></SiteLayout>
+          </I18nProvider>
         </QueryClientProvider>
         <Scripts />
       </body>

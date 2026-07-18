@@ -72,7 +72,10 @@ export function heatmapToWeeks(heatmap: { date: string; count: number }[]): Heat
   return weeks.slice(-52)
 }
 
-export function getMonthLabels(weeks: HeatmapWeek[]): { label: string; col: number }[] {
+export function getMonthLabels(
+  weeks: HeatmapWeek[],
+  locale: 'zh' | 'en' = 'en',
+): { label: string; col: number }[] {
   const months: { label: string; col: number }[] = []
   let lastMonth = -1
   weeks.forEach((week, index) => {
@@ -81,7 +84,9 @@ export function getMonthLabels(weeks: HeatmapWeek[]): { label: string; col: numb
     const month = new Date(first.date).getMonth()
     if (month !== lastMonth) {
       months.push({
-        label: new Date(first.date).toLocaleDateString('en-US', { month: 'short' }),
+        label: new Date(first.date).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
+          month: 'short',
+        }),
         col: index,
       })
       lastMonth = month

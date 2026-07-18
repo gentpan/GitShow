@@ -2,22 +2,23 @@ import { Link, useRouterState } from '@tanstack/react-router'
 import { useEffect, useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getSettings, getMe, adminLogin, getPageviews, recordPageview } from '@/server/api'
-import { formatNumber } from '@/lib/utils'
+import { formatNumber, darkenColor, themeMap } from '@/lib/utils'
 import { adminAuth, passkey } from '@/lib/auth'
-import { darkenColor, themeMap } from '@/lib/utils'
+import { useI18n, type MessageKey } from '@/lib/i18n'
 import { GitShowFooterLogo } from '@/components/GitShowFooterLogo'
 import { GitShowLogo } from '@/components/GitShowLogo'
 import { GitShowMark } from '@/components/GitShowMark'
 import { LatticeCross } from '@/components/LatticeCross'
 
-const baseNavLinks = [
-  { path: '/', label: '主页', icon: 'fas fa-house' },
-  { path: '/projects', label: '项目', icon: 'fas fa-folder' },
-  { path: '/following', label: '关注', icon: 'fas fa-user-plus' },
-  { path: '/activity', label: '看板', icon: 'fas fa-chart-bar' },
+const baseNavKeys: { path: string; key: MessageKey; icon: string }[] = [
+  { path: '/', key: 'nav.home', icon: 'fas fa-house' },
+  { path: '/projects', key: 'nav.projects', icon: 'fas fa-folder' },
+  { path: '/following', key: 'nav.following', icon: 'fas fa-user-plus' },
+  { path: '/activity', key: 'nav.activity', icon: 'fas fa-chart-bar' },
 ]
 
 export function SiteLayout({ children }: { children: React.ReactNode }) {
+  const { t, locale, setLocale } = useI18n()
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const [mobileOpen, setMobileOpen] = useState(false)
   const [navHidden, setNavHidden] = useState(false)
@@ -71,10 +72,10 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
 
   const theme = themeMap[(settings?.theme as keyof typeof themeMap) || 'green'] || themeMap.green
   const navLinks = useMemo(() => {
-    const links = [...baseNavLinks]
-    if (loggedIn) links.push({ path: '/admin', label: '管理', icon: 'fas fa-gear' })
+    const links = baseNavKeys.map((l) => ({ ...l, label: t(l.key) }))
+    if (loggedIn) links.push({ path: '/admin', key: 'nav.admin', icon: 'fas fa-gear', label: t('nav.admin') })
     return links
-  }, [loggedIn])
+  }, [loggedIn, t])
 
   const rootStyle = {
     ['--theme-primary' as string]: theme.primary,
@@ -85,7 +86,6 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
 
   const contactUrl = settings?.contact_url || me?.user?.html_url || 'https://github.com'
   const brand = settings?.title || 'GitShow'
-  /** Only show Passkey login when at least one is configured in admin. */
   const showPasskeyLogin = Boolean(settings?.has_passkey) && passkey.isSupported()
 
   async function login() {
@@ -99,7 +99,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
       setLoggedIn(true)
       window.location.href = '/admin'
     } catch {
-      setLoginError('密码错误')
+      setLoginError(t('login.errorPassword'))
     }
   }
 
@@ -114,7 +114,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
       setLoggedIn(true)
       window.location.href = '/admin'
     } catch {
-      setLoginError('Passkey 验证失败')
+      setLoginError(t('login.errorPasskey'))
     } finally {
       setPasskeyLoading(false)
     }
@@ -125,6 +125,25 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
     return pathname === path || pathname.startsWith(`${path}/`)
   }
 
+  const langSwitch = (
+    <div className="lang-switch" role="group" aria-label="Language">
+      <button
+        type="button"
+        className={`lang-switch-btn${locale === 'zh' ? ' is-active' : ''}`}
+        onClick={() => setLocale('zh')}
+      >
+        {t('nav.langZh')}
+      </button>
+      <button
+        type="button"
+        className={`lang-switch-btn${locale === 'en' ? ' is-active' : ''}`}
+        onClick={() => setLocale('en')}
+      >
+        {t('nav.langEn')}
+      </button>
+    </div>
+  )
+
   return (
     <div className="gs-shell" style={rootStyle}>
       <div className="gs-lattice">
@@ -132,7 +151,6 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
         <LatticeCross position="tr" />
         <LatticeCross position="bl" />
         <LatticeCross position="br" />
-        {/* header / content rail junctions */}
         <span className="gs-lattice-cross gs-lattice-cross-ml gs-lattice-header-mark" aria-hidden />
         <span className="gs-lattice-cross gs-lattice-cross-mr gs-lattice-header-mark" aria-hidden />
 
@@ -143,7 +161,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
               <GitShowLogo className="nav-brand-logo" title={brand} />
             </Link>
 
-            <nav className="nav-links hidden sm:flex" aria-label="主导航">
+            <nav className="nav-links hidden sm:flex" aria-label={t('nav.ariaMain')}>
               {navLinks.map((link) => (
                 <Link
                   key={link.path}
@@ -159,16 +177,17 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
             </nav>
 
             <div className="hidden sm:flex items-center gap-3">
+              {langSwitch}
               <a href={contactUrl} target="_blank" rel="noreferrer" className="contact-btn">
                 <i className="fas fa-paper-plane text-xs" />
-                {settings?.contact_label || '联系'}
+                {settings?.contact_label || t('nav.contact')}
               </a>
             </div>
 
             <button
               type="button"
               className="btn-icon sm:hidden"
-              aria-label={mobileOpen ? '关闭菜单' : '打开菜单'}
+              aria-label={mobileOpen ? t('nav.closeMenu') : t('nav.openMenu')}
               aria-expanded={mobileOpen}
               onClick={() => setMobileOpen(!mobileOpen)}
             >
@@ -190,6 +209,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
                     {link.label}
                   </Link>
                 ))}
+                <div className="py-2">{langSwitch}</div>
                 <a
                   href={contactUrl}
                   target="_blank"
@@ -198,7 +218,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
                   onClick={() => setMobileOpen(false)}
                 >
                   <i className="fas fa-paper-plane text-xs" />
-                  {settings?.contact_label || '联系'}
+                  {settings?.contact_label || t('nav.contact')}
                 </a>
               </div>
             </div>
@@ -221,7 +241,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
                 © {new Date().getFullYear()} {brand}
               </span>
               <span>·</span>
-              <span>基于</span>
+              <span>{t('footer.poweredBy')}</span>
               <a
                 href="https://github.com/gentpan/GitShow"
                 target="_blank"
@@ -232,7 +252,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
                 <GitShowFooterLogo className="footer-gitshow-logo" />
               </a>
               <span>·</span>
-              <span className="footer-pageviews" title="站点浏览量">
+              <span className="footer-pageviews" title={t('footer.pageviews')}>
                 <i className="fas fa-eye" aria-hidden />
                 {formatNumber(pageviews?.total || 0)}
               </span>
@@ -254,7 +274,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
                 <button
                   type="button"
                   className="btn-icon footer-logout-button"
-                  title="退出登录"
+                  title={t('footer.logout')}
                   onClick={() => {
                     adminAuth.logout()
                     setLoggedIn(false)
@@ -267,7 +287,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
                 <div className="relative">
                   {showLogin && (
                     <div className="footer-login-popover absolute bottom-full right-0 mb-2 w-64 p-4 space-y-3">
-                      <div className="gs-caption">登录管理</div>
+                      <div className="gs-caption">{t('login.title')}</div>
                       {loginError && (
                         <div className="gs-caption" style={{ color: 'var(--gs-error)' }}>
                           {loginError}
@@ -281,7 +301,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
                           onClick={loginPasskey}
                         >
                           <i className="fas fa-fingerprint" />
-                          {passkeyLoading ? '验证中...' : '使用 Passkey'}
+                          {passkeyLoading ? t('login.verifying') : t('login.passkey')}
                         </button>
                       )}
                       <input
@@ -291,15 +311,17 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
                         onKeyDown={(e) => e.key === 'Enter' && login()}
                         className="input-field w-full px-4 py-2 text-sm"
                         placeholder={
-                          settings?.has_admin_password ? '输入管理密码' : '无需密码，回车进入'
+                          settings?.has_admin_password
+                            ? t('login.passwordPlaceholder')
+                            : t('login.noPasswordPlaceholder')
                         }
                       />
                       <div className="flex items-center gap-2">
                         <button type="button" className="btn-primary flex-1" onClick={login}>
-                          登录
+                          {t('login.submit')}
                         </button>
                         <button type="button" className="btn-ghost" onClick={() => setShowLogin(false)}>
-                          取消
+                          {t('login.cancel')}
                         </button>
                       </div>
                     </div>
@@ -307,7 +329,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
                   <button
                     type="button"
                     className="btn-icon footer-icon-link"
-                    title="登录"
+                    title={t('login.open')}
                     onClick={() => setShowLogin(!showLogin)}
                   >
                     <i className="fas fa-lock" />

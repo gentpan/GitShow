@@ -1,5 +1,7 @@
+import type { MessageKey } from '@/lib/i18n'
+
 export interface ProfileTag {
-  label: string
+  key: MessageKey
   icon: string
 }
 
@@ -19,53 +21,36 @@ export interface ProfileTagInput {
   weekendShare?: number
 }
 
-const LANGUAGE_CATEGORIES: Record<string, { languages: string[]; icon: string }> = {
-  全栈: {
-    languages: ['TypeScript', 'JavaScript', 'Python', 'Ruby', 'PHP'],
-    icon: 'fas fa-layer-group',
-  },
-  系统: {
-    languages: ['Rust', 'Go', 'C', 'C++'],
-    icon: 'fas fa-microchip',
-  },
-  移动端: {
-    languages: ['Swift', 'Kotlin', 'Dart'],
-    icon: 'fas fa-mobile-screen',
-  },
-  数据: {
-    languages: ['R', 'Julia'],
-    icon: 'fas fa-chart-line',
-  },
-  运维: {
-    languages: ['Shell', 'Dockerfile', 'HCL'],
-    icon: 'fas fa-server',
-  },
-}
+const LANGUAGE_CATEGORIES: { key: MessageKey; languages: string[]; icon: string }[] = [
+  { key: 'tag.fullstack', languages: ['TypeScript', 'JavaScript', 'Python', 'Ruby', 'PHP'], icon: 'fas fa-layer-group' },
+  { key: 'tag.systems', languages: ['Rust', 'Go', 'C', 'C++'], icon: 'fas fa-microchip' },
+  { key: 'tag.mobile', languages: ['Swift', 'Kotlin', 'Dart'], icon: 'fas fa-mobile-screen' },
+  { key: 'tag.data', languages: ['R', 'Julia'], icon: 'fas fa-chart-line' },
+  { key: 'tag.ops', languages: ['Shell', 'Dockerfile', 'HCL'], icon: 'fas fa-server' },
+]
 
-/** Keep homepage badges tight and professional. */
 const MAX_TAGS = 4
 
 function languageCategory(language: string): ProfileTag | null {
-  for (const [label, meta] of Object.entries(LANGUAGE_CATEGORIES)) {
-    if (meta.languages.includes(language)) {
-      return { label, icon: meta.icon }
+  for (const cat of LANGUAGE_CATEGORIES) {
+    if (cat.languages.includes(language)) {
+      return { key: cat.key, icon: cat.icon }
     }
   }
   return null
 }
 
 function pushUnique(tags: ProfileTag[], tag: ProfileTag) {
-  if (!tags.some((t) => t.label === tag.label)) tags.push(tag)
+  if (!tags.some((t) => t.key === tag.key)) tags.push(tag)
 }
 
-/** Professional profile tags (max 4). */
 export function generateProfileTags(input: ProfileTagInput): ProfileTag[] {
   const tags: ProfileTag[] = []
 
   if (input.totalStars > 1000) {
-    pushUnique(tags, { label: '高星作者', icon: 'fas fa-fire' })
+    pushUnique(tags, { key: 'tag.starAuthor', icon: 'fas fa-fire' })
   } else if (input.totalStars > 100) {
-    pushUnique(tags, { label: '新锐项目', icon: 'fas fa-star' })
+    pushUnique(tags, { key: 'tag.rising', icon: 'fas fa-star' })
   }
 
   if (input.topLanguage) {
@@ -74,23 +59,23 @@ export function generateProfileTags(input: ProfileTagInput): ProfileTag[] {
   }
 
   if (input.totalContributions > 1000) {
-    pushUnique(tags, { label: '高活跃', icon: 'fas fa-bolt' })
+    pushUnique(tags, { key: 'tag.active', icon: 'fas fa-bolt' })
   } else if (input.totalContributions > 365) {
-    pushUnique(tags, { label: '持续贡献', icon: 'fas fa-calendar-check' })
+    pushUnique(tags, { key: 'tag.consistent', icon: 'fas fa-calendar-check' })
   }
 
   if (input.yearsActive > 5) {
-    pushUnique(tags, { label: '资深开发', icon: 'fas fa-medal' })
+    pushUnique(tags, { key: 'tag.senior', icon: 'fas fa-medal' })
   }
 
   if ((input.languageCount || 0) >= 6) {
-    pushUnique(tags, { label: '多语言', icon: 'fas fa-globe' })
+    pushUnique(tags, { key: 'tag.polyglot', icon: 'fas fa-globe' })
   }
 
   if (input.followers > 1000) {
-    pushUnique(tags, { label: '社区影响力', icon: 'fas fa-bullhorn' })
+    pushUnique(tags, { key: 'tag.influencer', icon: 'fas fa-bullhorn' })
   } else if (input.followers > 100) {
-    pushUnique(tags, { label: '社区成员', icon: 'fas fa-user-group' })
+    pushUnique(tags, { key: 'tag.community', icon: 'fas fa-user-group' })
   }
 
   return tags.slice(0, MAX_TAGS)
@@ -156,5 +141,3 @@ export function getWeekendContributionShare(
   if (!total) return 0
   return weekend / total
 }
-
-export { LANGUAGE_CATEGORIES }
