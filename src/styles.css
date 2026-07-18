@@ -35,7 +35,7 @@
   --gs-shadow-md: 0px 0px 0px 1px rgba(0, 0, 0, 0.05), 0px 25px 50px -12px rgba(0, 0, 0, 0.4);
 
   --gs-container: 1280px;
-  --gs-font: 'Geist', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --gs-font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
 
   /* Theme bridge (overridden by SiteLayout) */
   --theme-primary: var(--gs-primary);
