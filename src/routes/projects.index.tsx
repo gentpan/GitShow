@@ -24,19 +24,22 @@ function ProjectsPage() {
   const theme = themeMap[(settings?.theme as keyof typeof themeMap) || 'green'] || themeMap.green
   const c = theme.primary
 
-  const filteredRepos = useMemo(() => {
-    const selected: string[] = settings?.homepage_repos || []
-    if (!selected.length) return []
-    return selected
-      .map((name) => repos.find((r: any) => r.name === name || r.full_name === name))
-      .filter(Boolean)
-  }, [repos, settings])
+  // Projects page always lists every public repo; admin toggles only control homepage.
+  const allRepos = useMemo(
+    () =>
+      [...repos].sort(
+        (a: any, b: any) =>
+          (b.stargazers_count || 0) - (a.stargazers_count || 0) ||
+          +new Date(b.updated_at || 0) - +new Date(a.updated_at || 0),
+      ),
+    [repos],
+  )
 
   if (pending) {
     return <LoadingSpinner />
   }
 
-  if (!filteredRepos.length) {
+  if (!allRepos.length) {
     return (
       <div className="page-header">
         <div>
@@ -54,10 +57,10 @@ function ProjectsPage() {
           <h1 className="page-title">{t('projects.title')}</h1>
           <p className="page-subtitle">{t('projects.subtitle')}</p>
         </div>
-        <span className="gs-tag">{t('projects.count', { n: filteredRepos.length })}</span>
+        <span className="gs-tag">{t('projects.count', { n: allRepos.length })}</span>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {filteredRepos.map((repo: any) => (
+        {allRepos.map((repo: any) => (
           <ProjectCard key={repo.id} repo={repo} accent={c} />
         ))}
       </div>

@@ -251,10 +251,11 @@ function AdminPage() {
         </section>
 
         <section className="gs-card p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-medium" style={{ color: '#a1a1aa' }}>项目管理</h2>
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-sm font-medium" style={{ color: '#a1a1aa' }}>首页精选项目</h2>
             <button type="button" className="text-xs" style={{ color: 'var(--theme-primary)' }} onClick={toggleAll}>{allSelected ? '取消全选' : '全选'}</button>
           </div>
+          <p className="text-xs mb-4" style={{ color: '#52525b' }}>仅控制首页展示；「项目」页面默认显示全部仓库。</p>
           <div className="space-y-2 max-h-80 overflow-y-auto">
             {repos?.map((repo: any) => (
               <div key={repo.id} className="repo-row flex items-center justify-between px-4 py-3 cursor-pointer" onClick={() => toggleRepo(repo.name)}>

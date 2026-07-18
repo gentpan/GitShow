@@ -50,9 +50,10 @@ function HomePage() {
   const repos = useMemo(() => {
     const count = settings?.homepage_repo_count || 6
     const selected: string[] = settings?.homepage_repos || []
-    let list = selected.length
-      ? selected.map((name: string) => allRepos?.find((x: any) => x.name === name)).filter(Boolean)
-      : [...(allRepos || [])]
+    // Admin toggles only affect homepage featured list (not /projects).
+    let list = selected
+      .map((name: string) => allRepos?.find((x: any) => x.name === name || x.full_name === name))
+      .filter(Boolean)
     if (sortBy === 'stars') {
       list = [...list].sort((a: any, b: any) => b.stargazers_count - a.stargazers_count)
     } else {
