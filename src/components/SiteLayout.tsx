@@ -122,7 +122,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
         <header className={`nav-shell ${navHidden && !mobileOpen ? 'nav-shell-hidden' : ''}`}>
           <div className="gs-container nav-bar">
             <Link to="/" className="nav-brand" activeProps={{ className: 'nav-brand' }} aria-label={brand}>
-              <GitShowLogo className="nav-brand-logo" />
+              <GitShowLogo className="nav-brand-logo" title={brand} />
             </Link>
 
             <nav className="nav-links hidden sm:flex" aria-label="主导航">
