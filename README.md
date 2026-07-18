@@ -51,7 +51,7 @@
 | [TypeScript](https://www.typescriptlang.org) | 7.0 | 类型安全 | Type Safety |
 | [Bun](https://bun.sh) | 1.3 | 运行时与构建工具 | Runtime & Bundler |
 | [Vite](https://vitejs.dev) | 8.1 | 构建工具 | Build Tool |
-| [Tailwind CSS](https://tailwindcss.com) | 3.4 | 样式框架 | Styling |
+| [Tailwind CSS](https://tailwindcss.com) | 4.3 | 样式框架（`@tailwindcss/vite`） | Styling (`@tailwindcss/vite`) |
 | [TanStack Router](https://tanstack.com/router) | 1.170 | 文件系统路由 | File-based Routing |
 | [TanStack Query](https://tanstack.com/query) | 5.0 | 服务端状态管理 | Server State Management |
 | [WebAuthn](https://www.w3.org/TR/webauthn/) | 13.1 | Passkey 无密码认证 | Passwordless Authentication |
