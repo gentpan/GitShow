@@ -37,9 +37,16 @@ let cache: CacheData = {
 
 let refreshPromise: Promise<void> | null = null
 let lastRefresh = 0
+let loopStarted = false
 
 export function getCache(): CacheData {
   return cache
+}
+
+function ensureRefreshLoop() {
+  if (loopStarted) return
+  loopStarted = true
+  setInterval(() => refreshCache().catch(console.error), CACHE_TTL_MS)
 }
 
 function recordStarHistory(totalStars: number) {
@@ -162,6 +169,7 @@ export async function refreshCache(): Promise<void> {
 }
 
 export async function getCacheWithRefresh(): Promise<CacheData> {
+  ensureRefreshLoop()
   // First load (or failed previous load): wait until cache is populated.
   if (!cache.lastUpdated) {
     await refreshCache()
@@ -175,8 +183,8 @@ export async function getCacheWithRefresh(): Promise<CacheData> {
 }
 
 export function startRefreshLoop() {
+  ensureRefreshLoop()
   refreshCache().catch(console.error)
-  setInterval(() => refreshCache().catch(console.error), CACHE_TTL_MS)
 }
 
 export type { FollowingCache }

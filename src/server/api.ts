@@ -4,7 +4,10 @@ import {
   getCacheWithRefresh,
   getStarHistory,
   refreshCache,
+  startRefreshLoop,
 } from './cache'
+
+export { startRefreshLoop }
 import {
   loadSettings,
   saveSettings,
