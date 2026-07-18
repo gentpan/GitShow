@@ -528,11 +528,12 @@ a {
 
 .nav-brand-prefix {
   color: #ffffff;
+  font-weight: 600;
 }
 
 .nav-brand-suffix {
   color: #8b949e;
-  font-weight: 500;
+  font-weight: 400;
 }
 
 .nav-links {
