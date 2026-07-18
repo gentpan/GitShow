@@ -517,29 +517,10 @@ a {
   line-height: 0;
 }
 
-.nav-brand-lockup {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  color: inherit;
-}
-
-.nav-brand-mark-icon {
-  display: block;
-  width: 28px;
-  height: 28px;
-  flex-shrink: 0;
-}
-
-.nav-brand-word {
-  font-size: 20px;
-  font-weight: 600;
-  line-height: 28px;
-  letter-spacing: -0.02em;
-}
-
 .nav-brand-logo {
-  display: inline-flex;
+  display: block;
+  height: 22px;
+  width: auto;
 }
 
 .nav-links {
