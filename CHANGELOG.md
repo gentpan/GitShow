@@ -1,28 +1,28 @@
 # Changelog
 
-## 2.0.0 - 2026-07-10
+## 1.3.0 - 2026-07-18
 
 ### Changed
 
-- **重大架构迁移**：Go + Nuxt Vue → TanStack Start + React 19 + TypeScript 7.0 + Bun 全栈
-- 后端目录由 `server/` 重命名为 `api/`，前端站点仍在项目根目录 `src/`
-- 前端重写为 React 组件与 TanStack Router 文件路由
-- Docker 镜像改为 `oven/bun`，构建产物为 Nitro `.output/`
+- 全栈架构：TanStack Start + React 19 + TypeScript + Bun + Tailwind CSS 4
+- 默认主题青绿；首页与导航视觉改版（品牌字体、像素猫 favicon、格子布局）
+- GitHub 数据缓存改为 1 小时同步；削减 releases / following 冗余 API 调用
+- `/projects` 默认展示全部公开仓库；后台开关仅控制首页精选
+- 正文改用系统字体；Font Awesome 切换至 bluecdn 7.3.0
 
 ### Added
 
-- TanStack Start 全栈架构，类型安全的 React 路由
-- Bun 构建与运行支持
-- TypeScript 7.0
+- 中英文界面切换
+- 个人资料徽章、技术栈与语言环形图
+- 页脚站点浏览量（每次刷新 +1）
+- 头像本地缓存（`data/avatars`，7 天刷新）
+- 管理后台：标题、GitHub、Passkey、首页精选项目
 
-### Removed
+### Fixed
 
-- Go 后端（`main.go`）
-- Nuxt 3 前端
-
-### Note
-
-- Passkey 凭证格式变更（`@simplewebauthn/server`），旧版 Go WebAuthn 凭证需重新注册
+- 服务端缓存刷新不再泄漏到浏览器（`readFileSync` 报错）
+- 桌面端误显示移动端菜单按钮
+- 启动时可靠预热缓存并启动定时同步
 
 ## 1.2.0 - 2026-05-02
 
