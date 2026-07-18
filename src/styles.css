@@ -513,23 +513,14 @@ a {
 .nav-brand {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  color: var(--gs-text);
-  font-size: 20px;
-  font-weight: 600;
-  line-height: 28px;
+  color: #ffffff;
+  line-height: 0;
 }
 
-.nav-brand-mark {
-  width: 28px;
-  height: 28px;
-  border-radius: var(--gs-radius);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--theme-primary);
-  color: #ffffff;
-  font-size: 14px;
+.nav-brand-logo {
+  display: block;
+  height: 22px;
+  width: auto;
 }
 
 .nav-links {
