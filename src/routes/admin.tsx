@@ -173,18 +173,18 @@ function AdminPage() {
 
   return (
     <div className="space-y-6 pb-20">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold mb-0" style={{ color: '#fafafa' }}>管理设置</h1>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <span className="text-sm" style={{ color: '#a1a1aa' }}>最后刷新</span>
-            <span className="text-sm" style={{ color: '#52525b' }}>
+      <div className="flex items-center justify-between gap-4">
+        <h1 className="text-2xl font-bold mb-0 shrink-0" style={{ color: '#fafafa' }}>管理设置</h1>
+        <div className="flex items-center gap-3 shrink-0">
+          <span className="text-sm whitespace-nowrap" style={{ color: '#a1a1aa' }}>
+            最后刷新{' '}
+            <span style={{ color: '#52525b' }}>
               {health?.last_updated ? timeAgo(health.last_updated) : '—'}
             </span>
-          </div>
+          </span>
           <button
             type="button"
-            className="px-4 py-2 text-sm"
+            className="px-4 py-2 text-sm whitespace-nowrap"
             style={{ backgroundColor: '#111', color: '#a1a1aa', border: '1px solid rgba(255,255,255,0.1)' }}
             disabled={refreshing}
             onClick={refresh}
