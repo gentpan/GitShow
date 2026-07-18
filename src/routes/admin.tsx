@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { adminAuth, passkey } from '@/lib/auth'
+import { passkey } from '@/lib/auth'
 import { langColor, themeMap, timeAgo } from '@/lib/utils'
 import {
   getRepos,
@@ -84,8 +84,7 @@ function AdminPage() {
     setPasskeyNotes(notes)
   }, [adminPasswordDirty, form.admin_password, form.github_token, githubTokenDirty])
 
-  useMemo(() => {
-    adminAuth.login()
+  useEffect(() => {
     applySettings(settings)
   }, [settings, applySettings])
 
@@ -245,7 +244,7 @@ function AdminPage() {
         <section className="gs-card p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-medium" style={{ color: '#a1a1aa' }}>社交链接 (Icon 按钮)</h2>
-            <button type="button" className="text-xs flex items-center gap-1" style={{ color: '#16a34a' }} onClick={addSocialLink}><i className="fas fa-plus" /> 添加</button>
+            <button type="button" className="text-xs flex items-center gap-1" style={{ color: 'var(--theme-primary)' }} onClick={addSocialLink}><i className="fas fa-plus" /> 添加</button>
           </div>
           <div className="space-y-3">
             {(form.social_links || []).map((link: any, i: number) => (
@@ -265,7 +264,7 @@ function AdminPage() {
         <section className="gs-card p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-medium" style={{ color: '#a1a1aa' }}>项目管理</h2>
-            <button type="button" className="text-xs" style={{ color: '#16a34a' }} onClick={toggleAll}>{allSelected ? '取消全选' : '全选'}</button>
+            <button type="button" className="text-xs" style={{ color: 'var(--theme-primary)' }} onClick={toggleAll}>{allSelected ? '取消全选' : '全选'}</button>
           </div>
           <div className="space-y-2 max-h-80 overflow-y-auto">
             {repos?.map((repo: any) => (
@@ -365,12 +364,12 @@ function AdminPage() {
               }}>清除全部</button>
             )}
           </div>
-          {passkeyMsg && <div className="mt-3 text-xs" style={{ color: passkeyErr ? '#ef4444' : '#16a34a' }}>{passkeyMsg}</div>}
+          {passkeyMsg && <div className="mt-3 text-xs" style={{ color: passkeyErr ? 'var(--gs-error)' : 'var(--theme-primary)' }}>{passkeyMsg}</div>}
         </section>
 
         <div className="flex items-center gap-4">
           <button type="button" className="btn-save px-8 h-12 text-base font-semibold" disabled={saving} onClick={save}>{saving ? '保存中...' : '保存设置'}</button>
-          {saved && <span className="text-sm" style={{ color: '#16a34a' }}>✓ 已保存</span>}
+          {saved && <span className="text-sm" style={{ color: 'var(--theme-primary)' }}>✓ 已保存</span>}
           {error && <span className="text-sm" style={{ color: '#ef4444' }}>{error}</span>}
         </div>
       </div>

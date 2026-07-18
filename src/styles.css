@@ -113,14 +113,6 @@ a {
 }
 
 /* ── Typography ── */
-.gs-display {
-  font-size: 60px;
-  line-height: 60px;
-  font-weight: 600;
-  letter-spacing: 0;
-  color: var(--gs-text);
-}
-
 .gs-h3 {
   font-size: 36px;
   line-height: 40px;
@@ -133,12 +125,6 @@ a {
   line-height: 28px;
   font-weight: 500;
   color: var(--gs-text);
-}
-
-.gs-body {
-  font-size: 18px;
-  line-height: 28px;
-  font-weight: 400;
 }
 
 .gs-body-sm {
@@ -155,11 +141,6 @@ a {
 }
 
 @media (max-width: 639px) {
-  .gs-display {
-    font-size: 36px;
-    line-height: 40px;
-  }
-
   .gs-h3 {
     font-size: 28px;
     line-height: 32px;
@@ -343,9 +324,7 @@ a {
 }
 
 /* ── Tags / badges ── */
-.gs-tag,
-.home-badge,
-.tag-green {
+.gs-tag {
   display: inline-flex;
   align-items: center;
   height: 32px;
@@ -359,12 +338,25 @@ a {
   box-shadow: var(--gs-shadow-sm);
 }
 
+.home-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: var(--gs-radius-pill);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
 .tag-green {
+  display: inline-flex;
+  align-items: center;
   background: rgba(var(--theme-primary-rgb), 0.12);
   color: var(--theme-primary);
-  box-shadow: none;
   border: 1px solid rgba(var(--theme-primary-rgb), 0.35);
-  height: auto;
+  border-radius: var(--gs-radius-pill);
   padding: 2px 10px;
   font-size: 12px;
   font-weight: 500;
@@ -373,25 +365,23 @@ a {
 .home-badge-default {
   background: rgba(255, 255, 255, 0.06);
   color: var(--gs-text-secondary);
-  box-shadow: none;
-  border: 1px solid var(--gs-border);
+  border-color: var(--gs-border);
 }
 
 .home-badge-outline {
   background: transparent;
   color: var(--gs-text-secondary);
-  box-shadow: none;
-  border: 1px solid var(--gs-border);
+  border-color: var(--gs-border);
 }
 
 .home-badge-solid {
   background: var(--theme-primary);
   color: #ffffff;
+  border-color: var(--theme-primary);
 }
 
 /* ── Inputs ── */
-.input-field,
-.input-field-muted {
+.input-field {
   background: var(--gs-bg-input);
   color: var(--gs-text);
   border: 1px solid var(--gs-border);
@@ -402,13 +392,11 @@ a {
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.input-field::placeholder,
-.input-field-muted::placeholder {
+.input-field::placeholder {
   color: var(--gs-text-secondary);
 }
 
-.input-field:focus,
-.input-field-muted:focus {
+.input-field:focus {
   border-color: var(--gs-interactive);
   box-shadow: 0 0 0 2px rgba(36, 150, 237, 0.1);
 }
@@ -572,34 +560,6 @@ a {
   scrollbar-width: none;
 }
 
-.lang-bar-segment {
-  position: relative;
-}
-
-.lang-bar-segment::after {
-  content: attr(data-lang);
-  position: absolute;
-  bottom: calc(100% + 6px);
-  left: 50%;
-  transform: translateX(-50%) scale(0.95);
-  padding: 4px 8px;
-  background: #000;
-  border: 1px solid var(--gs-border);
-  border-radius: var(--gs-radius-sm);
-  color: #fafafa;
-  font-size: 11px;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.15s, transform 0.15s;
-  z-index: 10;
-}
-
-.lang-bar-segment:hover::after {
-  opacity: 1;
-  transform: translateX(-50%) scale(1);
-}
-
 .active-filter {
   background-color: rgba(var(--theme-primary-rgb), 0.15);
   color: var(--theme-primary);
@@ -696,16 +656,22 @@ a {
   --home-accent: var(--theme-primary);
 }
 
-.home-rounded {
-  border-radius: var(--gs-radius-lg);
-}
-
 .home-rounded-sm {
   border-radius: var(--gs-radius-sm);
 }
 
 .home-rounded-full {
   border-radius: var(--gs-radius-pill);
+}
+
+.following-repo-row {
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: var(--gs-radius);
+  transition: background-color 0.15s ease;
+}
+
+.following-repo-row:hover {
+  background: rgba(0, 0, 0, 0.55);
 }
 
 .home-social-icon {
@@ -786,29 +752,6 @@ a {
 
 .animate-fade-in {
   animation: homeFadeIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes gsRise {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.gs-rise {
-  animation: gsRise 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-.gs-rise-delay-1 {
-  animation-delay: 0.08s;
-}
-
-.gs-rise-delay-2 {
-  animation-delay: 0.16s;
 }
 
 @media (max-width: 1023px) {

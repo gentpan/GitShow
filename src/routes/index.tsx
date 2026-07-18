@@ -27,7 +27,7 @@ function HomePage() {
     queryFn: () => getRepos(),
   })
   const { data: activity, isPending: activityPending } = useQuery({
-    queryKey: ['activity'],
+    queryKey: ['activity', 30],
     queryFn: () => getActivity({ data: { limit: 30 } }),
   })
   const { data: heatmap, isPending: heatmapPending } = useQuery({
@@ -105,7 +105,7 @@ function HomePage() {
 
           <section className="space-y-3">
             <h2 className="gs-h4 px-1">Contributions</h2>
-            <ContributionGraph heatmap={heatmap || []} accent={accent} />
+            <ContributionGraph heatmap={heatmap || []} accent={accent} accentRgb={theme.rgb} />
           </section>
 
           <section className="space-y-3">

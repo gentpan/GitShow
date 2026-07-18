@@ -6,11 +6,12 @@ import { formatNumber } from '@/lib/utils'
 interface ContributionGraphProps {
   heatmap: { date: string; count: number }[]
   accent: string
+  accentRgb?: string
 }
 
 const DAY_LABELS = ['', 'Mon', '', 'Wed', '', 'Fri', '']
 
-export function ContributionGraph({ heatmap, accent }: ContributionGraphProps) {
+export function ContributionGraph({ heatmap, accent, accentRgb = '20, 71, 230' }: ContributionGraphProps) {
   const weeks = useMemo(() => heatmapToWeeks(heatmap), [heatmap])
   const monthLabels = useMemo(() => getMonthLabels(weeks), [weeks])
   const total = useMemo(() => getTotalContributions(heatmap), [heatmap])
@@ -66,8 +67,10 @@ export function ContributionGraph({ heatmap, accent }: ContributionGraphProps) {
                     <div
                       key={di}
                       className="home-contrib-cell home-rounded-sm w-full aspect-square min-h-[11px]"
-                      style={{ backgroundColor: contributionColor(day.count) }}
+                      style={{ backgroundColor: contributionColor(day.count, accentRgb) }}
                       title={`${day.date}: ${day.count} contributions`}
+                      role="img"
+                      aria-label={`${day.date}: ${day.count} contributions`}
                     />
                   ))}
                 </div>
@@ -85,7 +88,7 @@ export function ContributionGraph({ heatmap, accent }: ContributionGraphProps) {
             <div
               key={level}
               className="home-contrib-cell home-rounded-sm w-3 h-3"
-              style={{ backgroundColor: contributionColor(level) }}
+              style={{ backgroundColor: contributionColor(level, accentRgb) }}
             />
           ))}
           <span>More</span>
