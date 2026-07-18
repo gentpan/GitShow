@@ -49,9 +49,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (typeof window === 'undefined') return
-    const key = 'gitshow_pv_session'
-    if (sessionStorage.getItem(key)) return
-    sessionStorage.setItem(key, '1')
+    // Count every full page load / refresh (not unique visitors).
     recordPageview()
       .then(() => refetchPageviews())
       .catch(() => {})
