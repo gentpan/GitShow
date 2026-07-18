@@ -14,4 +14,4 @@ COPY config.json.example ./config.json
 COPY settings.json.example ./settings.json
 ENV PORT=3000
 EXPOSE 3000
-CMD ["bun", "run", "dist/server/server.js"]
+CMD ["bun", "run", "start"]
