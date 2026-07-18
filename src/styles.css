@@ -954,12 +954,16 @@ a {
 
 /* ── Language donut + list interaction ── */
 .lang-donut-seg {
-  cursor: pointer;
-  opacity: 0.38;
+  cursor: default;
+  opacity: 1;
   transition:
     opacity 220ms ease,
     stroke-width 220ms ease,
     filter 220ms ease;
+}
+
+.lang-donut-seg.is-dimmed {
+  opacity: 0.35;
 }
 
 .lang-donut-seg.is-active {
@@ -997,15 +1001,11 @@ a {
   background: transparent;
   color: inherit;
   text-align: left;
-  cursor: pointer;
+  cursor: default;
   transition:
     background 180ms ease,
     border-color 180ms ease,
     color 180ms ease;
-}
-
-.lang-list-item:hover {
-  background: rgba(255, 255, 255, 0.04);
 }
 
 .lang-list-item.is-active {

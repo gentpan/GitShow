@@ -1,33 +1,16 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Card } from '@/components/home/ui/Card'
 import { formatBytes } from '@/lib/homeUtils'
 import type { LanguageStat } from '@/lib/homeUtils'
 
 interface LanguageChartProps {
   languages: LanguageStat[]
-  activeLanguage?: string | null
-  onActiveLanguageChange?: (name: string) => void
 }
 
-export function LanguageChart({
-  languages,
-  activeLanguage,
-  onActiveLanguageChange,
-}: LanguageChartProps) {
+export function LanguageChart({ languages }: LanguageChartProps) {
   const topLanguages = languages.slice(0, 5)
   const total = topLanguages.reduce((sum, lang) => sum + lang.size, 0)
-
-  const [internalActive, setInternalActive] = useState(topLanguages[0]?.name || '')
-  const active = activeLanguage ?? internalActive
-
-  useEffect(() => {
-    if (!topLanguages.length) return
-    if (!topLanguages.some((l) => l.name === active)) {
-      const next = topLanguages[0].name
-      setInternalActive(next)
-      onActiveLanguageChange?.(next)
-    }
-  }, [topLanguages, active, onActiveLanguageChange])
+  const [hovered, setHovered] = useState<string | null>(null)
 
   const size = 140
   const baseStroke = 18
@@ -43,18 +26,17 @@ export function LanguageChart({
     return segment
   })
 
-  const activeSeg = segments.find((s) => s.lang.name === active) || segments[0]
-
-  const selectLanguage = (name: string) => {
-    setInternalActive(name)
-    onActiveLanguageChange?.(name)
-  }
+  const activeSeg = hovered ? segments.find((s) => s.lang.name === hovered) : null
 
   return (
     <Card padding="lg" className="h-full">
       {topLanguages.length > 0 ? (
         <div className="flex flex-col sm:flex-row items-center gap-6">
-          <div className="lang-donut relative shrink-0" style={{ width: size, height: size }}>
+          <div
+            className="lang-donut relative shrink-0"
+            style={{ width: size, height: size }}
+            onMouseLeave={() => setHovered(null)}
+          >
             <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
               <circle
                 cx={size / 2}
@@ -68,11 +50,12 @@ export function LanguageChart({
                 const dash = (segment.percentage / 100) * circumference
                 const gap = circumference - dash
                 const offset = (segment.offset / 100) * circumference
-                const isActive = segment.lang.name === active
+                const isActive = hovered === segment.lang.name
+                const dimmed = hovered != null && !isActive
                 return (
                   <circle
                     key={segment.lang.name}
-                    className={`lang-donut-seg${isActive ? ' is-active' : ''}`}
+                    className={`lang-donut-seg${isActive ? ' is-active' : ''}${dimmed ? ' is-dimmed' : ''}`}
                     cx={size / 2}
                     cy={size / 2}
                     r={radius}
@@ -85,31 +68,45 @@ export function LanguageChart({
                     style={{
                       filter: isActive ? `drop-shadow(0 0 8px ${segment.lang.color}99)` : undefined,
                     }}
-                    onClick={() => selectLanguage(segment.lang.name)}
+                    onMouseEnter={() => setHovered(segment.lang.name)}
                   />
                 )
               })}
             </svg>
             <div className="lang-donut-center absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
-              <span className="lang-donut-pct tabular-nums" style={{ color: activeSeg?.lang.color }}>
-                {Math.round(activeSeg?.percentage || 0)}%
-              </span>
-              <span className="lang-donut-name truncate max-w-[72px]">{activeSeg?.lang.name}</span>
+              {activeSeg ? (
+                <>
+                  <span className="lang-donut-pct tabular-nums" style={{ color: activeSeg.lang.color }}>
+                    {Math.round(activeSeg.percentage)}%
+                  </span>
+                  <span className="lang-donut-name truncate max-w-[72px]">{activeSeg.lang.name}</span>
+                </>
+              ) : (
+                <>
+                  <span className="lang-donut-pct tabular-nums" style={{ color: 'var(--home-text-primary)' }}>
+                    {topLanguages.length}
+                  </span>
+                  <span className="lang-donut-name">langs</span>
+                </>
+              )}
             </div>
           </div>
 
-          <div className="flex-1 w-full space-y-1" role="listbox" aria-label="语言占比">
+          <div
+            className="flex-1 w-full space-y-1"
+            role="list"
+            aria-label="语言占比"
+            onMouseLeave={() => setHovered(null)}
+          >
             {topLanguages.map((lang) => {
               const pct = total ? Math.round((lang.size / total) * 100) : lang.percentage
-              const isActive = lang.name === active
+              const isActive = hovered === lang.name
               return (
-                <button
+                <div
                   key={lang.name}
-                  type="button"
-                  role="option"
-                  aria-selected={isActive}
+                  role="listitem"
                   className={`lang-list-item${isActive ? ' is-active' : ''}`}
-                  onClick={() => selectLanguage(lang.name)}
+                  onMouseEnter={() => setHovered(lang.name)}
                 >
                   <div className="flex items-center gap-2 min-w-0">
                     <span
@@ -119,7 +116,7 @@ export function LanguageChart({
                     <span className="lang-list-name truncate">{lang.name}</span>
                   </div>
                   <span className="lang-list-pct tabular-nums shrink-0">{pct}%</span>
-                </button>
+                </div>
               )
             })}
           </div>
