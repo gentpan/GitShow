@@ -11,6 +11,7 @@ import { TechStack } from '@/components/home/TechStack'
 import { Card } from '@/components/home/ui/Card'
 import { getMe, getRepos, getActivity, getHeatmap, getSettings } from '@/server/api'
 import { aggregateLanguages, deriveExternalContributions } from '@/lib/homeUtils'
+import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { themeMap } from '@/lib/utils'
 
 export const Route = createFileRoute('/')({ component: HomePage })
@@ -71,14 +72,7 @@ function HomePage() {
   )
 
   if (pending) {
-    return (
-      <div className="home-page flex items-center justify-center py-20">
-        <div
-          className="loading-spinner w-8 h-8 border-2 animate-spin"
-          style={{ borderColor: accent, borderTopColor: 'transparent' }}
-        />
-      </div>
-    )
+    return <LoadingSpinner className="home-page" />
   }
 
   const displayName = me?.user?.name || me?.user?.login || settings?.github_username || 'Developer'

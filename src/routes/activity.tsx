@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getActivity, getSettings } from '@/server/api'
+import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { themeMap, timeAgo } from '@/lib/utils'
 
 const eventTypes = [
@@ -45,7 +46,7 @@ function ActivityPage() {
   const filtered = useMemo(() => selectedType === 'all' ? (feed || []) : (feed || []).filter((i: any) => i.type === selectedType), [feed, selectedType])
 
   if (pending) {
-    return <div className="flex items-center justify-center py-20"><div className="loading-spinner w-8 h-8 border-2 animate-spin" style={{ borderColor: c, borderTopColor: 'transparent' }} /></div>
+    return <LoadingSpinner />
   }
 
   return (

@@ -631,10 +631,6 @@ a {
 }
 
 /* ── Shared utilities ── */
-.loading-spinner {
-  border-radius: var(--gs-radius-pill);
-}
-
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }

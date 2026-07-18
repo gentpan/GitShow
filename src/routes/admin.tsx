@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { passkey } from '@/lib/auth'
+import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { langColor, themeMap, timeAgo } from '@/lib/utils'
 import {
   getRepos,
@@ -167,11 +168,7 @@ function AdminPage() {
   }
 
   if (pending) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div className="loading-spinner w-8 h-8 border-2 animate-spin" style={{ borderColor: c, borderTopColor: 'transparent' }} />
-      </div>
-    )
+    return <LoadingSpinner />
   }
 
   return (

@@ -1,23 +1,18 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { getFollowing, getSettings } from '@/server/api'
-import { langColor, themeMap, timeAgo } from '@/lib/utils'
+import { getFollowing } from '@/server/api'
+import { LoadingSpinner } from '@/components/LoadingSpinner'
+import { langColor, timeAgo } from '@/lib/utils'
 
 export const Route = createFileRoute('/following')({ component: FollowingPage })
 
 function FollowingPage() {
-  const { data: following, isPending: followingPending } = useQuery({
+  const { data: following, isPending: pending } = useQuery({
     queryKey: ['following'],
     queryFn: () => getFollowing(),
   })
-  const { data: settings, isPending: settingsPending } = useQuery({
-    queryKey: ['settings'],
-    queryFn: () => getSettings(),
-  })
 
-  const pending = followingPending || settingsPending
-  const c = (themeMap[(settings?.theme as keyof typeof themeMap) || 'green'] || themeMap.green).primary
   const sorted = useMemo(
     () =>
       [...(following || [])].sort(
@@ -27,14 +22,7 @@ function FollowingPage() {
   )
 
   if (pending) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div
-          className="loading-spinner w-8 h-8 border-2 animate-spin"
-          style={{ borderColor: c, borderTopColor: 'transparent' }}
-        />
-      </div>
-    )
+    return <LoadingSpinner />
   }
 
   if (!sorted.length) {

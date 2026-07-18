@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { getRepoDetailFn, getRepoContentsFn, getSettings } from '@/server/api'
 import type { PublicSettings, RepoDetailResponse } from '@/server/types'
+import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { formatNumber, langColor, repoIcon, sortLangPct, themeMap, timeAgo } from '@/lib/utils'
 
 function formatSize(bytes: number) {
@@ -72,14 +73,7 @@ export function RepoDetailPage({ name, initialDetail, initialSettings }: RepoDet
   }
 
   if (pending) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div
-          className="loading-spinner w-8 h-8 border-2 animate-spin"
-          style={{ borderColor: c, borderTopColor: 'transparent' }}
-        />
-      </div>
-    )
+    return <LoadingSpinner />
   }
 
   if (error || !repo) {

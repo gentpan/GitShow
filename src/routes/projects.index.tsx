@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { ProjectCard } from '@/components/home/ProjectCard'
 import { getRepos, getSettings } from '@/server/api'
+import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { themeMap } from '@/lib/utils'
 
 export const Route = createFileRoute('/projects/')({ component: ProjectsPage })
@@ -30,14 +31,7 @@ function ProjectsPage() {
   }, [repos, settings])
 
   if (pending) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div
-          className="loading-spinner w-8 h-8 border-2 animate-spin"
-          style={{ borderColor: c, borderTopColor: 'transparent' }}
-        />
-      </div>
-    )
+    return <LoadingSpinner />
   }
 
   if (!filteredRepos.length) {
