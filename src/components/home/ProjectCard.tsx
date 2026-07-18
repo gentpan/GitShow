@@ -14,7 +14,7 @@ export function ProjectCard({ repo, accent }: ProjectCardProps) {
     <Link
       to="/projects/$name"
       params={{ name: repo.name }}
-      className="home-card home-rounded home-card-hover block p-4 h-full transition-all"
+      className="home-card home-card-hover block p-6 h-full transition-all"
     >
       <div className="flex items-start justify-between gap-2 mb-2">
         <h4 className="font-medium text-sm truncate flex items-center gap-2 min-w-0" style={{ color: accent }}>

@@ -51,7 +51,7 @@ function AdminPage() {
 
   const pending = settingsPending || reposPending || healthPending
 
-  const c = (themeMap[(form.theme as keyof typeof themeMap) || 'green'] || themeMap.green).primary
+  const c = (themeMap[(form.theme as keyof typeof themeMap) || 'blue'] || themeMap.blue).primary
   const passkeyItems = settings?.passkey_items || []
   const hasPasskey = Boolean(settings?.has_passkey || passkeyItems.length)
   const githubUsername = form.github_username || ''
@@ -76,7 +76,7 @@ function AdminPage() {
       homepage_repo_count: st.homepage_repo_count || 6,
       homepage_repos: st.homepage_repos || [],
       social_links: st.social_links || [],
-      theme: st.theme || 'green',
+      theme: st.theme || 'blue',
       admin_password: adminPasswordDirty ? form.admin_password : '',
     })
     const notes: Record<string, string> = {}
@@ -179,7 +179,7 @@ function AdminPage() {
     <div className="space-y-6 pb-20">
       <h1 className="text-2xl font-bold" style={{ color: '#fafafa' }}>管理设置</h1>
 
-      <div className="p-4 flex items-center justify-between" style={{ backgroundColor: '#111', border: '1px solid rgba(255,255,255,0.08)' }}>
+      <div className="p-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-sm" style={{ color: '#a1a1aa' }}>最后刷新</span>
           <span className="text-sm" style={{ color: '#52525b' }}>{health?.last_updated ? timeAgo(health.last_updated) : '—'}</span>
@@ -190,13 +190,30 @@ function AdminPage() {
       </div>
 
       <div className="space-y-6">
-        <section className="p-6" style={{ backgroundColor: '#111', border: '1px solid rgba(255,255,255,0.08)' }}>
-          <h2 className="text-sm font-medium mb-4" style={{ color: '#a1a1aa' }}>网站标题</h2>
+        <section className="gs-card p-6">
+          <h2 className="text-sm font-medium mb-4" style={{ color: 'var(--gs-text-secondary)' }}>网站标题</h2>
           <input value={form.title || ''} onChange={(e) => setForm({ ...form, title: e.target.value })} className="input-field w-full px-4 py-3 text-base" placeholder="GitShow" />
         </section>
 
-        <section className="p-6 space-y-4" style={{ backgroundColor: '#111', border: '1px solid rgba(255,255,255,0.08)' }}>
-          <h2 className="text-sm font-medium" style={{ color: '#a1a1aa' }}>GitHub 账号</h2>
+        <section className="gs-card p-6 space-y-3">
+          <h2 className="text-sm font-medium" style={{ color: 'var(--gs-text-secondary)' }}>主题色</h2>
+          <div className="flex flex-wrap gap-3">
+            {(Object.keys(themeMap) as Array<keyof typeof themeMap>).map((key) => (
+              <button
+                key={key}
+                type="button"
+                className={`px-4 py-2 text-sm font-medium capitalize ${form.theme === key ? 'active-count' : 'inactive-count'}`}
+                onClick={() => setForm({ ...form, theme: key })}
+                style={form.theme === key ? { backgroundColor: themeMap[key].primary, borderColor: themeMap[key].primary, color: '#fff' } : undefined}
+              >
+                {key}
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section className="gs-card p-6 space-y-4">
+          <h2 className="text-sm font-medium" style={{ color: 'var(--gs-text-secondary)' }}>GitHub 账号</h2>
           <div>
             <label className="block text-xs mb-1" style={{ color: '#52525b' }}>GitHub 地址</label>
             <input value={form.github_url || ''} onChange={(e) => setForm({ ...form, github_url: e.target.value })} onBlur={onGithubUrlBlur} className="input-field w-full px-4 py-3 text-sm" placeholder="https://github.com/gentpan" />
@@ -210,13 +227,13 @@ function AdminPage() {
           </div>
         </section>
 
-        <section className="p-6 space-y-4" style={{ backgroundColor: '#111', border: '1px solid rgba(255,255,255,0.08)' }}>
+        <section className="gs-card p-6 space-y-4">
           <h2 className="text-sm font-medium" style={{ color: '#a1a1aa' }}>右上角联系按钮</h2>
           <input value={form.contact_label || ''} onChange={(e) => setForm({ ...form, contact_label: e.target.value })} className="input-field w-full px-4 py-3 text-sm" placeholder="联系" />
           <input value={form.contact_url || ''} onChange={(e) => setForm({ ...form, contact_url: e.target.value })} className="input-field w-full px-4 py-3 text-sm" placeholder="https://github.com/your-name" />
         </section>
 
-        <section className="p-6" style={{ backgroundColor: '#111', border: '1px solid rgba(255,255,255,0.08)' }}>
+        <section className="gs-card p-6">
           <h2 className="text-sm font-medium mb-4" style={{ color: '#a1a1aa' }}>首页项目显示数量</h2>
           <div className="flex gap-3">
             {COUNT_OPTIONS.map((n) => (
@@ -225,7 +242,7 @@ function AdminPage() {
           </div>
         </section>
 
-        <section className="p-6" style={{ backgroundColor: '#111', border: '1px solid rgba(255,255,255,0.08)' }}>
+        <section className="gs-card p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-medium" style={{ color: '#a1a1aa' }}>社交链接 (Icon 按钮)</h2>
             <button type="button" className="text-xs flex items-center gap-1" style={{ color: '#16a34a' }} onClick={addSocialLink}><i className="fas fa-plus" /> 添加</button>
@@ -245,7 +262,7 @@ function AdminPage() {
           </div>
         </section>
 
-        <section className="p-6" style={{ backgroundColor: '#111', border: '1px solid rgba(255,255,255,0.08)' }}>
+        <section className="gs-card p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-medium" style={{ color: '#a1a1aa' }}>项目管理</h2>
             <button type="button" className="text-xs" style={{ color: '#16a34a' }} onClick={toggleAll}>{allSelected ? '取消全选' : '全选'}</button>
@@ -269,7 +286,7 @@ function AdminPage() {
           </div>
         </section>
 
-        <section className="p-6" style={{ backgroundColor: '#111', border: '1px solid rgba(255,255,255,0.08)' }}>
+        <section className="gs-card p-6">
           <h2 className="text-sm font-medium mb-4" style={{ color: '#a1a1aa' }}>管理密码</h2>
           <div className="flex gap-3 items-center">
             <input type="password" value={form.admin_password || ''} onChange={(e) => { setForm({ ...form, admin_password: e.target.value }); setAdminPasswordDirty(true) }} className="input-field flex-1 px-4 py-3 text-sm" placeholder={origPassword ? '已设置，留空保持不变' : '设置管理密码，留空则无需密码'} autoComplete="new-password" />
@@ -277,7 +294,7 @@ function AdminPage() {
           </div>
         </section>
 
-        <section className="p-6" style={{ backgroundColor: '#111', border: '1px solid rgba(255,255,255,0.08)' }}>
+        <section className="gs-card p-6">
           <h2 className="text-sm font-medium mb-2" style={{ color: '#a1a1aa' }}>Passkey</h2>
           <div className="text-xs mb-4" style={{ color: '#52525b' }}>
             {hasPasskey ? `已启用 ${passkeyItems.length} 个 Passkey，可用于无密码登录。` : '未设置，建议添加一个无密码登录方式。'}

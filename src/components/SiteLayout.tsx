@@ -43,7 +43,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  const theme = themeMap[(settings?.theme as keyof typeof themeMap) || 'green'] || themeMap.green
+  const theme = themeMap[(settings?.theme as keyof typeof themeMap) || 'blue'] || themeMap.blue
   const navLinks = useMemo(() => {
     const links = [...baseNavLinks]
     if (loggedIn || pathname === '/admin') links.push({ path: '/admin', label: '管理', icon: 'fas fa-gear' })
@@ -51,7 +51,6 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
   }, [loggedIn, pathname])
 
   const rootStyle = {
-    backgroundColor: '#030303',
     ['--theme-primary' as string]: theme.primary,
     ['--theme-primary-rgb' as string]: theme.rgb,
     ['--theme-primary-dark' as string]: darkenColor(theme.primary),
@@ -59,6 +58,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
   } as React.CSSProperties
 
   const contactUrl = settings?.contact_url || me?.user?.html_url || 'https://github.com'
+  const brand = settings?.title || 'GitShow'
 
   async function login() {
     try {
@@ -92,79 +92,154 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
     }
   }
 
+  function isActive(path: string) {
+    if (path === '/') return pathname === '/'
+    return pathname === path || pathname.startsWith(`${path}/`)
+  }
+
   return (
-    <div className="min-h-screen flex flex-col" style={rootStyle}>
-      <div className={`nav-shell sticky top-4 z-50 px-4 ${navHidden && !mobileOpen ? 'nav-shell-hidden' : ''}`}>
-        <div className="nav-capsule themed-nav max-w-6xl mx-auto flex items-center justify-between px-2 py-2">
-          <Link to="/" className="flex items-center gap-2 px-4 py-2" style={{ color: 'var(--theme-primary)', fontSize: 18, fontWeight: 700 }}>
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>
-            {settings?.title || 'GitShow'}
+    <div className="gs-shell" style={rootStyle}>
+      <header className={`nav-shell ${navHidden && !mobileOpen ? 'nav-shell-hidden' : ''}`}>
+        <div className="gs-container nav-bar">
+          <Link to="/" className="nav-brand">
+            <span className="nav-brand-mark" aria-hidden>
+              <i className="fas fa-code" />
+            </span>
+            <span>{brand}</span>
           </Link>
-          <div className="hidden sm:flex items-center gap-1">
+
+          <nav className="nav-links hidden sm:flex" aria-label="主导航">
             {navLinks.map((link) => (
-              <Link key={link.path} to={link.path} className={`nav-pill nav-link flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors ${pathname === link.path ? 'nav-link-active' : ''}`}>
-                <i className={`${link.icon} text-xs`} />{link.label}
+              <Link
+                key={link.path}
+                to={link.path}
+                className={`nav-link ${isActive(link.path) ? 'nav-link-active' : ''}`}
+              >
+                {link.label}
               </Link>
             ))}
+          </nav>
+
+          <div className="hidden sm:flex items-center gap-3">
+            <a href={contactUrl} target="_blank" rel="noreferrer" className="contact-btn">
+              <i className="fas fa-paper-plane text-xs" />
+              {settings?.contact_label || '联系'}
+            </a>
           </div>
-          <a href={contactUrl} target="_blank" rel="noreferrer" className="nav-pill contact-btn hidden sm:flex items-center gap-1.5 px-4 py-2 text-sm font-medium">
-            <i className="fas fa-paper-plane text-xs" />{settings?.contact_label || '联系'}
-          </a>
-          <button type="button" className="nav-pill nav-link sm:hidden flex items-center justify-center w-9 h-9" onClick={() => setMobileOpen(!mobileOpen)}>
+
+          <button
+            type="button"
+            className="btn-icon sm:hidden"
+            aria-label={mobileOpen ? '关闭菜单' : '打开菜单'}
+            onClick={() => setMobileOpen(!mobileOpen)}
+          >
             <i className={mobileOpen ? 'fas fa-xmark text-base' : 'fas fa-bars text-sm'} />
           </button>
         </div>
-      </div>
 
-      {mobileOpen && (
-        <div className="mobile-menu-panel sm:hidden px-4 pb-4 space-y-1">
-          {navLinks.map((link) => (
-            <Link key={link.path} to={link.path} className={`nav-pill nav-link flex items-center gap-2 px-4 py-2.5 text-sm font-medium ${pathname === link.path ? 'nav-link-active' : ''}`} onClick={() => setMobileOpen(false)}>
-              <i className={`${link.icon} text-xs w-4 text-center`} />{link.label}
-            </Link>
-          ))}
-          <a href={contactUrl} target="_blank" rel="noreferrer" className="nav-pill nav-link flex items-center gap-2 px-4 py-2.5 text-sm font-medium" onClick={() => setMobileOpen(false)}>
-            <i className="fas fa-paper-plane text-xs w-4 text-center" />{settings?.contact_label || '联系'}
-          </a>
-        </div>
-      )}
+        {mobileOpen && (
+          <div className="mobile-menu-panel sm:hidden">
+            <div className="gs-container py-3 space-y-1">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className={`nav-link ${isActive(link.path) ? 'nav-link-active' : ''}`}
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <i className={`${link.icon} text-xs w-4 text-center`} />
+                  {link.label}
+                </Link>
+              ))}
+              <a
+                href={contactUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="contact-btn w-full mt-2"
+                onClick={() => setMobileOpen(false)}
+              >
+                <i className="fas fa-paper-plane text-xs" />
+                {settings?.contact_label || '联系'}
+              </a>
+            </div>
+          </div>
+        )}
+      </header>
 
-      <main className="flex-1 max-w-6xl mx-auto px-4 py-8 w-full">{children}</main>
+      <main className="gs-main">
+        <div className="gs-container">{children}</div>
+      </main>
 
-      <footer style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-        <div className="max-w-6xl mx-auto px-4 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="text-sm flex flex-wrap items-center justify-center gap-1.5" style={{ color: '#52525b' }}>
-            <span>© {new Date().getFullYear()} {settings?.title || 'GitShow'}</span>
+      <footer className="gs-footer">
+        <div className="gs-container py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="gs-body-sm flex flex-wrap items-center justify-center gap-1.5" style={{ color: 'var(--gs-text-secondary)' }}>
+            <span>© {new Date().getFullYear()} {brand}</span>
+            <span>·</span>
             <span>build with</span>
-            <a href="https://github.com/gentpan/GitShow" target="_blank" rel="noreferrer" className="footer-text-link">GitShow</a>
+            <a href="https://github.com/gentpan/GitShow" target="_blank" rel="noreferrer" className="footer-text-link">
+              GitShow
+            </a>
           </div>
           <div className="flex items-center gap-2">
             {(settings?.social_links || []).map((link: any, i: number) => (
-              <a key={i} href={link.url} target="_blank" rel="noreferrer" className="footer-icon-link w-8 h-8 flex items-center justify-center text-sm"><i className={link.icon} /></a>
+              <a
+                key={i}
+                href={link.url}
+                target="_blank"
+                rel="noreferrer"
+                className="btn-icon footer-icon-link"
+                title={link.url}
+              >
+                <i className={link.icon} />
+              </a>
             ))}
             {loggedIn ? (
-              <button type="button" className="footer-logout-button w-8 h-8 flex items-center justify-center text-sm" title="退出登录" onClick={() => { adminAuth.logout(); setLoggedIn(false); if (pathname === '/admin') window.location.href = '/' }}>
+              <button
+                type="button"
+                className="btn-icon footer-logout-button"
+                title="退出登录"
+                onClick={() => {
+                  adminAuth.logout()
+                  setLoggedIn(false)
+                  if (pathname === '/admin') window.location.href = '/'
+                }}
+              >
                 <i className="fas fa-right-from-bracket" />
               </button>
             ) : (
               <div className="relative">
                 {showLogin && (
                   <div className="footer-login-popover absolute bottom-full right-0 mb-2 w-64 p-4 space-y-3">
-                    <div className="text-xs" style={{ color: '#a1a1aa' }}>登录管理</div>
-                    {loginError && <div className="text-xs" style={{ color: '#ef4444' }}>{loginError}</div>}
+                    <div className="gs-caption">登录管理</div>
+                    {loginError && <div className="gs-caption" style={{ color: 'var(--gs-error)' }}>{loginError}</div>}
                     {settings?.has_passkey && passkey.isSupported() && (
-                      <button type="button" className="w-full px-3 py-2 text-xs font-medium" style={{ backgroundColor: 'rgba(255,255,255,0.08)', color: '#fafafa', border: '1px solid rgba(255,255,255,0.12)' }} disabled={passkeyLoading} onClick={loginPasskey}>
-                        <i className="fas fa-fingerprint mr-1" />{passkeyLoading ? '验证中...' : '使用 Passkey'}
+                      <button type="button" className="btn-secondary w-full text-xs" disabled={passkeyLoading} onClick={loginPasskey}>
+                        <i className="fas fa-fingerprint" />
+                        {passkeyLoading ? '验证中...' : '使用 Passkey'}
                       </button>
                     )}
-                    <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && login()} className="input-field-muted w-full px-3 py-2 text-sm" placeholder={settings?.has_admin_password ? '输入管理密码' : '无需密码，回车进入'} />
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && login()}
+                      className="input-field w-full px-4 py-2 text-sm"
+                      placeholder={settings?.has_admin_password ? '输入管理密码' : '无需密码，回车进入'}
+                    />
                     <div className="flex items-center gap-2">
-                      <button type="button" className="flex-1 px-3 py-2 text-xs font-medium" style={{ backgroundColor: 'var(--theme-primary)', color: '#000' }} onClick={login}>登录</button>
-                      <button type="button" className="px-3 py-2 text-xs" style={{ color: '#52525b' }} onClick={() => setShowLogin(false)}>取消</button>
+                      <button type="button" className="btn-primary flex-1" onClick={login}>登录</button>
+                      <button type="button" className="btn-ghost" onClick={() => setShowLogin(false)}>取消</button>
                     </div>
                   </div>
                 )}
-                <button type="button" className="footer-icon-link w-8 h-8 flex items-center justify-center text-sm" title="登录" onClick={() => setShowLogin(!showLogin)}><i className="fas fa-lock" /></button>
+                <button
+                  type="button"
+                  className="btn-icon footer-icon-link"
+                  title="登录"
+                  onClick={() => setShowLogin(!showLogin)}
+                >
+                  <i className="fas fa-lock" />
+                </button>
               </div>
             )}
           </div>

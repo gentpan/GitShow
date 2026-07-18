@@ -16,7 +16,7 @@ function ProjectsPage() {
     )
   }, [])
 
-  const theme = themeMap[(settings?.theme as keyof typeof themeMap) || 'green'] || themeMap.green
+  const theme = themeMap[(settings?.theme as keyof typeof themeMap) || 'blue'] || themeMap.blue
   const c = theme.primary
 
   const filteredRepos = useMemo(() => {
@@ -40,23 +40,27 @@ function ProjectsPage() {
 
   if (!filteredRepos.length) {
     return (
-      <div className="text-center py-20" style={{ color: '#a1a1aa' }}>
-        后台未开启任何项目
+      <div className="gs-rise">
+        <div className="page-header">
+          <div>
+            <h1 className="page-title">所有项目</h1>
+            <p className="page-subtitle">后台未开启任何项目</p>
+          </div>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <h1 className="text-2xl font-bold" style={{ color: '#fafafa' }}>
-          所有项目
-        </h1>
-        <span className="text-sm" style={{ color: '#a1a1aa' }}>
-          {filteredRepos.length} 个仓库
-        </span>
+    <div className="gs-rise space-y-8">
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">所有项目</h1>
+          <p className="page-subtitle">精选仓库与开源作品</p>
+        </div>
+        <span className="gs-tag">{filteredRepos.length} 个仓库</span>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {filteredRepos.map((repo: any) => (
           <Link
             key={repo.id}
@@ -64,7 +68,7 @@ function ProjectsPage() {
             params={{ name: repo.name }}
             className="repo-card group block overflow-hidden"
           >
-            <div className="p-4 pb-3">
+            <div className="p-6 pb-4">
               <div className="flex items-start justify-between gap-2">
                 <h3
                   className="font-medium truncate flex items-center gap-2 min-w-0"
