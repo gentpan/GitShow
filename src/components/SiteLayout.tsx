@@ -67,6 +67,8 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
 
   const contactUrl = settings?.contact_url || me?.user?.html_url || 'https://github.com'
   const brand = settings?.title || 'GitShow'
+  /** Only show Passkey login when at least one is configured in admin. */
+  const showPasskeyLogin = Boolean(settings?.has_passkey) && passkey.isSupported()
 
   async function login() {
     try {
@@ -246,7 +248,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
                           {loginError}
                         </div>
                       )}
-                      {settings?.has_passkey && passkey.isSupported() && (
+                      {showPasskeyLogin && (
                         <button
                           type="button"
                           className="btn-secondary w-full text-xs"
