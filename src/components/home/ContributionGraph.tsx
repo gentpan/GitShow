@@ -5,13 +5,12 @@ import { formatNumber } from '@/lib/utils'
 
 interface ContributionGraphProps {
   heatmap: { date: string; count: number }[]
-  accent: string
-  accentRgb?: string
 }
 
 const DAY_LABELS = ['', 'Mon', '', 'Wed', '', 'Fri', '']
+const GITHUB_GREEN_ACCENT = '#3fb950'
 
-export function ContributionGraph({ heatmap, accent, accentRgb = '20, 71, 230' }: ContributionGraphProps) {
+export function ContributionGraph({ heatmap }: ContributionGraphProps) {
   const weeks = useMemo(() => heatmapToWeeks(heatmap), [heatmap])
   const monthLabels = useMemo(() => getMonthLabels(weeks), [weeks])
   const total = useMemo(() => getTotalContributions(heatmap), [heatmap])
@@ -29,7 +28,7 @@ export function ContributionGraph({ heatmap, accent, accentRgb = '20, 71, 230' }
   return (
     <Card padding="lg" className="home-contrib-card">
       <p className="text-sm text-[var(--home-text-secondary)] mb-4">
-        <span className="font-semibold" style={{ color: accent }}>
+        <span className="font-semibold" style={{ color: GITHUB_GREEN_ACCENT }}>
           {formatNumber(total)}
         </span>{' '}
         contributions in the last year
@@ -67,7 +66,7 @@ export function ContributionGraph({ heatmap, accent, accentRgb = '20, 71, 230' }
                     <div
                       key={di}
                       className="home-contrib-cell home-rounded-sm w-full aspect-square min-h-[11px]"
-                      style={{ backgroundColor: contributionColor(day.count, accentRgb) }}
+                      style={{ backgroundColor: contributionColor(day.count) }}
                       title={`${day.date}: ${day.count} contributions`}
                       role="img"
                       aria-label={`${day.date}: ${day.count} contributions`}
@@ -88,7 +87,7 @@ export function ContributionGraph({ heatmap, accent, accentRgb = '20, 71, 230' }
             <div
               key={level}
               className="home-contrib-cell home-rounded-sm w-3 h-3"
-              style={{ backgroundColor: contributionColor(level, accentRgb) }}
+              style={{ backgroundColor: contributionColor(level) }}
             />
           ))}
           <span>More</span>
