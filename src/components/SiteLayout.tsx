@@ -26,7 +26,8 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
   const [password, setPassword] = useState('')
   const [loginError, setLoginError] = useState('')
   const [passkeyLoading, setPasskeyLoading] = useState(false)
-  const [loggedIn, setLoggedIn] = useState(() => adminAuth.isLoggedIn())
+  // Keep SSR/client first paint aligned; sync login state after mount.
+  const [loggedIn, setLoggedIn] = useState(false)
 
   const { data: settings } = useQuery({
     queryKey: ['settings'],
