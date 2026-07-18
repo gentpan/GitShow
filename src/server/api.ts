@@ -4,7 +4,11 @@ import {
   getCacheWithRefresh,
   getStarHistory,
   refreshCache,
+  startRefreshLoop,
 } from './cache'
+
+// Warm GitHub cache as soon as server functions are loaded.
+startRefreshLoop()
 import {
   loadSettings,
   saveSettings,
