@@ -10,7 +10,7 @@
 [![TanStack](https://img.shields.io/badge/TanStack_Start-1.0-ff4154?style=flat-square)](https://tanstack.com/start)
 [![TypeScript](https://img.shields.io/badge/TypeScript-7.0-3178c6?style=flat-square&logo=typescript)](https://www.typescriptlang.org)
 [![Bun](https://img.shields.io/badge/Bun-1.3-f9e1a0?style=flat-square&logo=bun)](https://bun.sh)
-[![Tailwind](https://img.shields.io/badge/Tailwind_CSS-3.4-06b6d4?style=flat-square&logo=tailwindcss)](https://tailwindcss.com)
+[![Tailwind](https://img.shields.io/badge/Tailwind_CSS-4.3-06b6d4?style=flat-square&logo=tailwindcss)](https://tailwindcss.com)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ed?style=flat-square&logo=docker)](https://docker.com)
 
 **自托管个人 GitHub 主页 | Self-hosted Personal GitHub Portfolio**
