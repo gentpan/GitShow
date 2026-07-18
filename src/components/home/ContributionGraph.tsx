@@ -27,13 +27,12 @@ export function ContributionGraph({ heatmap, accent }: ContributionGraphProps) {
 
   return (
     <Card padding="lg" className="home-contrib-card">
-      <div className="flex items-center justify-between gap-4 mb-4 flex-wrap">
-        <h3 className="text-sm font-medium text-[var(--home-text-primary)]">Contributions</h3>
-        <p className="text-sm text-[var(--home-text-secondary)]">
-          <span className="font-semibold" style={{ color: accent }}>{formatNumber(total)}</span>
-          {' '}in the last year
-        </p>
-      </div>
+      <p className="text-sm text-[var(--home-text-secondary)] mb-4">
+        <span className="font-semibold" style={{ color: accent }}>
+          {formatNumber(total)}
+        </span>{' '}
+        contributions in the last year
+      </p>
 
       <div className="overflow-x-auto scrollbar-hide">
         <div className="min-w-[680px]">
@@ -42,7 +41,9 @@ export function ContributionGraph({ heatmap, accent }: ContributionGraphProps) {
               <div key={i} className="flex-1 relative min-w-0">
                 {monthLabels.map((month) =>
                   month.col === i ? (
-                    <span key={`${month.label}-${i}`} className="absolute left-0">{month.label}</span>
+                    <span key={`${month.label}-${i}`} className="absolute left-0">
+                      {month.label}
+                    </span>
                   ) : null,
                 )}
               </div>
@@ -52,7 +53,9 @@ export function ContributionGraph({ heatmap, accent }: ContributionGraphProps) {
           <div className="flex gap-[3px]">
             <div className="flex flex-col gap-[3px] text-[10px] text-[var(--home-text-tertiary)] pr-1 shrink-0">
               {DAY_LABELS.map((label, i) => (
-                <div key={i} className="h-[11px] leading-[11px]">{label}</div>
+                <div key={i} className="h-[11px] leading-[11px]">
+                  {label}
+                </div>
               ))}
             </div>
 
@@ -78,9 +81,9 @@ export function ContributionGraph({ heatmap, accent }: ContributionGraphProps) {
         <span>Last 52 weeks of activity</span>
         <div className="flex items-center gap-1.5">
           <span>Less</span>
-          {[0, 2, 5, 10, 15].map((level, i) => (
+          {[0, 2, 5, 10, 15].map((level) => (
             <div
-              key={i}
+              key={level}
               className="home-contrib-cell home-rounded-sm w-3 h-3"
               style={{ backgroundColor: contributionColor(level) }}
             />

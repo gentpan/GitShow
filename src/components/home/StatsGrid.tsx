@@ -1,5 +1,5 @@
 import { Card } from '@/components/home/ui/Card'
-import { getTotalContributions, getYearsActive } from '@/lib/homeUtils'
+import { getYearsActive } from '@/lib/homeUtils'
 import { formatNumber } from '@/lib/utils'
 
 interface StatsGridProps {
@@ -10,7 +10,6 @@ interface StatsGridProps {
 
 export function StatsGrid({ me, heatmap, accent }: StatsGridProps) {
   const stats = me?.stats
-  const totalContributions = getTotalContributions(heatmap)
   const yearsActive = getYearsActive(heatmap)
 
   const items = [
@@ -38,7 +37,7 @@ export function StatsGrid({ me, heatmap, accent }: StatsGridProps) {
   ]
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       {items.map((item) => (
         <Card key={item.label} padding="md" className="home-stat-card">
           <div className="flex items-start justify-between gap-2">
@@ -55,22 +54,6 @@ export function StatsGrid({ me, heatmap, accent }: StatsGridProps) {
           </div>
         </Card>
       ))}
-
-      {totalContributions > 0 && (
-        <Card padding="md" className="col-span-2 lg:col-span-4 home-stat-banner">
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div>
-              <div className="text-2xl font-bold tabular-nums" style={{ color: accent }}>
-                {formatNumber(totalContributions)}
-              </div>
-              <div className="text-xs text-[var(--home-text-secondary)] mt-1">contributions in the last year</div>
-            </div>
-            <div className="text-xs text-[var(--home-text-tertiary)]">
-              {formatNumber(me?.stats?.total_commits ?? 0)} total commits tracked
-            </div>
-          </div>
-        </Card>
-      )}
     </div>
   )
 }

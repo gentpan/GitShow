@@ -572,31 +572,6 @@ a {
   scrollbar-width: none;
 }
 
-.avatar-glow {
-  box-shadow: var(--gs-shadow-md);
-}
-
-/* Legacy hero (unused but kept safe) */
-.hero-card,
-.hero-grid,
-.hero-avatar-wrap,
-.hero-avatar,
-.hero-profile,
-.hero-name,
-.hero-bio,
-.hero-socials,
-.hero-social-link,
-.hero-stats-panel,
-.hero-stat-item,
-.hero-stat-icon,
-.hero-stat-copy,
-.hero-stat-value,
-.hero-stat-label,
-.activity-timeline,
-.activity-chart-range {
-  /* no-op structural leftovers intentionally unstyled beyond globals */
-}
-
 .lang-bar-segment {
   position: relative;
 }
@@ -765,11 +740,6 @@ a {
 
 .home-stat-card {
   min-height: 96px;
-}
-
-.home-stat-banner {
-  background: linear-gradient(90deg, rgba(var(--theme-primary-rgb), 0.12) 0%, transparent 100%);
-  border-color: rgba(var(--theme-primary-rgb), 0.25);
 }
 
 .home-contrib-card {

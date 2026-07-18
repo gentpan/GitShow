@@ -61,8 +61,14 @@ function HomePage() {
   const languages = useMemo(() => aggregateLanguages(allRepos || []), [allRepos])
 
   const externalContribs = useMemo(() => deriveExternalContributions(activity || []), [activity])
-  const totalPRs = useMemo(() => (activity || []).filter((a: any) => a.type === 'PullRequestEvent').length, [activity])
-  const totalCommits = useMemo(() => (activity || []).filter((a: any) => a.type === 'PushEvent').length, [activity])
+  const totalPRs = useMemo(
+    () => (activity || []).filter((a: any) => a.type === 'PullRequestEvent').length,
+    [activity],
+  )
+  const totalCommits = useMemo(
+    () => (activity || []).filter((a: any) => a.type === 'PushEvent').length,
+    [activity],
+  )
 
   if (pending) {
     return (
@@ -75,29 +81,24 @@ function HomePage() {
     )
   }
 
-  const displayName = me?.user?.login || settings?.github_username || 'Developer'
+  const displayName = me?.user?.name || me?.user?.login || settings?.github_username || 'Developer'
 
   return (
     <div className="home-page animate-fade-in">
       <div className="grid lg:grid-cols-[300px_1fr] gap-8 lg:gap-10">
-        <div className="gs-rise">
-          <Sidebar me={me} settings={settings} accent={accent} />
-        </div>
+        <Sidebar me={me} settings={settings} />
 
         <div className="space-y-8 min-w-0">
-          <Card padding="none" className="home-welcome-card gs-rise gs-rise-delay-1 overflow-hidden">
-            <p className="gs-caption mb-3" style={{ color: 'var(--gs-interactive)' }}>
-              Developer Hub
-            </p>
-            <h1 className="gs-h3 home-gradient-text mb-3">
+          <Card padding="none" className="home-welcome-card overflow-hidden">
+            <h1 className="gs-h3 home-gradient-text mb-2">
               Welcome to {displayName}&apos;s Hub
             </h1>
             <p className="gs-body-sm" style={{ color: 'var(--home-text-secondary)', maxWidth: 560 }}>
-              Explore open source contributions, tech stack, and notable projects in one place.
+              Open source contributions, tech stack, and notable projects.
             </p>
           </Card>
 
-          <section className="gs-rise gs-rise-delay-2 space-y-3">
+          <section className="space-y-3">
             <h2 className="gs-h4 px-1">Overview</h2>
             <StatsGrid me={me} heatmap={heatmap || []} accent={accent} />
           </section>
@@ -110,7 +111,7 @@ function HomePage() {
           <section className="space-y-3">
             <h2 className="gs-h4 px-1">Tech Stack & Languages</h2>
             <div className="grid md:grid-cols-2 gap-4">
-              <TechStack languages={languages} bio={null} />
+              <TechStack languages={languages} />
               <LanguageChart languages={languages} />
             </div>
           </section>

@@ -18,7 +18,7 @@ const paddingMap = {
 export function Card({ children, className = '', padding = 'md', hover = false, onClick }: CardProps) {
   return (
     <div
-      className={`home-card home-rounded ${paddingMap[padding]} ${hover ? 'home-card-hover cursor-pointer' : ''} ${className}`}
+      className={`home-card ${paddingMap[padding]} ${hover ? 'home-card-hover cursor-pointer' : ''} ${className}`}
       onClick={onClick}
       role={onClick ? 'button' : undefined}
     >
