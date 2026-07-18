@@ -18,6 +18,7 @@ export const Route = createFileRoute('/')({ component: HomePage })
 
 function HomePage() {
   const [sortBy, setSortBy] = useState<'stars' | 'updated'>('stars')
+  const [activeLanguage, setActiveLanguage] = useState<string | null>(null)
 
   const { data: me, isPending: mePending } = useQuery({
     queryKey: ['me'],
@@ -60,6 +61,13 @@ function HomePage() {
   }, [allRepos, settings, sortBy])
 
   const languages = useMemo(() => aggregateLanguages(allRepos || []), [allRepos])
+  const topLanguages = useMemo(() => languages.slice(0, 5), [languages])
+
+  // Keep selection in sync when language list loads/changes
+  const resolvedActiveLanguage = activeLanguage && topLanguages.some((l) => l.name === activeLanguage)
+    ? activeLanguage
+    : topLanguages[0]?.name || null
+
   const totalForks = useMemo(
     () => (allRepos || []).reduce((sum: number, r: any) => sum + (r.forks_count || 0), 0),
     [allRepos],
@@ -117,8 +125,16 @@ function HomePage() {
           <section className="home-lattice-block space-y-3">
             <h2 className="gs-h4 px-1">Tech Stack & Languages</h2>
             <div className="grid md:grid-cols-2 gap-4">
-              <TechStack languages={languages} />
-              <LanguageChart languages={languages} />
+              <TechStack
+                languages={topLanguages}
+                activeLanguage={resolvedActiveLanguage}
+                onActiveLanguageChange={setActiveLanguage}
+              />
+              <LanguageChart
+                languages={topLanguages}
+                activeLanguage={resolvedActiveLanguage}
+                onActiveLanguageChange={setActiveLanguage}
+              />
             </div>
           </section>
 
