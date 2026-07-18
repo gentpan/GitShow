@@ -1,18 +1,16 @@
+# Snippet for /etc/frankenphp/Caddyfile — xifeng.dev / gentpan.dev
 xifeng.dev, gentpan.dev {
 	root * /var/www/gitshow/dist/server/client
 
-	# Public root assets (favicon, PWA icons, manifest)
 	@publicFiles path /favicon.ico /favicon.svg /favicon-16x16.png /favicon-32x32.png /apple-touch-icon.png /android-chrome-192x192.png /android-chrome-512x512.png /site.webmanifest
 	handle @publicFiles {
 		file_server
 	}
 
-	# Built JS/CSS
 	handle /assets/* {
 		file_server
 	}
 
-	# App SSR
 	handle {
 		reverse_proxy localhost:3001 {
 			header_up Host {host}
