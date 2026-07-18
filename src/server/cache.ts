@@ -13,6 +13,7 @@ import {
   resetApiCallCount,
   getApiCallCount,
 } from './github'
+import { ensureAvatars } from './avatars'
 import type { CacheData, FollowingCache, StarHistoryPoint } from './types'
 
 /** Full GitHub sync interval. Portfolio data does not need sub-hour freshness. */
@@ -155,12 +156,21 @@ export async function refreshCache(): Promise<void> {
       }),
     )
 
+    const avatarEntries = [
+      ...(next.user ? [{ login: next.user.login, avatar_url: next.user.avatar_url }] : []),
+      ...followingNames
+        .map((name) => next.following[name]?.user)
+        .filter(Boolean)
+        .map((u) => ({ login: u!.login, avatar_url: u!.avatar_url })),
+    ]
+    await ensureAvatars(avatarEntries)
+
     next.lastUpdated = new Date().toISOString()
     cache = next
     lastRefresh = Date.now()
     recordStarHistory(next.totalStars)
     console.log(
-      `[cache] refreshed in ${Date.now() - start}ms · github_calls=${getApiCallCount()} · repos=${next.totalRepos} · following=${followingNames.length}`,
+      `[cache] refreshed in ${Date.now() - start}ms · github_calls=${getApiCallCount()} · repos=${next.totalRepos} · following=${followingNames.length} · avatars=${avatarEntries.length}`,
     )
   })().finally(() => {
     refreshPromise = null

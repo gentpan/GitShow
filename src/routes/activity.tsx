@@ -95,7 +95,12 @@ function ActivityPage() {
                 key={item.id}
                 className="activity-row flex items-center gap-3 px-5 py-3.5 flex-wrap sm:flex-nowrap"
               >
-                <img src={item.avatar} alt="" className="w-8 h-8 rounded-full shrink-0" />
+                <img
+                  src={item.avatar_url || item.avatar}
+                  alt=""
+                  className="w-8 h-8 rounded-full shrink-0 bg-zinc-800 object-cover"
+                  loading="lazy"
+                />
                 <span
                   className="text-xs shrink-0 px-2.5 py-1 rounded-full font-medium"
                   style={{ backgroundColor: st.bg, color: st.color }}

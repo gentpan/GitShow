@@ -1,16 +1,24 @@
 import app from './dist/server/server/server.js'
 import { toNodeHandler } from 'srvx/node'
 import { createServer } from 'node:http'
-import { readdirSync, readFileSync } from 'node:fs'
+import { readdirSync, readFileSync, existsSync, statSync, createReadStream } from 'node:fs'
 import { pathToFileURL } from 'node:url'
-import { join, dirname } from 'node:path'
+import { join, dirname, extname, basename } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const PORT = process.env.PORT || 3001
 const __dirname = dirname(fileURLToPath(import.meta.url))
+const AVATAR_DIR = process.env.AVATARS_PATH || join(__dirname, 'data/avatars')
+
+const MIME = {
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.png': 'image/png',
+  '.webp': 'image/webp',
+  '.gif': 'image/gif',
+}
 
 const handler = toNodeHandler(app.fetch, { trustProxy: true })
-const server = createServer(handler)
 
 function resolveExportName(source, originalName) {
   const re = new RegExp(`${originalName}\\s+as\\s+(\\w+)`)
@@ -46,6 +54,38 @@ async function warmGitHubCache() {
     console.error('[cache] warm failed:', err)
   }
 }
+
+function serveAvatar(req, res) {
+  const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`)
+  if (!url.pathname.startsWith('/avatars/')) return false
+
+  const name = basename(url.pathname)
+  if (!name || name !== basename(name) || name.includes('..')) {
+    res.writeHead(400)
+    res.end('bad request')
+    return true
+  }
+
+  const filePath = join(AVATAR_DIR, name)
+  if (!existsSync(filePath) || !statSync(filePath).isFile()) {
+    res.writeHead(404)
+    res.end('not found')
+    return true
+  }
+
+  const ext = extname(name).toLowerCase()
+  res.writeHead(200, {
+    'Content-Type': MIME[ext] || 'application/octet-stream',
+    'Cache-Control': 'public, max-age=86400',
+  })
+  createReadStream(filePath).pipe(res)
+  return true
+}
+
+const server = createServer((req, res) => {
+  if (serveAvatar(req, res)) return
+  return handler(req, res)
+})
 
 server.listen(PORT, () => {
   console.log('Server listening on http://localhost:' + PORT)

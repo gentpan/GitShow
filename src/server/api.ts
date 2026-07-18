@@ -6,6 +6,7 @@ import {
   refreshCache,
   startRefreshLoop,
 } from './cache'
+import { localAvatarUrl, resolveAvatarUrl } from './avatars'
 
 export { startRefreshLoop }
 import {
@@ -49,7 +50,10 @@ export const getMe = createServerFn({ method: 'GET' }).handler(
     const cfg = loadConfig()
     const loc = cfg.location || c.user.location
     return {
-      user: c.user,
+      user: {
+        ...c.user,
+        avatar_url: resolveAvatarUrl(c.user.login, c.user.avatar_url),
+      },
       stats: {
         total_stars: c.totalStars,
         total_commits: c.totalCommits,
@@ -90,13 +94,13 @@ export const getActivity = createServerFn({ method: 'GET' })
     const targetLimit = data.limit || 20
     let events = c.events
     let actor = c.user?.login || ''
-    let avatar = c.user?.avatar_url || ''
+    let avatar = c.user ? localAvatarUrl(c.user.login) : ''
     if (targetUsername !== getUsername()) {
       const fc = c.following[targetUsername]
       if (fc) {
         events = fc.events
         actor = fc.user.login
-        avatar = fc.user.avatar_url
+        avatar = localAvatarUrl(fc.user.login)
       } else {
         events = []
       }
@@ -113,14 +117,15 @@ export const getFollowing = createServerFn({ method: 'GET' }).handler(
     for (const name of c.followingNames) {
       const fc = c.following[name]
       if (!fc?.user) continue
+      const avatar = localAvatarUrl(fc.user.login)
       const recentEvents = eventsToActivities(
         fc.events,
         fc.user.login,
-        fc.user.avatar_url
+        avatar,
       ).slice(0, 5)
       result.push({
         username: fc.user.login,
-        avatar_url: fc.user.avatar_url,
+        avatar_url: avatar,
         bio: fc.user.bio,
         last_active: fc.events[0]?.created_at || null,
         recent_repos: fc.repos,
@@ -139,14 +144,14 @@ export const getFeed = createServerFn({ method: 'GET' })
     const all: ActivityItem[] = []
     if (c.user) {
       all.push(
-        ...eventsToActivities(c.events, c.user.login, c.user.avatar_url)
+        ...eventsToActivities(c.events, c.user.login, localAvatarUrl(c.user.login)),
       )
     }
     for (const name of c.followingNames) {
       const fc = c.following[name]
       if (fc?.user) {
         all.push(
-          ...eventsToActivities(fc.events, fc.user.login, fc.user.avatar_url)
+          ...eventsToActivities(fc.events, fc.user.login, localAvatarUrl(fc.user.login)),
         )
       }
     }
