@@ -24,7 +24,7 @@ let cache: CacheData = {
   lastUpdated: null,
 }
 
-let refreshing = false
+let refreshPromise: Promise<void> | null = null
 let lastRefresh = 0
 
 export function getCache(): CacheData {
@@ -60,26 +60,26 @@ export function getStarHistory(): StarHistoryPoint[] {
 }
 
 export async function refreshCache(): Promise<void> {
-  if (refreshing) return
-  refreshing = true
-  console.log('[cache] refreshing...')
-  const start = Date.now()
-  const cfg = loadConfig()
-  const username = getUsername()
-  const next: CacheData = {
-    user: null,
-    repos: [],
-    events: [],
-    following: {},
-    followingNames: [],
-    heatmap: [],
-    totalStars: 0,
-    totalCommits: 0,
-    totalRepos: 0,
-    lastUpdated: null,
-  }
+  if (refreshPromise) return refreshPromise
 
-  try {
+  refreshPromise = (async () => {
+    console.log('[cache] refreshing...')
+    const start = Date.now()
+    const cfg = loadConfig()
+    const username = getUsername()
+    const next: CacheData = {
+      user: null,
+      repos: [],
+      events: [],
+      following: {},
+      followingNames: [],
+      heatmap: [],
+      totalStars: 0,
+      totalCommits: 0,
+      totalRepos: 0,
+      lastUpdated: null,
+    }
+
     next.user = await getUser(username).catch(() => null)
     const repos = await getRepos(username).catch(() => [])
     next.repos = repos
@@ -96,7 +96,9 @@ export async function refreshCache(): Promise<void> {
       next.totalCommits = totalCommits
     } catch {
       next.heatmap = buildHeatmapFromEvents(events)
-      next.totalCommits = events.filter((e) => e.type === 'PushEvent').reduce((s, e) => s + (e.payload.size || 0), 0)
+      next.totalCommits = events
+        .filter((e) => e.type === 'PushEvent')
+        .reduce((s, e) => s + (e.payload.size || 0), 0)
     }
 
     let followingNames = cfg.following?.length ? cfg.following : []
@@ -129,12 +131,20 @@ export async function refreshCache(): Promise<void> {
     lastRefresh = Date.now()
     recordStarHistory(next.totalStars)
     console.log(`[cache] refreshed in ${Date.now() - start}ms`)
-  } finally {
-    refreshing = false
-  }
+  })().finally(() => {
+    refreshPromise = null
+  })
+
+  return refreshPromise
 }
 
 export async function getCacheWithRefresh(): Promise<CacheData> {
+  // First load (or failed previous load): wait until cache is populated.
+  if (!cache.lastUpdated) {
+    await refreshCache()
+    return cache
+  }
+  // Stale cache: serve current data and refresh in the background.
   if (Date.now() - lastRefresh > 30 * 60 * 1000) {
     refreshCache().catch(console.error)
   }

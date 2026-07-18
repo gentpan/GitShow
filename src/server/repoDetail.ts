@@ -1,4 +1,4 @@
-import { getCache } from './cache'
+import { getCacheWithRefresh } from './cache'
 import { getUsername } from './config'
 import {
   getReadmeHtml,
@@ -14,9 +14,9 @@ import type {
   RepoDetailResponse,
 } from './types'
 
-export function findCachedRepo(name: string): GitHubRepo | undefined {
+export async function findCachedRepo(name: string): Promise<GitHubRepo | undefined> {
   const decoded = decodeURIComponent(name)
-  const repos = getCache().repos
+  const repos = (await getCacheWithRefresh()).repos
   return repos.find(
     (r) =>
       r.name === decoded ||
@@ -60,7 +60,7 @@ function sanitizeReadmeHtml(html: string | null): string | null {
 }
 
 export async function buildRepoDetail(name: string): Promise<RepoDetailResponse> {
-  const cached = findCachedRepo(name)
+  const cached = await findCachedRepo(name)
   if (!cached) throw new Error('repo not found')
 
   const [owner, repoName] = parseRepoOwnerName(cached, getUsername())
@@ -92,7 +92,7 @@ export async function buildRepoDetail(name: string): Promise<RepoDetailResponse>
 }
 
 export async function buildRepoContents(name: string, path: string): Promise<RepoContentItem[]> {
-  const cached = findCachedRepo(name)
+  const cached = await findCachedRepo(name)
   if (!cached) throw new Error('repo not found')
   const [owner, repoName] = parseRepoOwnerName(cached, getUsername())
   const contents = await getRepoContents(owner, repoName, path)
