@@ -2,12 +2,21 @@ import { HeadContent, Outlet, Scripts, createRootRoute } from '@tanstack/react-r
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useState } from 'react'
 import { SiteLayout } from '@/components/SiteLayout'
+import { getSettings } from '@/server/api'
 import appCss from '@/styles.css?url'
 import markdownReadmeCss from '@/markdown-readme.css?url'
 
 export const Route = createRootRoute({
-  head: () => ({
-    meta: [{ charSet: 'utf-8' }, { name: 'viewport', content: 'width=device-width, initial-scale=1' }, { title: 'GitShow' }],
+  loader: async () => {
+    const settings = await getSettings()
+    return { settings }
+  },
+  head: ({ loaderData }) => ({
+    meta: [
+      { charSet: 'utf-8' },
+      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+      { title: loaderData?.settings?.title || 'GitShow' },
+    ],
     links: [
       { rel: 'stylesheet', href: appCss },
       { rel: 'stylesheet', href: markdownReadmeCss },
@@ -20,14 +29,19 @@ export const Route = createRootRoute({
 })
 
 function RootComponent() {
-  const [queryClient] = useState(() => new QueryClient({
-    defaultOptions: {
-      queries: {
-        staleTime: 60 * 1000,
-        refetchOnWindowFocus: false,
+  const { settings } = Route.useLoaderData()
+  const [queryClient] = useState(() => {
+    const client = new QueryClient({
+      defaultOptions: {
+        queries: {
+          staleTime: 60 * 1000,
+          refetchOnWindowFocus: false,
+        },
       },
-    },
-  }))
+    })
+    client.setQueryData(['settings'], settings)
+    return client
+  })
 
   return (
     <html lang="zh-CN">
