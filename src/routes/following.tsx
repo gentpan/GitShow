@@ -17,7 +17,7 @@ function FollowingPage() {
   })
 
   const pending = followingPending || settingsPending
-  const c = (themeMap[(settings?.theme as keyof typeof themeMap) || 'blue'] || themeMap.blue).primary
+  const c = (themeMap[(settings?.theme as keyof typeof themeMap) || 'green'] || themeMap.green).primary
   const sorted = useMemo(
     () =>
       [...(following || [])].sort(

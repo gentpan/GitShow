@@ -38,7 +38,7 @@ export function loadSettings(): Settings {
       homepage_repo_count: 6,
       homepage_repos: [],
       social_links: [],
-      theme: 'blue',
+      theme: 'green',
       admin_password: '',
     }
     settingsCache = defaults

@@ -50,7 +50,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  const theme = themeMap[(settings?.theme as keyof typeof themeMap) || 'blue'] || themeMap.blue
+  const theme = themeMap[(settings?.theme as keyof typeof themeMap) || 'green'] || themeMap.green
   const navLinks = useMemo(() => {
     const links = [...baseNavLinks]
     if (loggedIn) links.push({ path: '/admin', label: '管理', icon: 'fas fa-gear' })
