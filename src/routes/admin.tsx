@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { passkey } from '@/lib/auth'
-import { langColor, themeLabels, themeMap, timeAgo } from '@/lib/utils'
+import { langColor, themeMap, timeAgo } from '@/lib/utils'
 import {
   getRepos,
   getHealth,
@@ -141,7 +141,7 @@ function AdminPage() {
         homepage_repo_count: form.homepage_repo_count,
         homepage_repos: form.homepage_repos,
         social_links: form.social_links,
-        theme: form.theme,
+        theme: 'green',
         admin_password: adminPasswordDirty ? form.admin_password : origPassword,
       } })
       setGithubTokenDirty(false)
@@ -192,32 +192,6 @@ function AdminPage() {
         <section className="gs-card p-6">
           <h2 className="text-sm font-medium mb-4" style={{ color: 'var(--gs-text-secondary)' }}>网站标题</h2>
           <input value={form.title || ''} onChange={(e) => setForm({ ...form, title: e.target.value })} className="input-field w-full px-4 py-3 text-base" placeholder="GitShow" />
-        </section>
-
-        <section className="gs-card p-6 space-y-3">
-          <h2 className="text-sm font-medium" style={{ color: 'var(--gs-text-secondary)' }}>主题色</h2>
-          <div className="flex flex-wrap gap-3">
-            {(Object.keys(themeMap) as Array<keyof typeof themeMap>).map((key) => (
-              <button
-                key={key}
-                type="button"
-                className={`px-4 py-2 text-sm font-medium ${form.theme === key ? 'active-count' : 'inactive-count'}`}
-                onClick={() => setForm({ ...form, theme: key })}
-                style={
-                  form.theme === key
-                    ? { backgroundColor: themeMap[key].primary, borderColor: themeMap[key].primary, color: '#fff' }
-                    : { borderColor: themeMap[key].primary, color: themeMap[key].primary }
-                }
-              >
-                <span
-                  className="inline-block w-2.5 h-2.5 rounded-full mr-2"
-                  style={{ backgroundColor: themeMap[key].primary }}
-                  aria-hidden
-                />
-                {themeLabels[key]}
-              </button>
-            ))}
-          </div>
         </section>
 
         <section className="gs-card p-6 space-y-4">

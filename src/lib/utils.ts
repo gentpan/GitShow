@@ -64,17 +64,7 @@ export function sortLangPct(langPct?: Record<string, number> | null): [string, n
 
 export const themeMap = {
   green: { primary: '#238636', rgb: '35, 134, 54' },
-  teal: { primary: '#0d9488', rgb: '13, 148, 136' },
-  blue: { primary: '#1447E6', rgb: '20, 71, 230' },
-  orange: { primary: '#F05100', rgb: '240, 81, 0' },
 } as const
-
-export const themeLabels: Record<keyof typeof themeMap, string> = {
-  green: '青绿',
-  teal: '青石',
-  blue: '靛蓝',
-  orange: '橙焰',
-}
 
 export function darkenColor(hex: string) {
   const n = parseInt(hex.slice(1), 16)
