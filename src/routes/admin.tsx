@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { passkey } from '@/lib/auth'
-import { langColor, themeMap, timeAgo } from '@/lib/utils'
+import { langColor, themeLabels, themeMap, timeAgo } from '@/lib/utils'
 import {
   getRepos,
   getHealth,
@@ -51,7 +51,7 @@ function AdminPage() {
 
   const pending = settingsPending || reposPending || healthPending
 
-  const c = (themeMap[(form.theme as keyof typeof themeMap) || 'blue'] || themeMap.blue).primary
+  const c = (themeMap[(form.theme as keyof typeof themeMap) || 'green'] || themeMap.green).primary
   const passkeyItems = settings?.passkey_items || []
   const hasPasskey = Boolean(settings?.has_passkey || passkeyItems.length)
   const githubUsername = form.github_username || ''
@@ -76,7 +76,7 @@ function AdminPage() {
       homepage_repo_count: st.homepage_repo_count || 6,
       homepage_repos: st.homepage_repos || [],
       social_links: st.social_links || [],
-      theme: st.theme || 'blue',
+      theme: st.theme || 'green',
       admin_password: adminPasswordDirty ? form.admin_password : '',
     })
     const notes: Record<string, string> = {}
@@ -201,11 +201,20 @@ function AdminPage() {
               <button
                 key={key}
                 type="button"
-                className={`px-4 py-2 text-sm font-medium capitalize ${form.theme === key ? 'active-count' : 'inactive-count'}`}
+                className={`px-4 py-2 text-sm font-medium ${form.theme === key ? 'active-count' : 'inactive-count'}`}
                 onClick={() => setForm({ ...form, theme: key })}
-                style={form.theme === key ? { backgroundColor: themeMap[key].primary, borderColor: themeMap[key].primary, color: '#fff' } : undefined}
+                style={
+                  form.theme === key
+                    ? { backgroundColor: themeMap[key].primary, borderColor: themeMap[key].primary, color: '#fff' }
+                    : { borderColor: themeMap[key].primary, color: themeMap[key].primary }
+                }
               >
-                {key}
+                <span
+                  className="inline-block w-2.5 h-2.5 rounded-full mr-2"
+                  style={{ backgroundColor: themeMap[key].primary }}
+                  aria-hidden
+                />
+                {themeLabels[key]}
               </button>
             ))}
           </div>

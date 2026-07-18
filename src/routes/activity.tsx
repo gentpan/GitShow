@@ -41,7 +41,7 @@ function ActivityPage() {
 
   const pending = feedPending || settingsPending
 
-  const c = (themeMap[(settings?.theme as keyof typeof themeMap) || 'blue'] || themeMap.blue).primary
+  const c = (themeMap[(settings?.theme as keyof typeof themeMap) || 'green'] || themeMap.green).primary
   const filtered = useMemo(() => selectedType === 'all' ? (feed || []) : (feed || []).filter((i: any) => i.type === selectedType), [feed, selectedType])
 
   if (pending) {

@@ -41,7 +41,7 @@ function HomePage() {
 
   const pending = mePending || reposPending || activityPending || heatmapPending || settingsPending
 
-  const theme = themeMap[(settings?.theme as keyof typeof themeMap) || 'blue'] || themeMap.blue
+  const theme = themeMap[(settings?.theme as keyof typeof themeMap) || 'green'] || themeMap.green
   const accent = theme.primary
 
   const repos = useMemo(() => {

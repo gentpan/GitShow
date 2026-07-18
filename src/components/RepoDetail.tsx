@@ -49,7 +49,7 @@ export function RepoDetailPage({ name, initialDetail, initialSettings }: RepoDet
       .finally(() => setPending(false))
   }, [name, initialDetail, initialSettings])
 
-  const theme = themeMap[(settings?.theme as keyof typeof themeMap) || 'blue'] || themeMap.blue
+  const theme = themeMap[(settings?.theme as keyof typeof themeMap) || 'green'] || themeMap.green
   const c = theme.primary
   const repo = data?.repo
 

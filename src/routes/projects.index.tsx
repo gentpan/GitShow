@@ -18,7 +18,7 @@ function ProjectsPage() {
   })
 
   const pending = reposPending || settingsPending
-  const theme = themeMap[(settings?.theme as keyof typeof themeMap) || 'blue'] || themeMap.blue
+  const theme = themeMap[(settings?.theme as keyof typeof themeMap) || 'green'] || themeMap.green
   const c = theme.primary
 
   const filteredRepos = useMemo(() => {

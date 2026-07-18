@@ -12,13 +12,13 @@
   --gs-text-secondary: #737373;
   --gs-text-muted: #525252;
 
-  --gs-primary: #1447e6;
-  --gs-primary-hover: #0d34cc;
-  --gs-primary-active: #0a2bb5;
-  --gs-interactive: #2496ed;
-  --gs-interactive-hover: #61dafb;
+  --gs-primary: #238636;
+  --gs-primary-hover: #1a7f37;
+  --gs-primary-active: #196c2e;
+  --gs-interactive: #3fb950;
+  --gs-interactive-hover: #56d364;
   --gs-accent-ts: #3178c6;
-  --gs-accent-go: #00add8;
+  --gs-accent-go: #0d9488;
   --gs-accent-orange: #f05100;
   --gs-warning: #f99c00;
   --gs-error: #e40014;
@@ -39,7 +39,7 @@
 
   /* Theme bridge (overridden by SiteLayout) */
   --theme-primary: var(--gs-primary);
-  --theme-primary-rgb: 20, 71, 230;
+  --theme-primary-rgb: 35, 134, 54;
   --theme-primary-dark: var(--gs-primary-hover);
   --home-accent: var(--theme-primary);
 }
