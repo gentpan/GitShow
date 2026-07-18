@@ -40,12 +40,6 @@ export function getYearsActive(heatmap: { date?: string; count?: number }[]): nu
   return Math.max(1, Math.ceil(years))
 }
 
-export function formatJoinDate(date?: string | null): string {
-  if (!date) return ''
-  const d = new Date(date)
-  return `Joined ${d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`
-}
-
 export function formatBytes(bytes: number): string {
   if (bytes >= 1_000_000) return `${(bytes / 1_000_000).toFixed(1)}MB`
   if (bytes >= 1_000) return `${(bytes / 1_000).toFixed(1)}KB`

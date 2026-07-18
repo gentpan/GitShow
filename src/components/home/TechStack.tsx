@@ -4,18 +4,11 @@ import type { LanguageStat } from '@/lib/homeUtils'
 
 interface TechStackProps {
   languages: LanguageStat[]
-  bio?: string | null
 }
 
-export function TechStack({ languages, bio }: TechStackProps) {
+export function TechStack({ languages }: TechStackProps) {
   return (
     <Card padding="lg" className="h-full">
-      {bio && (
-        <p className="text-sm text-[var(--home-text-secondary)] leading-relaxed mb-4 pb-4 border-b border-[var(--home-border)]">
-          {bio}
-        </p>
-      )}
-
       <div className="text-xs font-medium text-[var(--home-text-tertiary)] mb-3 uppercase tracking-wide">
         Core Technologies
       </div>

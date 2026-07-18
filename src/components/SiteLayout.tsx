@@ -101,7 +101,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
     <div className="gs-shell" style={rootStyle}>
       <header className={`nav-shell ${navHidden && !mobileOpen ? 'nav-shell-hidden' : ''}`}>
         <div className="gs-container nav-bar">
-          <Link to="/" className="nav-brand">
+          <Link to="/" className="nav-brand" activeProps={{ className: 'nav-brand' }}>
             <span className="nav-brand-mark" aria-hidden>
               <i className="fas fa-code" />
             </span>
@@ -114,6 +114,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
                 key={link.path}
                 to={link.path}
                 className={`nav-link ${isActive(link.path) ? 'nav-link-active' : ''}`}
+                activeProps={{ className: `nav-link ${isActive(link.path) ? 'nav-link-active' : ''}` }}
               >
                 {link.label}
               </Link>
