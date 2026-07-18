@@ -22,6 +22,7 @@ export const Route = createRootRoute({
       { rel: 'stylesheet', href: markdownReadmeCss },
       { rel: 'icon', href: '/favicon.ico' },
       { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap' },
+      { rel: 'stylesheet', href: 'https://static.bluecdn.com/fonts/alimama-fangyuanti.css' },
       { rel: 'stylesheet', href: 'https://static.utterlog.com/libs/fontawesome/7.2.0/css/all.min.css' },
     ],
   }),
