@@ -2,16 +2,29 @@ import { useMemo } from 'react'
 import { Badge } from '@/components/home/ui/Badge'
 import { Card } from '@/components/home/ui/Card'
 import { getTotalContributions, type LanguageStat } from '@/lib/homeUtils'
-import { generateProfileTags, getYearsActiveFromCreatedAt } from '@/lib/profileTags'
+import {
+  generateProfileTags,
+  getActiveDays,
+  getContributionStreak,
+  getWeekendContributionShare,
+  getYearsActiveFromCreatedAt,
+} from '@/lib/profileTags'
 
 interface SidebarProps {
   me: any
   settings: any
-  heatmap?: { count?: number }[]
+  heatmap?: { date?: string; count?: number }[]
   languages?: LanguageStat[]
+  totalForks?: number
 }
 
-export function Sidebar({ me, settings, heatmap = [], languages = [] }: SidebarProps) {
+export function Sidebar({
+  me,
+  settings,
+  heatmap = [],
+  languages = [],
+  totalForks = 0,
+}: SidebarProps) {
   const user = me?.user
   const pronouns =
     me?.gender === 'female' ? 'She/Her' : me?.gender === 'male' ? 'He/Him' : null
@@ -23,12 +36,19 @@ export function Sidebar({ me, settings, heatmap = [], languages = [] }: SidebarP
     return generateProfileTags({
       totalStars: me?.stats?.total_stars || 0,
       totalRepos: me?.stats?.total_repos || 0,
+      totalForks,
+      totalCommits: me?.stats?.total_commits || 0,
       followers: user?.followers || 0,
+      following: me?.following_count ?? user?.following ?? 0,
       totalContributions: getTotalContributions(heatmap),
       yearsActive: yearsFromAccount,
       topLanguage: languages[0]?.name || null,
+      languageCount: languages.length,
+      streakDays: getContributionStreak(heatmap),
+      activeDays: getActiveDays(heatmap),
+      weekendShare: getWeekendContributionShare(heatmap),
     })
-  }, [me, user, heatmap, languages])
+  }, [me, user, heatmap, languages, totalForks])
 
   return (
     <aside className="home-sidebar space-y-4 lg:sticky lg:top-24 lg:self-start">
