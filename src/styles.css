@@ -426,6 +426,7 @@ a {
 .home-badge {
   display: inline-flex;
   align-items: center;
+  gap: 6px;
   padding: 4px 10px;
   border-radius: var(--gs-radius-pill);
   font-size: 12px;
@@ -433,6 +434,12 @@ a {
   line-height: 16px;
   white-space: nowrap;
   border: 1px solid transparent;
+}
+
+.home-badge-icon {
+  font-size: 11px;
+  line-height: 1;
+  opacity: 0.9;
 }
 
 .tag-green {

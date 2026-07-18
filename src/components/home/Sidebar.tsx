@@ -1,17 +1,34 @@
+import { useMemo } from 'react'
 import { Badge } from '@/components/home/ui/Badge'
 import { Card } from '@/components/home/ui/Card'
+import { getTotalContributions, type LanguageStat } from '@/lib/homeUtils'
+import { generateProfileTags, getYearsActiveFromCreatedAt } from '@/lib/profileTags'
 
 interface SidebarProps {
   me: any
   settings: any
+  heatmap?: { count?: number }[]
+  languages?: LanguageStat[]
 }
 
-export function Sidebar({ me, settings }: SidebarProps) {
+export function Sidebar({ me, settings, heatmap = [], languages = [] }: SidebarProps) {
   const user = me?.user
   const pronouns =
     me?.gender === 'female' ? 'She/Her' : me?.gender === 'male' ? 'He/Him' : null
   const location = me?.location || user?.location || ''
   const socialLinks: { icon?: string; url?: string }[] = settings?.social_links || []
+
+  const profileTags = useMemo(() => {
+    const yearsFromAccount = getYearsActiveFromCreatedAt(user?.created_at)
+    return generateProfileTags({
+      totalStars: me?.stats?.total_stars || 0,
+      totalRepos: me?.stats?.total_repos || 0,
+      followers: user?.followers || 0,
+      totalContributions: getTotalContributions(heatmap),
+      yearsActive: yearsFromAccount,
+      topLanguage: languages[0]?.name || null,
+    })
+  }, [me, user, heatmap, languages])
 
   return (
     <aside className="home-sidebar space-y-4 lg:sticky lg:top-24 lg:self-start">
@@ -43,9 +60,14 @@ export function Sidebar({ me, settings }: SidebarProps) {
             Follow on GitHub
           </a>
 
-          {pronouns && (
+          {(pronouns || profileTags.length > 0) && (
             <div className="flex flex-wrap gap-2">
-              <Badge>{pronouns}</Badge>
+              {pronouns && <Badge icon="fas fa-user">{pronouns}</Badge>}
+              {profileTags.map((tag) => (
+                <Badge key={tag.label} icon={tag.icon}>
+                  {tag.label}
+                </Badge>
+              ))}
             </div>
           )}
 
