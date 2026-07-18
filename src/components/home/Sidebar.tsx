@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { Badge } from '@/components/home/ui/Badge'
 import { Card } from '@/components/home/ui/Card'
 import { getTotalContributions, type LanguageStat } from '@/lib/homeUtils'
+import { useI18n } from '@/lib/i18n'
 import {
   generateProfileTags,
   getActiveDays,
@@ -25,6 +26,7 @@ export function Sidebar({
   languages = [],
   totalForks = 0,
 }: SidebarProps) {
+  const { t } = useI18n()
   const user = me?.user
   const pronouns =
     me?.gender === 'female' ? 'She/Her' : me?.gender === 'male' ? 'He/Him' : null
@@ -76,15 +78,15 @@ export function Sidebar({
             className="home-btn-primary w-full"
           >
             <i className="fab fa-github" />
-            在 GitHub 关注
+            {t('sidebar.followGithub')}
           </a>
 
           {(pronouns || profileTags.length > 0) && (
             <div className="flex flex-wrap gap-2">
               {pronouns && <Badge icon="fas fa-user">{pronouns}</Badge>}
               {profileTags.map((tag) => (
-                <Badge key={tag.label} icon={tag.icon}>
-                  {tag.label}
+                <Badge key={tag.key} icon={tag.icon}>
+                  {t(tag.key)}
                 </Badge>
               ))}
             </div>
@@ -116,12 +118,12 @@ export function Sidebar({
             <span className="font-semibold text-[var(--home-text-primary)]">
               {user?.followers ?? 0}
             </span>{' '}
-            followers
+            {t('sidebar.followers')}
             <span className="mx-1">·</span>
             <span className="font-semibold text-[var(--home-text-primary)]">
               {me?.following_count ?? user?.following ?? 0}
             </span>{' '}
-            following
+            {t('sidebar.following')}
           </div>
         </div>
       </Card>

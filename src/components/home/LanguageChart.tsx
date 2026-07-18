@@ -2,12 +2,14 @@ import { useState } from 'react'
 import { Card } from '@/components/home/ui/Card'
 import { formatBytes } from '@/lib/homeUtils'
 import type { LanguageStat } from '@/lib/homeUtils'
+import { useI18n } from '@/lib/i18n'
 
 interface LanguageChartProps {
   languages: LanguageStat[]
 }
 
 export function LanguageChart({ languages }: LanguageChartProps) {
+  const { t } = useI18n()
   const topLanguages = languages.slice(0, 5)
   const total = topLanguages.reduce((sum, lang) => sum + lang.size, 0)
   const [hovered, setHovered] = useState<string | null>(null)
@@ -86,7 +88,7 @@ export function LanguageChart({ languages }: LanguageChartProps) {
                   <span className="lang-donut-pct tabular-nums" style={{ color: 'var(--home-text-primary)' }}>
                     {topLanguages.length}
                   </span>
-                  <span className="lang-donut-name">langs</span>
+                  <span className="lang-donut-name">{t('lang.center')}</span>
                 </>
               )}
             </div>
@@ -95,7 +97,7 @@ export function LanguageChart({ languages }: LanguageChartProps) {
           <div
             className="flex-1 w-full space-y-1"
             role="list"
-            aria-label="语言占比"
+            aria-label={t('lang.aria')}
             onMouseLeave={() => setHovered(null)}
           >
             {topLanguages.map((lang) => {
@@ -123,13 +125,13 @@ export function LanguageChart({ languages }: LanguageChartProps) {
         </div>
       ) : (
         <div className="text-sm text-[var(--home-text-secondary)] text-center py-6">
-          暂无语言数据
+          {t('lang.empty')}
         </div>
       )}
 
       {topLanguages.length > 0 && (
         <p className="text-xs text-[var(--home-text-tertiary)] mt-4 text-center sm:text-left">
-          基于 {formatBytes(total)} 代码量 · Top 5
+          {t('lang.footer', { bytes: formatBytes(total) })}
         </p>
       )}
     </Card>

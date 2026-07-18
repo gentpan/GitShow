@@ -1,4 +1,5 @@
 import { Card } from '@/components/home/ui/Card'
+import { useI18n } from '@/lib/i18n'
 import { getYearsActiveFromCreatedAt } from '@/lib/profileTags'
 import { formatNumber } from '@/lib/utils'
 
@@ -9,31 +10,15 @@ interface StatsGridProps {
 }
 
 export function StatsGrid({ me, accent }: StatsGridProps) {
+  const { t } = useI18n()
   const stats = me?.stats
   const yearsActive = Math.max(1, Math.floor(getYearsActiveFromCreatedAt(me?.user?.created_at) || 1))
 
   const items = [
-    {
-      label: '公开仓库',
-      value: stats?.total_repos ?? 0,
-      icon: 'fas fa-folder',
-    },
-    {
-      label: '获得 Star',
-      value: stats?.total_stars ?? 0,
-      icon: 'fas fa-star',
-      accent: true,
-    },
-    {
-      label: '关注者',
-      value: me?.user?.followers ?? 0,
-      icon: 'fas fa-users',
-    },
-    {
-      label: '活跃年限',
-      value: yearsActive,
-      icon: 'fas fa-calendar',
-    },
+    { label: t('stats.repos'), value: stats?.total_repos ?? 0, icon: 'fas fa-folder' },
+    { label: t('stats.stars'), value: stats?.total_stars ?? 0, icon: 'fas fa-star', accent: true },
+    { label: t('stats.followers'), value: me?.user?.followers ?? 0, icon: 'fas fa-users' },
+    { label: t('stats.years'), value: yearsActive, icon: 'fas fa-calendar' },
   ]
 
   return (

@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { Card } from '@/components/home/ui/Card'
 import { contributionColor, getMonthLabels, getTotalContributions, heatmapToWeeks } from '@/lib/homeUtils'
+import { useI18n } from '@/lib/i18n'
 import { formatNumber } from '@/lib/utils'
 
 interface ContributionGraphProps {
@@ -11,15 +12,17 @@ const DAY_LABELS = ['', 'Mon', '', 'Wed', '', 'Fri', '']
 const GITHUB_GREEN_ACCENT = '#3fb950'
 
 export function ContributionGraph({ heatmap }: ContributionGraphProps) {
+  const { t, locale } = useI18n()
   const weeks = useMemo(() => heatmapToWeeks(heatmap), [heatmap])
-  const monthLabels = useMemo(() => getMonthLabels(weeks), [weeks])
+  const monthLabels = useMemo(() => getMonthLabels(weeks, locale), [weeks, locale])
   const total = useMemo(() => getTotalContributions(heatmap), [heatmap])
+  const dayLabels = locale === 'zh' ? ['', '一', '', '三', '', '五', ''] : DAY_LABELS
 
   if (!heatmap?.length) {
     return (
       <Card padding="lg">
         <div className="text-sm text-[var(--home-text-secondary)] text-center py-8">
-          暂无贡献数据
+          {t('contrib.empty')}
         </div>
       </Card>
     )
@@ -28,11 +31,22 @@ export function ContributionGraph({ heatmap }: ContributionGraphProps) {
   return (
     <Card padding="lg" className="home-contrib-card">
       <p className="text-sm text-[var(--home-text-secondary)] mb-4">
-        近一年{' '}
-        <span className="font-semibold" style={{ color: GITHUB_GREEN_ACCENT }}>
-          {formatNumber(total)}
-        </span>{' '}
-        次贡献
+        {locale === 'zh' ? (
+          <>
+            近一年{' '}
+            <span className="font-semibold" style={{ color: GITHUB_GREEN_ACCENT }}>
+              {formatNumber(total)}
+            </span>{' '}
+            次贡献
+          </>
+        ) : (
+          <>
+            <span className="font-semibold" style={{ color: GITHUB_GREEN_ACCENT }}>
+              {formatNumber(total)}
+            </span>{' '}
+            contributions in the last year
+          </>
+        )}
       </p>
 
       <div className="overflow-x-auto scrollbar-hide">
@@ -53,7 +67,7 @@ export function ContributionGraph({ heatmap }: ContributionGraphProps) {
 
           <div className="flex gap-[3px]">
             <div className="flex flex-col gap-[3px] text-[10px] text-[var(--home-text-tertiary)] pr-1 shrink-0">
-              {DAY_LABELS.map((label, i) => (
+              {dayLabels.map((label, i) => (
                 <div key={i} className="h-[11px] leading-[11px]">
                   {label}
                 </div>
@@ -81,9 +95,9 @@ export function ContributionGraph({ heatmap }: ContributionGraphProps) {
       </div>
 
       <div className="flex items-center justify-between mt-4 text-xs text-[var(--home-text-tertiary)]">
-        <span>近 52 周活跃度</span>
+        <span>{t('contrib.weeks')}</span>
         <div className="flex items-center gap-1.5">
-          <span>少</span>
+          <span>{t('contrib.less')}</span>
           {[0, 2, 5, 10, 15].map((level) => (
             <div
               key={level}
@@ -91,7 +105,7 @@ export function ContributionGraph({ heatmap }: ContributionGraphProps) {
               style={{ backgroundColor: contributionColor(level) }}
             />
           ))}
-          <span>多</span>
+          <span>{t('contrib.more')}</span>
         </div>
       </div>
     </Card>

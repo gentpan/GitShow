@@ -39,22 +39,22 @@ export function formatNumber(n: number) {
   return String(n)
 }
 
-export function timeAgo(date?: string | Date | null) {
+export function timeAgo(date?: string | Date | null, locale: 'zh' | 'en' = 'zh') {
   if (!date) return ''
   const seconds = Math.floor((Date.now() - +new Date(date)) / 1000)
-  const intervals: [number, string][] = [
-    [31536000, '年前'],
-    [2592000, '个月前'],
-    [86400, '天前'],
-    [3600, '小时前'],
-    [60, '分钟前'],
-    [1, '秒前'],
+  const intervals: [number, string, string][] = [
+    [31536000, '年前', 'y ago'],
+    [2592000, '个月前', 'mo ago'],
+    [86400, '天前', 'd ago'],
+    [3600, '小时前', 'h ago'],
+    [60, '分钟前', 'm ago'],
+    [1, '秒前', 's ago'],
   ]
-  for (const [secs, label] of intervals) {
+  for (const [secs, zh, en] of intervals) {
     const count = Math.floor(seconds / secs)
-    if (count >= 1) return `${count}${label}`
+    if (count >= 1) return locale === 'zh' ? `${count}${zh}` : `${count}${en}`
   }
-  return '刚刚'
+  return locale === 'zh' ? '刚刚' : 'just now'
 }
 
 export function sortLangPct(langPct?: Record<string, number> | null): [string, number][] {

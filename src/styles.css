@@ -1096,6 +1096,38 @@ a {
   opacity: 0.8;
 }
 
+.lang-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--gs-border);
+  border-radius: var(--gs-radius-pill);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.lang-switch-btn {
+  border: 0;
+  background: transparent;
+  color: var(--gs-text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  padding: 6px 10px;
+  border-radius: var(--gs-radius-pill);
+  cursor: pointer;
+  transition: color 160ms ease, background 160ms ease;
+}
+
+.lang-switch-btn:hover {
+  color: #fff;
+}
+
+.lang-switch-btn.is-active {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
 @media (max-width: 1023px) {
   .home-sidebar .home-avatar {
     width: 120px;

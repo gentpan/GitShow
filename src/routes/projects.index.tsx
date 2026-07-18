@@ -4,11 +4,13 @@ import { useQuery } from '@tanstack/react-query'
 import { ProjectCard } from '@/components/home/ProjectCard'
 import { getRepos, getSettings } from '@/server/api'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
+import { useI18n } from '@/lib/i18n'
 import { themeMap } from '@/lib/utils'
 
 export const Route = createFileRoute('/projects/')({ component: ProjectsPage })
 
 function ProjectsPage() {
+  const { t } = useI18n()
   const { data: repos = [], isPending: reposPending } = useQuery({
     queryKey: ['repos'],
     queryFn: () => getRepos(),
@@ -38,8 +40,8 @@ function ProjectsPage() {
     return (
       <div className="page-header">
         <div>
-          <h1 className="page-title">所有项目</h1>
-          <p className="page-subtitle">后台未开启任何项目</p>
+          <h1 className="page-title">{t('projects.title')}</h1>
+          <p className="page-subtitle">{t('projects.empty')}</p>
         </div>
       </div>
     )
@@ -49,10 +51,10 @@ function ProjectsPage() {
     <div className="space-y-8">
       <div className="page-header">
         <div>
-          <h1 className="page-title">所有项目</h1>
-          <p className="page-subtitle">精选仓库与开源作品</p>
+          <h1 className="page-title">{t('projects.title')}</h1>
+          <p className="page-subtitle">{t('projects.subtitle')}</p>
         </div>
-        <span className="gs-tag">{filteredRepos.length} 个仓库</span>
+        <span className="gs-tag">{t('projects.count', { n: filteredRepos.length })}</span>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {filteredRepos.map((repo: any) => (
