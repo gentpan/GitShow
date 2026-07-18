@@ -7,7 +7,10 @@ export interface LanguageStat {
   color: string
 }
 
-export function aggregateLanguages(repos: { languages?: Record<string, number> }[]): LanguageStat[] {
+export function aggregateLanguages(
+  repos: { languages?: Record<string, number> }[],
+  limit = 8,
+): LanguageStat[] {
   const map: Record<string, number> = {}
   for (const repo of repos) {
     if (!repo.languages) continue
@@ -19,7 +22,7 @@ export function aggregateLanguages(repos: { languages?: Record<string, number> }
   if (!total) return []
   return Object.entries(map)
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 8)
+    .slice(0, limit)
     .map(([name, size]) => ({
       name,
       size,
@@ -97,12 +100,19 @@ export interface ExternalContrib {
   url: string
 }
 
-export function deriveExternalContributions(activity: any[]): ExternalContrib[] {
+/** Only repos not owned by the site user (true external participation). */
+export function deriveExternalContributions(
+  activity: any[],
+  selfUsername?: string | null,
+): ExternalContrib[] {
+  const self = (selfUsername || '').toLowerCase()
   const map = new Map<string, ExternalContrib>()
   for (const item of activity) {
     const repoName = item.repo || ''
     if (!repoName) continue
     const owner = repoName.split('/')[0] || ''
+    if (self && owner.toLowerCase() === self) continue
+    if (item.type !== 'PullRequestEvent' && item.type !== 'PushEvent') continue
     const existing = map.get(repoName) || {
       repoName,
       owner,
@@ -119,4 +129,39 @@ export function deriveExternalContributions(activity: any[]): ExternalContrib[] 
   return [...map.values()]
     .sort((a, b) => b.commitCount + b.prCount - (a.commitCount + a.prCount))
     .slice(0, 4)
+}
+
+export interface FocusArea {
+  label: string
+  icon: string
+  percentage: number
+}
+
+/** Aggregate language bytes into focus areas for Tech Stack (not raw language chips). */
+export function deriveFocusAreas(languages: LanguageStat[]): FocusArea[] {
+  const categories: { label: string; icon: string; langs: string[] }[] = [
+    { label: '全栈 Web', icon: 'fas fa-layer-group', langs: ['TypeScript', 'JavaScript', 'Python', 'Ruby', 'PHP', 'HTML', 'CSS', 'Vue', 'Svelte'] },
+    { label: '系统与后端', icon: 'fas fa-microchip', langs: ['Rust', 'Go', 'C', 'C++', 'Java', 'C#'] },
+    { label: '移动端', icon: 'fas fa-mobile-screen', langs: ['Swift', 'Kotlin', 'Dart'] },
+    { label: '数据与智能', icon: 'fas fa-chart-line', langs: ['R', 'Julia', 'Jupyter Notebook'] },
+    { label: '运维与基础设施', icon: 'fas fa-server', langs: ['Shell', 'Dockerfile', 'HCL', 'Makefile'] },
+  ]
+
+  const total = languages.reduce((s, l) => s + l.size, 0)
+  if (!total) return []
+
+  const areas: FocusArea[] = []
+  for (const cat of categories) {
+    const size = languages
+      .filter((l) => cat.langs.includes(l.name))
+      .reduce((s, l) => s + l.size, 0)
+    if (!size) continue
+    areas.push({
+      label: cat.label,
+      icon: cat.icon,
+      percentage: Math.round((size / total) * 100),
+    })
+  }
+
+  return areas.sort((a, b) => b.percentage - a.percentage).slice(0, 4)
 }

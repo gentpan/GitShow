@@ -19,7 +19,7 @@ export function ContributionGraph({ heatmap }: ContributionGraphProps) {
     return (
       <Card padding="lg">
         <div className="text-sm text-[var(--home-text-secondary)] text-center py-8">
-          Contribution data not available
+          暂无贡献数据
         </div>
       </Card>
     )
@@ -28,10 +28,11 @@ export function ContributionGraph({ heatmap }: ContributionGraphProps) {
   return (
     <Card padding="lg" className="home-contrib-card">
       <p className="text-sm text-[var(--home-text-secondary)] mb-4">
+        近一年{' '}
         <span className="font-semibold" style={{ color: GITHUB_GREEN_ACCENT }}>
           {formatNumber(total)}
         </span>{' '}
-        contributions in the last year
+        次贡献
       </p>
 
       <div className="overflow-x-auto scrollbar-hide">
@@ -80,9 +81,9 @@ export function ContributionGraph({ heatmap }: ContributionGraphProps) {
       </div>
 
       <div className="flex items-center justify-between mt-4 text-xs text-[var(--home-text-tertiary)]">
-        <span>Last 52 weeks of activity</span>
+        <span>近 52 周活跃度</span>
         <div className="flex items-center gap-1.5">
-          <span>Less</span>
+          <span>少</span>
           {[0, 2, 5, 10, 15].map((level) => (
             <div
               key={level}
@@ -90,7 +91,7 @@ export function ContributionGraph({ heatmap }: ContributionGraphProps) {
               style={{ backgroundColor: contributionColor(level) }}
             />
           ))}
-          <span>More</span>
+          <span>多</span>
         </div>
       </div>
     </Card>

@@ -98,7 +98,7 @@ export function LanguageChart({
             </div>
           </div>
 
-          <div className="flex-1 w-full space-y-1" role="listbox" aria-label="Languages">
+          <div className="flex-1 w-full space-y-1" role="listbox" aria-label="语言占比">
             {topLanguages.map((lang) => {
               const pct = total ? Math.round((lang.size / total) * 100) : lang.percentage
               const isActive = lang.name === active
@@ -126,13 +126,13 @@ export function LanguageChart({
         </div>
       ) : (
         <div className="text-sm text-[var(--home-text-secondary)] text-center py-6">
-          No language data available
+          暂无语言数据
         </div>
       )}
 
       {topLanguages.length > 0 && (
         <p className="text-xs text-[var(--home-text-tertiary)] mt-4 text-center sm:text-left">
-          Based on {formatBytes(total)} of code · Top 5
+          基于 {formatBytes(total)} 代码量 · Top 5
         </p>
       )}
     </Card>

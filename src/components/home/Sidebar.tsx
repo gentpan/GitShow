@@ -77,7 +77,7 @@ export function Sidebar({
             className="home-btn-primary w-full"
           >
             <i className="fab fa-github" />
-            Follow on GitHub
+            在 GitHub 关注
           </a>
 
           {(pronouns || profileTags.length > 0) && (
@@ -130,7 +130,7 @@ export function Sidebar({
       {socialLinks.length > 0 && (
         <Card padding="sm">
           <div className="text-xs font-medium text-[var(--home-text-tertiary)] mb-3 uppercase tracking-wide">
-            Links
+            链接
           </div>
           <div className="flex flex-wrap gap-2">
             {socialLinks.map((link, i) => (
