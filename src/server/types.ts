@@ -68,6 +68,7 @@ export interface GitHubUser {
   followers: number
   following: number
   location: string
+  created_at?: string
 }
 
 export interface GitHubRepo {

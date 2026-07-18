@@ -81,7 +81,7 @@ function HomePage() {
     <div className="home-page animate-fade-in">
       <div className="home-lattice">
         <aside className="home-lattice-sidebar">
-          <Sidebar me={me} settings={settings} />
+          <Sidebar me={me} settings={settings} heatmap={heatmap || []} languages={languages} />
         </aside>
 
         <div className="home-lattice-main">
