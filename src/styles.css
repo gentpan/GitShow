@@ -519,6 +519,7 @@ a {
 
 .nav-brand-logo {
   display: block;
+  font-family: 'Alimama FangYuanTi VF', var(--gs-font);
   font-size: 20px;
   font-weight: 400;
   line-height: 28px;
