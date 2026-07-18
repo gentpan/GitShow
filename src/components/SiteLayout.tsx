@@ -237,7 +237,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
               className="gs-body-sm flex flex-wrap items-center justify-center gap-1.5"
               style={{ color: 'var(--gs-text-secondary)' }}
             >
-              <span>
+              <span className="footer-brand">
                 © {new Date().getFullYear()} {brand}
               </span>
               <span>·</span>
