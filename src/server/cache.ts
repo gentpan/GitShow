@@ -78,6 +78,7 @@ export function getStarHistory(): StarHistoryPoint[] {
 }
 
 export async function refreshCache(): Promise<void> {
+  ensureRefreshLoop()
   if (refreshPromise) return refreshPromise
 
   refreshPromise = (async () => {

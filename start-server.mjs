@@ -1,7 +1,7 @@
 import app from './dist/server/server/server.js'
 import { toNodeHandler } from 'srvx/node'
 import { createServer } from 'node:http'
-import { readdirSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { pathToFileURL } from 'node:url'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -12,19 +12,36 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const handler = toNodeHandler(app.fetch, { trustProxy: true })
 const server = createServer(handler)
 
+function resolveExportName(source, originalName) {
+  const re = new RegExp(`${originalName}\\s+as\\s+(\\w+)`)
+  return source.match(re)?.[1] || null
+}
+
 async function warmGitHubCache() {
   try {
     const assetsDir = join(__dirname, 'dist/server/server/assets')
-    const apiFile = readdirSync(assetsDir).find((f) => f.startsWith('api-') && f.endsWith('.js'))
-    if (!apiFile) return
-    // Loading the server-fn module starts the 1h refresh loop via getCacheWithRefresh/startRefreshLoop exports.
-    const mod = await import(pathToFileURL(join(assetsDir, apiFile)).href)
-    if (typeof mod.startRefreshLoop === 'function') {
-      mod.startRefreshLoop()
+    const cacheFile = readdirSync(assetsDir).find((f) => f.startsWith('cache-') && f.endsWith('.js'))
+    if (!cacheFile) {
+      console.warn('[cache] warm skipped: cache bundle not found')
       return
     }
-    // Fallback: hit a cache-backed server function after listen.
-    await fetch(`http://127.0.0.1:${PORT}/`)
+    const source = readFileSync(join(assetsDir, cacheFile), 'utf8')
+    const startName = resolveExportName(source, 'startRefreshLoop')
+    const refreshName = resolveExportName(source, 'refreshCache')
+    const getName = resolveExportName(source, 'getCacheWithRefresh')
+    const mod = await import(pathToFileURL(join(assetsDir, cacheFile)).href)
+
+    if (startName && typeof mod[startName] === 'function') {
+      mod[startName]()
+      return
+    }
+    if (refreshName && typeof mod[refreshName] === 'function') {
+      await mod[refreshName]()
+      return
+    }
+    if (getName && typeof mod[getName] === 'function') {
+      await mod[getName]()
+    }
   } catch (err) {
     console.error('[cache] warm failed:', err)
   }
