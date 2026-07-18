@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getSettings, getMe, adminLogin } from '@/server/api'
 import { adminAuth, passkey } from '@/lib/auth'
 import { darkenColor, themeMap } from '@/lib/utils'
+import { GitShowLogo } from '@/components/GitShowLogo'
 import { LatticeCross } from '@/components/LatticeCross'
 
 const baseNavLinks = [
@@ -117,11 +118,8 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
 
         <header className={`nav-shell ${navHidden && !mobileOpen ? 'nav-shell-hidden' : ''}`}>
           <div className="gs-container nav-bar">
-            <Link to="/" className="nav-brand" activeProps={{ className: 'nav-brand' }}>
-              <span className="nav-brand-mark" aria-hidden>
-                <i className="fas fa-code" />
-              </span>
-              <span>{brand}</span>
+            <Link to="/" className="nav-brand" activeProps={{ className: 'nav-brand' }} aria-label={brand}>
+              <GitShowLogo className="nav-brand-logo" />
             </Link>
 
             <nav className="nav-links hidden sm:flex" aria-label="主导航">
