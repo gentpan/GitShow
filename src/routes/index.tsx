@@ -60,6 +60,10 @@ function HomePage() {
   }, [allRepos, settings, sortBy])
 
   const languages = useMemo(() => aggregateLanguages(allRepos || []), [allRepos])
+  const totalForks = useMemo(
+    () => (allRepos || []).reduce((sum: number, r: any) => sum + (r.forks_count || 0), 0),
+    [allRepos],
+  )
 
   const externalContribs = useMemo(() => deriveExternalContributions(activity || []), [activity])
   const totalPRs = useMemo(
@@ -81,7 +85,13 @@ function HomePage() {
     <div className="home-page animate-fade-in">
       <div className="home-lattice">
         <aside className="home-lattice-sidebar">
-          <Sidebar me={me} settings={settings} heatmap={heatmap || []} languages={languages} />
+          <Sidebar
+            me={me}
+            settings={settings}
+            heatmap={heatmap || []}
+            languages={languages}
+            totalForks={totalForks}
+          />
         </aside>
 
         <div className="home-lattice-main">
