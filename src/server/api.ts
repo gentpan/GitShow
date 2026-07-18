@@ -218,7 +218,7 @@ export const saveSettingsFn = createServerFn({ method: 'POST' })
       homepage_repo_count: data.homepage_repo_count || 6,
       homepage_repos: data.homepage_repos || [],
       social_links: data.social_links || [],
-      theme: data.theme || 'green',
+      theme: data.theme || 'blue',
       admin_password: data.admin_password ?? current.admin_password,
       passkeys: current.passkeys,
       passkey_credentials: current.passkey_credentials,

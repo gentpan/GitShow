@@ -49,7 +49,7 @@ export function RepoDetailPage({ name, initialDetail, initialSettings }: RepoDet
       .finally(() => setPending(false))
   }, [name, initialDetail, initialSettings])
 
-  const theme = themeMap[(settings?.theme as keyof typeof themeMap) || 'green'] || themeMap.green
+  const theme = themeMap[(settings?.theme as keyof typeof themeMap) || 'blue'] || themeMap.blue
   const c = theme.primary
   const repo = data?.repo
 
@@ -96,26 +96,23 @@ export function RepoDetailPage({ name, initialDetail, initialSettings }: RepoDet
   const crumbs = breadcrumbParts()
 
   return (
-    <div className="space-y-6">
+    <div className="gs-rise space-y-8">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="min-w-0">
-          <Link to="/projects" className="text-xs mb-2 inline-block" style={{ color: '#71717a' }}>
+          <Link to="/projects" className="gs-caption mb-3 inline-flex items-center gap-1 footer-text-link">
             ← 所有项目
           </Link>
-          <h1 className="text-2xl font-bold flex items-center gap-2 flex-wrap" style={{ color: '#fafafa' }}>
-            <i className={`${repoIcon(repo.language)} text-base`} style={{ color: c }} />
+          <h1 className="page-title flex items-center gap-3 flex-wrap">
+            <i className={`${repoIcon(repo.language)} text-xl`} style={{ color: c }} />
             {repo.full_name || repo.name}
             {repo.latest_version && (
-              <span
-                className="text-xs px-2 py-0.5 font-medium"
-                style={{ backgroundColor: c, color: '#111' }}
-              >
+              <span className="gs-tag" style={{ background: c }}>
                 {repo.latest_version}
               </span>
             )}
           </h1>
           {repo.description && (
-            <p className="text-sm mt-2 max-w-3xl" style={{ color: '#a1a1aa' }}>
+            <p className="page-subtitle max-w-3xl">
               {repo.description}
             </p>
           )}
@@ -124,14 +121,14 @@ export function RepoDetailPage({ name, initialDetail, initialSettings }: RepoDet
           href={repo.html_url}
           target="_blank"
           rel="noreferrer"
-          className="contact-btn nav-pill px-4 py-2 text-sm font-medium shrink-0"
+          className="contact-btn shrink-0"
         >
-          <i className="fab fa-github mr-1.5" />
+          <i className="fab fa-github" />
           在 GitHub 查看
         </a>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           ['Stars', repo.stargazers_count],
           ['Forks', repo.forks_count],

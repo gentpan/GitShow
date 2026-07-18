@@ -63,10 +63,10 @@ export function sortLangPct(langPct?: Record<string, number> | null): [string, n
 }
 
 export const themeMap = {
+  blue: { primary: '#1447E6', rgb: '20, 71, 230' },
   green: { primary: '#16a34a', rgb: '22, 163, 74' },
-  blue: { primary: '#2563eb', rgb: '37, 99, 235' },
   purple: { primary: '#9333ea', rgb: '147, 51, 234' },
-  orange: { primary: '#ea580c', rgb: '234, 88, 12' },
+  orange: { primary: '#F05100', rgb: '240, 81, 0' },
 } as const
 
 export function darkenColor(hex: string) {

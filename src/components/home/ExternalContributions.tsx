@@ -13,9 +13,9 @@ export function ExternalContributions({ contributions, totalPRs, totalCommits, a
   if (!contributions.length) return null
 
   return (
-    <div className="space-y-4">
+    <section className="space-y-4">
       <div className="flex items-center justify-between gap-4 flex-wrap">
-        <h3 className="text-sm font-medium text-[var(--home-text-primary)]">Open Source Contributions</h3>
+        <h2 className="gs-h4">Open Source Contributions</h2>
         <div className="flex items-center gap-3 text-xs text-[var(--home-text-secondary)]">
           <span><span className="font-semibold" style={{ color: accent }}>{formatNumber(totalPRs)}</span> PRs</span>
           <span><span className="font-semibold" style={{ color: accent }}>{formatNumber(totalCommits)}</span> commits</span>
@@ -29,7 +29,7 @@ export function ExternalContributions({ contributions, totalPRs, totalCommits, a
             href={contrib.url}
             target="_blank"
             rel="noreferrer"
-            className="home-card home-rounded home-card-hover block p-4 transition-all"
+            className="home-card home-card-hover block p-6 transition-all"
           >
             <div className="flex items-start justify-between gap-2 mb-2">
               <h4 className="font-medium text-sm truncate" style={{ color: accent }}>
@@ -59,6 +59,6 @@ export function ExternalContributions({ contributions, totalPRs, totalCommits, a
           </a>
         ))}
       </div>
-    </div>
+    </section>
   )
 }

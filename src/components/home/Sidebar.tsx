@@ -32,7 +32,7 @@ export function Sidebar({ me, settings, accent }: SidebarProps) {
             href={user?.html_url}
             target="_blank"
             rel="noreferrer"
-            className="home-btn-primary home-rounded w-full flex items-center justify-center gap-2 py-2.5 text-sm font-medium transition-colors"
+            className="home-btn-primary w-full"
           >
             <i className="fab fa-github" />
             Follow on GitHub

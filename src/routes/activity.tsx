@@ -41,7 +41,7 @@ function ActivityPage() {
 
   const pending = feedPending || settingsPending
 
-  const c = (themeMap[(settings?.theme as keyof typeof themeMap) || 'green'] || themeMap.green).primary
+  const c = (themeMap[(settings?.theme as keyof typeof themeMap) || 'blue'] || themeMap.blue).primary
   const filtered = useMemo(() => selectedType === 'all' ? (feed || []) : (feed || []).filter((i: any) => i.type === selectedType), [feed, selectedType])
 
   if (pending) {
@@ -49,15 +49,18 @@ function ActivityPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold" style={{ color: '#fafafa' }}>活动看板</h1>
+    <div className="gs-rise space-y-8">
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">活动看板</h1>
+          <p className="page-subtitle">最近的 GitHub 动态与贡献</p>
+        </div>
         <div className="flex items-center gap-2 flex-wrap">
           {eventTypes.map((t) => (
             <button
               key={t.type}
               type="button"
-              className={`px-3 py-1.5 text-xs font-medium transition-colors ${selectedType === t.type ? 'active-filter' : 'inactive-filter'}`}
+              className={`px-4 py-2 text-sm font-medium transition-colors ${selectedType === t.type ? 'active-filter' : 'inactive-filter'}`}
               onClick={() => setSelectedType(t.type)}
             >
               <i className={`${t.icon} mr-1`} />{t.label}
@@ -67,18 +70,18 @@ function ActivityPage() {
       </div>
 
       {!filtered.length ? (
-        <div className="text-center py-20" style={{ color: '#a1a1aa' }}>该类型暂无动态</div>
+        <div className="text-center py-20" style={{ color: 'var(--gs-text-secondary)' }}>该类型暂无动态</div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {filtered.map((item: any) => {
             const st = typeMap[item.type] || { label: item.type, bg: 'rgba(161,161,170,0.15)', color: '#a1a1aa' }
             return (
-              <div key={item.id} className="activity-row flex items-center gap-3 px-4 py-2.5 flex-wrap sm:flex-nowrap">
-                <img src={item.avatar_url} className="w-6 h-6 rounded-full shrink-0" alt="" />
-                <span className="text-xs shrink-0 px-1.5 py-0.5 rounded font-medium" style={{ backgroundColor: st.bg, color: st.color }}>{st.label}</span>
-                <a href={item.repo_url} target="_blank" rel="noreferrer" className="hover:underline text-sm truncate min-w-0" style={{ color: c }}>{item.repo}</a>
-                {item.message && <span className="text-sm truncate max-w-xs min-w-0" style={{ color: '#a1a1aa' }}>{item.message}</span>}
-                <span className="text-xs sm:ml-auto shrink-0" style={{ color: '#52525b' }}>{timeAgo(item.created_at)}</span>
+              <div key={item.id} className="activity-row flex items-center gap-3 px-5 py-3.5 flex-wrap sm:flex-nowrap">
+                <img src={item.avatar_url} className="w-7 h-7 rounded-full shrink-0" alt="" />
+                <span className="text-xs shrink-0 px-2.5 py-1 rounded-full font-medium" style={{ backgroundColor: st.bg, color: st.color }}>{st.label}</span>
+                <a href={item.repo_url} target="_blank" rel="noreferrer" className="footer-text-link text-sm truncate min-w-0" style={{ color: c }}>{item.repo}</a>
+                {item.message && <span className="text-sm truncate max-w-xs min-w-0" style={{ color: 'var(--gs-text-secondary)' }}>{item.message}</span>}
+                <span className="text-xs sm:ml-auto shrink-0" style={{ color: 'var(--gs-text-muted)' }}>{timeAgo(item.created_at)}</span>
               </div>
             )
           })}

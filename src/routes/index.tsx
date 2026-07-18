@@ -41,7 +41,7 @@ function HomePage() {
 
   const pending = mePending || reposPending || activityPending || heatmapPending || settingsPending
 
-  const theme = themeMap[(settings?.theme as keyof typeof themeMap) || 'green'] || themeMap.green
+  const theme = themeMap[(settings?.theme as keyof typeof themeMap) || 'blue'] || themeMap.blue
   const accent = theme.primary
 
   const repos = useMemo(() => {
@@ -67,7 +67,10 @@ function HomePage() {
   if (pending) {
     return (
       <div className="home-page flex items-center justify-center py-20">
-        <div className="loading-spinner w-8 h-8 border-2 animate-spin" style={{ borderColor: accent, borderTopColor: 'transparent' }} />
+        <div
+          className="loading-spinner w-8 h-8 border-2 animate-spin"
+          style={{ borderColor: accent, borderTopColor: 'transparent' }}
+        />
       </div>
     )
   }
@@ -76,36 +79,41 @@ function HomePage() {
 
   return (
     <div className="home-page animate-fade-in">
-      <div className="grid lg:grid-cols-[296px_1fr] gap-6 lg:gap-8">
-        <Sidebar me={me} settings={settings} accent={accent} />
+      <div className="grid lg:grid-cols-[300px_1fr] gap-8 lg:gap-10">
+        <div className="gs-rise">
+          <Sidebar me={me} settings={settings} accent={accent} />
+        </div>
 
-        <main className="space-y-6 min-w-0">
-          <Card padding="lg" className="home-welcome-card">
-            <h2 className="text-xl font-semibold home-gradient-text mb-1">
-              Welcome to {displayName}&apos;s Hub
-            </h2>
-            <p className="text-sm text-[var(--home-text-secondary)]">
-              Explore open source contributions and projects
+        <div className="space-y-8 min-w-0">
+          <Card padding="none" className="home-welcome-card gs-rise gs-rise-delay-1 overflow-hidden">
+            <p className="gs-caption mb-3" style={{ color: 'var(--gs-interactive)' }}>
+              Developer Hub
             </p>
-            <p className="text-xs text-[var(--home-text-tertiary)] mt-3">
-              Powered by GitShow
+            <h1 className="gs-h3 home-gradient-text mb-3">
+              Welcome to {displayName}&apos;s Hub
+            </h1>
+            <p className="gs-body-sm" style={{ color: 'var(--home-text-secondary)', maxWidth: 560 }}>
+              Explore open source contributions, tech stack, and notable projects in one place.
             </p>
           </Card>
 
-          <StatsGrid me={me} heatmap={heatmap || []} accent={accent} />
+          <section className="gs-rise gs-rise-delay-2 space-y-3">
+            <h2 className="gs-h4 px-1">Overview</h2>
+            <StatsGrid me={me} heatmap={heatmap || []} accent={accent} />
+          </section>
 
-          <ContributionGraph heatmap={heatmap || []} accent={accent} />
+          <section className="space-y-3">
+            <h2 className="gs-h4 px-1">Contributions</h2>
+            <ContributionGraph heatmap={heatmap || []} accent={accent} />
+          </section>
 
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="space-y-3">
-              <h3 className="text-sm font-medium text-[var(--home-text-primary)] px-1">Tech Stack & Languages</h3>
+          <section className="space-y-3">
+            <h2 className="gs-h4 px-1">Tech Stack & Languages</h2>
+            <div className="grid md:grid-cols-2 gap-4">
               <TechStack languages={languages} bio={null} />
-            </div>
-            <div className="space-y-3">
-              <h3 className="text-sm font-medium text-transparent px-1 select-none hidden md:block">.</h3>
               <LanguageChart languages={languages} />
             </div>
-          </div>
+          </section>
 
           <ExternalContributions
             contributions={externalContribs}
@@ -115,20 +123,20 @@ function HomePage() {
           />
 
           {repos.length > 0 && (
-            <div className="space-y-4">
+            <section className="space-y-4">
               <div className="flex items-center justify-between gap-4 flex-wrap">
-                <h3 className="text-sm font-medium text-[var(--home-text-primary)]">Notable Projects</h3>
-                <div className="flex items-center gap-1 text-xs">
+                <h2 className="gs-h4">Notable Projects</h2>
+                <div className="flex items-center gap-2 text-xs">
                   <button
                     type="button"
-                    className={`home-sort-btn home-rounded px-3 py-1.5 transition-colors ${sortBy === 'stars' ? 'home-sort-active' : ''}`}
+                    className={`home-sort-btn px-4 py-2 transition-colors ${sortBy === 'stars' ? 'home-sort-active' : ''}`}
                     onClick={() => setSortBy('stars')}
                   >
                     Most Stars
                   </button>
                   <button
                     type="button"
-                    className={`home-sort-btn home-rounded px-3 py-1.5 transition-colors ${sortBy === 'updated' ? 'home-sort-active' : ''}`}
+                    className={`home-sort-btn px-4 py-2 transition-colors ${sortBy === 'updated' ? 'home-sort-active' : ''}`}
                     onClick={() => setSortBy('updated')}
                   >
                     Recently Updated
@@ -141,9 +149,9 @@ function HomePage() {
                   <ProjectCard key={repo.id} repo={repo} accent={accent} />
                 ))}
               </div>
-            </div>
+            </section>
           )}
-        </main>
+        </div>
       </div>
     </div>
   )

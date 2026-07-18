@@ -10,8 +10,8 @@ interface CardProps {
 
 const paddingMap = {
   none: '',
-  sm: 'p-3',
-  md: 'p-4',
+  sm: 'p-4',
+  md: 'p-6',
   lg: 'p-6',
 }
 
