@@ -513,8 +513,17 @@ a {
 .nav-brand {
   display: inline-flex;
   align-items: center;
+  gap: 10px;
   color: #ffffff;
   line-height: 1;
+}
+
+.nav-brand-mark {
+  display: block;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  color: #ffffff;
 }
 
 .nav-brand-logo {

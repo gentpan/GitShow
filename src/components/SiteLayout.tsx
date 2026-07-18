@@ -6,6 +6,7 @@ import { adminAuth, passkey } from '@/lib/auth'
 import { darkenColor, themeMap } from '@/lib/utils'
 import { GitShowFooterLogo } from '@/components/GitShowFooterLogo'
 import { GitShowLogo } from '@/components/GitShowLogo'
+import { GitShowMark } from '@/components/GitShowMark'
 import { LatticeCross } from '@/components/LatticeCross'
 
 const baseNavLinks = [
@@ -122,6 +123,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
         <header className={`nav-shell ${navHidden && !mobileOpen ? 'nav-shell-hidden' : ''}`}>
           <div className="gs-container nav-bar">
             <Link to="/" className="nav-brand" activeProps={{ className: 'nav-brand' }} aria-label={brand}>
+              <GitShowMark className="nav-brand-mark" title={brand} />
               <GitShowLogo className="nav-brand-logo" title={brand} />
             </Link>
 
