@@ -28,7 +28,7 @@ export const Route = createRootRoute({
       { rel: 'apple-touch-icon', href: '/apple-touch-icon.png', sizes: '180x180' },
       { rel: 'manifest', href: '/site.webmanifest' },
       { rel: 'stylesheet', href: 'https://static.bluecdn.com/fonts/alimama-fangyuanti.css' },
-      { rel: 'stylesheet', href: 'https://static.utterlog.com/libs/fontawesome/7.2.0/css/all.min.css' },
+      { rel: 'stylesheet', href: 'https://static.bluecdn.com/libs/fontawesome/7.3.0/css/all.min.css' },
     ],
   }),
   component: RootComponent,
