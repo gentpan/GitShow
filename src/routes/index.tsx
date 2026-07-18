@@ -10,11 +10,7 @@ import { StatsGrid } from '@/components/home/StatsGrid'
 import { TechStack } from '@/components/home/TechStack'
 import { Card } from '@/components/home/ui/Card'
 import { getMe, getRepos, getActivity, getHeatmap, getSettings } from '@/server/api'
-import {
-  aggregateLanguages,
-  deriveExternalContributions,
-  deriveFocusAreas,
-} from '@/lib/homeUtils'
+import { aggregateLanguages, deriveExternalContributions } from '@/lib/homeUtils'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { themeMap } from '@/lib/utils'
 
@@ -64,14 +60,14 @@ function HomePage() {
     return list.slice(0, count)
   }, [allRepos, settings, sortBy])
 
-  const languages = useMemo(() => aggregateLanguages(allRepos || [], 20), [allRepos])
+  const languages = useMemo(() => aggregateLanguages(allRepos || [], 100), [allRepos])
   const topLanguages = useMemo(() => languages.slice(0, 5), [languages])
-  const focusAreas = useMemo(() => deriveFocusAreas(languages), [languages])
 
-  const resolvedActiveLanguage =
+  const chartActiveLanguage =
     activeLanguage && topLanguages.some((l) => l.name === activeLanguage)
       ? activeLanguage
       : topLanguages[0]?.name || null
+  const stackActiveLanguage = activeLanguage || chartActiveLanguage
 
   const totalForks = useMemo(
     () => (allRepos || []).reduce((sum: number, r: any) => sum + (r.forks_count || 0), 0),
@@ -139,10 +135,14 @@ function HomePage() {
           <section className="home-lattice-block space-y-3">
             <h2 className="gs-h4 px-1">技术栈与语言</h2>
             <div className="grid md:grid-cols-2 gap-4">
-              <TechStack focusAreas={focusAreas} />
+              <TechStack
+                languages={languages}
+                activeLanguage={stackActiveLanguage}
+                onActiveLanguageChange={setActiveLanguage}
+              />
               <LanguageChart
                 languages={topLanguages}
-                activeLanguage={resolvedActiveLanguage}
+                activeLanguage={chartActiveLanguage}
                 onActiveLanguageChange={setActiveLanguage}
               />
             </div>
