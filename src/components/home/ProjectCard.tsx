@@ -24,6 +24,11 @@ export function ProjectCard({ repo, accent }: ProjectCardProps) {
           >
             <i className="fas fa-bookmark text-xs shrink-0 opacity-70" />
             <span className="truncate">{repo.name}</span>
+            {repo.latest_version && (
+              <span className="shrink-0 font-normal text-[var(--home-text-tertiary)]">
+                {repo.latest_version}
+              </span>
+            )}
           </h4>
           {lang && <Badge color={langColor(lang)}>{lang}</Badge>}
         </div>
@@ -31,12 +36,6 @@ export function ProjectCard({ repo, accent }: ProjectCardProps) {
         <p className="text-sm text-[var(--home-text-secondary)] line-clamp-2 min-h-[40px] mb-3">
           {repo.description || 'No description available for this repository.'}
         </p>
-
-        {repo.latest_version && (
-          <div className="mb-3">
-            <Badge variant="outline">{repo.latest_version}</Badge>
-          </div>
-        )}
 
         <div className="flex items-center justify-between gap-3 text-xs text-[var(--home-text-tertiary)]">
           <div className="flex items-center gap-4">
