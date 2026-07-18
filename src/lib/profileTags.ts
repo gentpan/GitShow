@@ -45,24 +45,6 @@ const LANGUAGE_CATEGORIES: Record<string, { languages: string[]; icon: string }>
   },
 }
 
-const LANGUAGE_SPECIALIST: Record<string, { label: string; icon: string }> = {
-  TypeScript: { label: 'TypeScript', icon: 'fab fa-js' },
-  JavaScript: { label: 'JavaScript', icon: 'fab fa-js' },
-  Python: { label: 'Pythonista', icon: 'fab fa-python' },
-  Go: { label: 'Gopher', icon: 'fab fa-golang' },
-  Rust: { label: 'Rustacean', icon: 'fas fa-gears' },
-  Java: { label: 'Java Dev', icon: 'fab fa-java' },
-  'C#': { label: 'C# Dev', icon: 'fas fa-hashtag' },
-  PHP: { label: 'PHP Dev', icon: 'fab fa-php' },
-  Ruby: { label: 'Rubyist', icon: 'fas fa-gem' },
-  Swift: { label: 'Swift Dev', icon: 'fab fa-swift' },
-  Kotlin: { label: 'Kotlin Dev', icon: 'fas fa-mobile-screen-button' },
-  Dart: { label: 'Flutter Dev', icon: 'fas fa-mobile' },
-  Vue: { label: 'Vue Dev', icon: 'fab fa-vuejs' },
-  HTML: { label: 'Front-End', icon: 'fas fa-paintbrush' },
-  CSS: { label: 'Front-End', icon: 'fas fa-paintbrush' },
-}
-
 const MAX_TAGS = 8
 
 function languageCategory(language: string): ProfileTag | null {
@@ -119,12 +101,10 @@ export function generateProfileTags(input: ProfileTagInput): ProfileTag[] {
     pushUnique(tags, { label: 'Networker', icon: 'fas fa-share-nodes' })
   }
 
-  // Language category + specialist
+  // Language category only (e.g. Full-Stack) — no per-language specialist badges
   if (input.topLanguage) {
     const cat = languageCategory(input.topLanguage)
     if (cat) pushUnique(tags, cat)
-    const specialist = LANGUAGE_SPECIALIST[input.topLanguage]
-    if (specialist) pushUnique(tags, specialist)
   }
 
   // Polyglot / focused stack
