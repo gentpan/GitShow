@@ -96,7 +96,7 @@ export function RepoDetailPage({ name, initialDetail, initialSettings }: RepoDet
   const crumbs = breadcrumbParts()
 
   return (
-    <div className="gs-rise space-y-8">
+    <div className="space-y-8">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="min-w-0">
           <Link to="/projects" className="gs-caption mb-3 inline-flex items-center gap-1 footer-text-link">
@@ -165,7 +165,7 @@ export function RepoDetailPage({ name, initialDetail, initialSettings }: RepoDet
             </div>
             {crumbs.length > 0 && (
               <div
-                className="repo-breadcrumb text-xs mb-3 flex flex-wrap items-center gap-1"
+                className="text-xs mb-3 flex flex-wrap items-center gap-1"
                 style={{ color: '#71717a' }}
               >
                 <button type="button" onClick={() => openDir('')} style={{ color: c }}>

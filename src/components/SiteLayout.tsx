@@ -1,5 +1,6 @@
 import { Link, useRouterState } from '@tanstack/react-router'
 import { useEffect, useMemo, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { getSettings, getMe, adminLogin } from '@/server/api'
 import { adminAuth, passkey } from '@/lib/auth'
 import { darkenColor, themeMap } from '@/lib/utils'
@@ -13,20 +14,25 @@ const baseNavLinks = [
 
 export function SiteLayout({ children }: { children: React.ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
-  const [settings, setSettings] = useState<any>(null)
-  const [me, setMe] = useState<any>(null)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [navHidden, setNavHidden] = useState(false)
   const [showLogin, setShowLogin] = useState(false)
   const [password, setPassword] = useState('')
   const [loginError, setLoginError] = useState('')
   const [passkeyLoading, setPasskeyLoading] = useState(false)
-  const [loggedIn, setLoggedIn] = useState(false)
+  const [loggedIn, setLoggedIn] = useState(() => adminAuth.isLoggedIn())
+
+  const { data: settings } = useQuery({
+    queryKey: ['settings'],
+    queryFn: () => getSettings(),
+  })
+  const { data: me } = useQuery({
+    queryKey: ['me'],
+    queryFn: () => getMe(),
+  })
 
   useEffect(() => {
-    getSettings().then(setSettings).catch(() => {})
-    getMe().then(setMe).catch(() => {})
-    setLoggedIn(adminAuth.isLoggedIn() || pathname === '/admin')
+    setLoggedIn(adminAuth.isLoggedIn())
   }, [pathname])
 
   useEffect(() => {
@@ -46,9 +52,9 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
   const theme = themeMap[(settings?.theme as keyof typeof themeMap) || 'blue'] || themeMap.blue
   const navLinks = useMemo(() => {
     const links = [...baseNavLinks]
-    if (loggedIn || pathname === '/admin') links.push({ path: '/admin', label: '管理', icon: 'fas fa-gear' })
+    if (loggedIn) links.push({ path: '/admin', label: '管理', icon: 'fas fa-gear' })
     return links
-  }, [loggedIn, pathname])
+  }, [loggedIn])
 
   const rootStyle = {
     ['--theme-primary' as string]: theme.primary,
@@ -114,7 +120,9 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
                 key={link.path}
                 to={link.path}
                 className={`nav-link ${isActive(link.path) ? 'nav-link-active' : ''}`}
-                activeProps={{ className: `nav-link ${isActive(link.path) ? 'nav-link-active' : ''}` }}
+                activeProps={{
+                  className: `nav-link ${isActive(link.path) ? 'nav-link-active' : ''}`,
+                }}
               >
                 {link.label}
               </Link>
@@ -132,6 +140,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
             type="button"
             className="btn-icon sm:hidden"
             aria-label={mobileOpen ? '关闭菜单' : '打开菜单'}
+            aria-expanded={mobileOpen}
             onClick={() => setMobileOpen(!mobileOpen)}
           >
             <i className={mobileOpen ? 'fas fa-xmark text-base' : 'fas fa-bars text-sm'} />
@@ -173,11 +182,21 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
 
       <footer className="gs-footer">
         <div className="gs-container py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="gs-body-sm flex flex-wrap items-center justify-center gap-1.5" style={{ color: 'var(--gs-text-secondary)' }}>
-            <span>© {new Date().getFullYear()} {brand}</span>
+          <div
+            className="gs-body-sm flex flex-wrap items-center justify-center gap-1.5"
+            style={{ color: 'var(--gs-text-secondary)' }}
+          >
+            <span>
+              © {new Date().getFullYear()} {brand}
+            </span>
             <span>·</span>
             <span>build with</span>
-            <a href="https://github.com/gentpan/GitShow" target="_blank" rel="noreferrer" className="footer-text-link">
+            <a
+              href="https://github.com/gentpan/GitShow"
+              target="_blank"
+              rel="noreferrer"
+              className="footer-text-link"
+            >
               GitShow
             </a>
           </div>
@@ -212,9 +231,18 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
                 {showLogin && (
                   <div className="footer-login-popover absolute bottom-full right-0 mb-2 w-64 p-4 space-y-3">
                     <div className="gs-caption">登录管理</div>
-                    {loginError && <div className="gs-caption" style={{ color: 'var(--gs-error)' }}>{loginError}</div>}
+                    {loginError && (
+                      <div className="gs-caption" style={{ color: 'var(--gs-error)' }}>
+                        {loginError}
+                      </div>
+                    )}
                     {settings?.has_passkey && passkey.isSupported() && (
-                      <button type="button" className="btn-secondary w-full text-xs" disabled={passkeyLoading} onClick={loginPasskey}>
+                      <button
+                        type="button"
+                        className="btn-secondary w-full text-xs"
+                        disabled={passkeyLoading}
+                        onClick={loginPasskey}
+                      >
                         <i className="fas fa-fingerprint" />
                         {passkeyLoading ? '验证中...' : '使用 Passkey'}
                       </button>
@@ -225,11 +253,17 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
                       onChange={(e) => setPassword(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && login()}
                       className="input-field w-full px-4 py-2 text-sm"
-                      placeholder={settings?.has_admin_password ? '输入管理密码' : '无需密码，回车进入'}
+                      placeholder={
+                        settings?.has_admin_password ? '输入管理密码' : '无需密码，回车进入'
+                      }
                     />
                     <div className="flex items-center gap-2">
-                      <button type="button" className="btn-primary flex-1" onClick={login}>登录</button>
-                      <button type="button" className="btn-ghost" onClick={() => setShowLogin(false)}>取消</button>
+                      <button type="button" className="btn-primary flex-1" onClick={login}>
+                        登录
+                      </button>
+                      <button type="button" className="btn-ghost" onClick={() => setShowLogin(false)}>
+                        取消
+                      </button>
                     </div>
                   </div>
                 )}

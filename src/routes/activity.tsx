@@ -31,7 +31,7 @@ function ActivityPage() {
   const [selectedType, setSelectedType] = useState('all')
 
   const { data: feed, isPending: feedPending } = useQuery({
-    queryKey: ['activity'],
+    queryKey: ['activity', 50],
     queryFn: () => getActivity({ data: { limit: 50 } }),
   })
   const { data: settings, isPending: settingsPending } = useQuery({
@@ -49,7 +49,7 @@ function ActivityPage() {
   }
 
   return (
-    <div className="gs-rise space-y-8">
+    <div className="space-y-8">
       <div className="page-header">
         <div>
           <h1 className="page-title">活动看板</h1>

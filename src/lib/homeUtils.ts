@@ -46,14 +46,13 @@ export function formatBytes(bytes: number): string {
   return `${bytes} bytes`
 }
 
-const CONTRIB_COLORS = ['#161b22', '#0e4429', '#006d32', '#26a641', '#39d353']
-
-export function contributionColor(count: number): string {
-  if (!count) return CONTRIB_COLORS[0]
-  if (count <= 2) return CONTRIB_COLORS[1]
-  if (count <= 5) return CONTRIB_COLORS[2]
-  if (count <= 10) return CONTRIB_COLORS[3]
-  return CONTRIB_COLORS[4]
+/** Empty cell + 4 intensity levels from theme primary RGB (CSS var). */
+export function contributionColor(count: number, rgb = '20, 71, 230'): string {
+  if (!count) return '#161616'
+  if (count <= 2) return `rgba(${rgb}, 0.28)`
+  if (count <= 5) return `rgba(${rgb}, 0.48)`
+  if (count <= 10) return `rgba(${rgb}, 0.72)`
+  return `rgba(${rgb}, 1)`
 }
 
 export interface HeatmapWeek {

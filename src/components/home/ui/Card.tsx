@@ -1,11 +1,9 @@
-import type { ReactNode, MouseEvent } from 'react'
+import type { ReactNode } from 'react'
 
 interface CardProps {
   children: ReactNode
   className?: string
   padding?: 'none' | 'sm' | 'md' | 'lg'
-  hover?: boolean
-  onClick?: (e: MouseEvent<HTMLDivElement>) => void
 }
 
 const paddingMap = {
@@ -15,14 +13,6 @@ const paddingMap = {
   lg: 'p-6',
 }
 
-export function Card({ children, className = '', padding = 'md', hover = false, onClick }: CardProps) {
-  return (
-    <div
-      className={`home-card ${paddingMap[padding]} ${hover ? 'home-card-hover cursor-pointer' : ''} ${className}`}
-      onClick={onClick}
-      role={onClick ? 'button' : undefined}
-    >
-      {children}
-    </div>
-  )
+export function Card({ children, className = '', padding = 'md' }: CardProps) {
+  return <div className={`home-card ${paddingMap[padding]} ${className}`}>{children}</div>
 }

@@ -8,23 +8,19 @@ interface BadgeProps {
 }
 
 export function Badge({ children, variant = 'default', color, className = '' }: BadgeProps) {
-  const base = 'home-badge home-rounded-full inline-flex items-center px-2.5 py-1 text-xs font-medium whitespace-nowrap'
+  const base = `home-badge home-badge-${variant === 'default' ? 'default' : variant} ${className}`.trim()
+
   if (color) {
     const style =
       variant === 'solid'
         ? { backgroundColor: color, color: '#fff' }
         : { backgroundColor: `${color}20`, color, border: `1px solid ${color}40` }
     return (
-      <span className={`${base} ${className}`} style={style}>
+      <span className={`home-badge ${className}`.trim()} style={style}>
         {children}
       </span>
     )
   }
-  if (variant === 'outline') {
-    return <span className={`${base} home-badge-outline ${className}`}>{children}</span>
-  }
-  if (variant === 'solid') {
-    return <span className={`${base} home-badge-solid ${className}`}>{children}</span>
-  }
-  return <span className={`${base} home-badge-default ${className}`}>{children}</span>
+
+  return <span className={base}>{children}</span>
 }
