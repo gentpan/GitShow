@@ -63,7 +63,7 @@ const LANGUAGE_SPECIALIST: Record<string, { label: string; icon: string }> = {
   CSS: { label: 'Front-End', icon: 'fas fa-paintbrush' },
 }
 
-const MAX_TAGS = 6
+const MAX_TAGS = 8
 
 function languageCategory(language: string): ProfileTag | null {
   for (const [label, meta] of Object.entries(LANGUAGE_CATEGORIES)) {
