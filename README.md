@@ -66,13 +66,6 @@
 git clone https://github.com/gentpan/GitShow.git
 cd GitShow
 
-# 复制配置文件 | Copy config files
-cp config.json.example config.json
-cp settings.json.example settings.json
-
-# 编辑 config.json 填入你的 GitHub username 和 token
-# Edit config.json with your GitHub username and token
-
 # 启动开发服务器 | Start dev server
 ./start.sh
 # 或 | or
@@ -80,18 +73,9 @@ bun install
 bun --bun run dev
 ```
 
-访问 | Visit http://localhost:3000
+访问 | Visit http://localhost:3000 ，打开 `/admin` 完成站点与 GitHub 配置。
 
----
-
-## 配置说明 | Configuration
-
-| 文件 | File | 用途 | Purpose |
-|------|------|------|---------|
-| `config.json` | GitHub 用户名、Token、Following 列表 | GitHub username, token, following list |
-| `settings.json` | 站点标题、社交链接、主题、管理员密码、Passkey | Site title, social links, theme, admin password, passkeys |
-| `star-history.json` | Star 历史曲线（自动生成） | Star history (auto-generated) |
-| `.env` | 可选，GITHUB_TOKEN 覆盖 config 中的 token | Optional, GITHUB_TOKEN overrides config |
+Visit http://localhost:3000, then open `/admin` to finish setup.
 
 ---
 
@@ -100,10 +84,6 @@ bun --bun run dev
 ### Docker Compose（推荐 | Recommended）
 
 ```bash
-cp config.json.example config.json
-cp settings.json.example settings.json
-# 编辑配置文件 | Edit config files
-
 docker compose up -d --build
 ```
 
@@ -114,14 +94,6 @@ bun install
 bun --bun run build
 bun run start
 ```
-
-### 环境变量 | Environment Variables
-
-| 变量 | 说明 | Description |
-|------|------|-------------|
-| `GITHUB_TOKEN` | GitHub 个人访问令牌 | GitHub Personal Access Token |
-| `PORT` | 服务端口，默认 3000 | Server port, default 3000 |
-| `NODE_ENV` | 环境模式 production/development | Environment mode |
 
 ---
 
