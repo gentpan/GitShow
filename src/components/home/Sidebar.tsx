@@ -29,7 +29,6 @@ export function Sidebar({
   const pronouns =
     me?.gender === 'female' ? 'She/Her' : me?.gender === 'male' ? 'He/Him' : null
   const location = me?.location || user?.location || ''
-  const socialLinks: { icon?: string; url?: string }[] = settings?.social_links || []
 
   const profileTags = useMemo(() => {
     const yearsFromAccount = getYearsActiveFromCreatedAt(user?.created_at)
@@ -126,28 +125,6 @@ export function Sidebar({
           </div>
         </div>
       </Card>
-
-      {socialLinks.length > 0 && (
-        <Card padding="sm">
-          <div className="text-xs font-medium text-[var(--home-text-tertiary)] mb-3 uppercase tracking-wide">
-            链接
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {socialLinks.map((link, i) => (
-              <a
-                key={`${link.url || ''}-${i}`}
-                href={link.url}
-                target="_blank"
-                rel="noreferrer"
-                className="home-social-icon w-9 h-9 flex items-center justify-center text-sm transition-colors"
-                title={link.url}
-              >
-                <i className={link.icon} />
-              </a>
-            ))}
-          </div>
-        </Card>
-      )}
     </aside>
   )
 }
