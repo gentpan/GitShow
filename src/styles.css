@@ -621,6 +621,26 @@ a {
   text-decoration: underline;
 }
 
+.footer-gitshow-link {
+  display: inline-flex;
+  align-items: center;
+  color: var(--gs-text);
+  line-height: 0;
+  opacity: 0.9;
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+
+.footer-gitshow-link:hover {
+  opacity: 1;
+  color: #ffffff;
+}
+
+.footer-gitshow-logo {
+  display: block;
+  height: 18px;
+  width: auto;
+}
+
 /* ── Shared utilities ── */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;

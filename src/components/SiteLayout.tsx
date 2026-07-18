@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getSettings, getMe, adminLogin } from '@/server/api'
 import { adminAuth, passkey } from '@/lib/auth'
 import { darkenColor, themeMap } from '@/lib/utils'
+import { GitShowFooterLogo } from '@/components/GitShowFooterLogo'
 import { GitShowLogo } from '@/components/GitShowLogo'
 import { LatticeCross } from '@/components/LatticeCross'
 
@@ -207,9 +208,10 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
                 href="https://github.com/gentpan/GitShow"
                 target="_blank"
                 rel="noreferrer"
-                className="footer-text-link"
+                className="footer-gitshow-link"
+                aria-label="GitShow"
               >
-                GitShow
+                <GitShowFooterLogo className="footer-gitshow-logo" />
               </a>
             </div>
             <div className="flex items-center gap-2">
