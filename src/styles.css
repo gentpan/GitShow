@@ -1084,6 +1084,12 @@ a {
   transition: width 280ms ease;
 }
 
+.footer-brand {
+  font-family: 'Alimama FangYuanTi VF', var(--gs-font);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
 .footer-pageviews {
   display: inline-flex;
   align-items: center;
