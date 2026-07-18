@@ -62,19 +62,104 @@ a {
 /* ── Layout ── */
 .gs-shell {
   min-height: 100vh;
+  background: var(--gs-bg);
+}
+
+/* gitshow.io lattice: centered column with side rails + corner crosses */
+.gs-lattice {
+  position: relative;
+  width: 100%;
+  max-width: var(--gs-container);
+  min-height: 100vh;
+  margin-inline: auto;
   display: flex;
   flex-direction: column;
-  background:
-    radial-gradient(1200px 600px at 10% -10%, rgba(20, 71, 230, 0.18), transparent 55%),
-    radial-gradient(900px 500px at 90% 0%, rgba(0, 173, 216, 0.1), transparent 50%),
-    var(--gs-bg);
+  border-left: 1px solid var(--gs-border);
+  border-right: 1px solid var(--gs-border);
+  background: var(--gs-bg);
 }
 
 .gs-container {
   width: 100%;
-  max-width: var(--gs-container);
+  max-width: none;
   margin-inline: auto;
   padding-inline: 24px;
+}
+
+/* Corner / edge crosshairs (+) */
+.gs-lattice-cross {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  z-index: 40;
+  pointer-events: none;
+  color: rgba(115, 115, 115, 0.55);
+}
+
+.gs-lattice-cross::before,
+.gs-lattice-cross::after {
+  content: '';
+  position: absolute;
+  background: currentColor;
+}
+
+.gs-lattice-cross::before {
+  left: 50%;
+  top: 0;
+  width: 1px;
+  height: 100%;
+  transform: translateX(-50%);
+}
+
+.gs-lattice-cross::after {
+  top: 50%;
+  left: 0;
+  height: 1px;
+  width: 100%;
+  transform: translateY(-50%);
+}
+
+.gs-lattice-cross-tl {
+  top: -1px;
+  left: -1px;
+  transform: translate(-50%, -50%);
+}
+
+.gs-lattice-cross-tr {
+  top: -1px;
+  right: -1px;
+  transform: translate(50%, -50%);
+}
+
+.gs-lattice-cross-bl {
+  bottom: -1px;
+  left: -1px;
+  transform: translate(-50%, 50%);
+}
+
+.gs-lattice-cross-br {
+  bottom: -1px;
+  right: -1px;
+  transform: translate(50%, 50%);
+}
+
+/* Mid-edge crosses where header / footer meet the rails */
+.gs-lattice-cross-ml {
+  left: -1px;
+  transform: translate(-50%, -50%);
+}
+
+.gs-lattice-cross-mr {
+  right: -1px;
+  transform: translate(50%, -50%);
+}
+
+.gs-lattice-header-mark {
+  top: 64px;
+}
+
+.gs-lattice-footer-mark {
+  bottom: 0;
 }
 
 @media (max-width: 1023px) {
@@ -407,8 +492,7 @@ a {
   top: 0;
   z-index: 50;
   transition: transform 0.24s ease, opacity 0.24s ease;
-  backdrop-filter: blur(16px) saturate(140%);
-  background: rgba(10, 10, 10, 0.72);
+  background: var(--gs-bg);
   border-bottom: 1px solid var(--gs-border);
 }
 
@@ -456,7 +540,7 @@ a {
 
 .nav-link {
   position: relative;
-  color: var(--gs-text);
+  color: var(--gs-text-secondary);
   font-size: 16px;
   font-weight: 400;
   line-height: 24px;
@@ -465,7 +549,7 @@ a {
 }
 
 .nav-link:hover {
-  color: var(--gs-interactive-hover);
+  color: var(--gs-text);
 }
 
 .nav-link::after {
@@ -481,17 +565,16 @@ a {
 
 .nav-link:hover::after,
 .nav-link-active::after {
-  background: var(--gs-interactive);
+  background: var(--gs-text);
 }
 
 .nav-link-active {
-  color: var(--gs-interactive);
+  color: var(--gs-text);
 }
 
 .mobile-menu-panel {
   border-bottom: 1px solid var(--gs-border);
-  background: rgba(10, 10, 10, 0.92);
-  backdrop-filter: blur(16px);
+  background: var(--gs-bg);
 }
 
 .mobile-menu-panel .nav-link {
@@ -508,8 +591,9 @@ a {
 
 /* ── Footer ── */
 .gs-footer {
+  position: relative;
   border-top: 1px solid var(--gs-border);
-  background: rgba(10, 10, 10, 0.6);
+  background: var(--gs-bg);
 }
 
 .footer-login-popover {
@@ -533,16 +617,16 @@ a {
 }
 
 .footer-icon-link:hover {
-  color: var(--gs-interactive-hover);
+  color: var(--gs-text);
 }
 
 .footer-text-link {
-  color: var(--gs-interactive);
+  color: var(--gs-text);
   transition: color 0.15s ease;
 }
 
 .footer-text-link:hover {
-  color: var(--gs-interactive-hover);
+  color: var(--gs-text);
   text-decoration: underline;
 }
 
@@ -654,6 +738,91 @@ a {
   --home-text-secondary: var(--gs-text-secondary);
   --home-text-tertiary: var(--gs-text-muted);
   --home-accent: var(--theme-primary);
+  /* Bleed to lattice rails (cancel .gs-container horizontal padding) */
+  margin-inline: -24px;
+}
+
+@media (max-width: 1023px) {
+  .home-page {
+    margin-inline: -16px;
+  }
+}
+
+@media (max-width: 639px) {
+  .home-page {
+    margin-inline: -12px;
+  }
+}
+
+.home-lattice {
+  display: grid;
+  gap: 0;
+}
+
+.home-lattice-sidebar {
+  padding-inline: 24px;
+}
+
+.home-lattice-main {
+  min-width: 0;
+}
+
+@media (min-width: 1024px) {
+  .home-lattice {
+    grid-template-columns: 300px 1fr;
+  }
+
+  .home-lattice-sidebar {
+    position: relative;
+    border-right: 1px solid var(--gs-border);
+    padding-inline: 24px;
+  }
+
+  .home-lattice-main {
+    position: relative;
+  }
+}
+
+@media (max-width: 1023px) {
+  .home-lattice-sidebar {
+    padding-inline: 16px;
+    padding-bottom: 24px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--gs-border);
+  }
+}
+
+@media (max-width: 639px) {
+  .home-lattice-sidebar {
+    padding-inline: 12px;
+  }
+}
+
+.home-lattice-block {
+  position: relative;
+  padding: 28px 24px;
+  border-bottom: 1px solid var(--gs-border);
+}
+
+.home-lattice-block:last-child {
+  border-bottom: 0;
+  padding-bottom: 8px;
+}
+
+.home-lattice-block:first-child {
+  padding-top: 0;
+}
+
+@media (max-width: 1023px) {
+  .home-lattice-block {
+    padding-inline: 16px;
+  }
+}
+
+@media (max-width: 639px) {
+  .home-lattice-block {
+    padding-inline: 12px;
+  }
 }
 
 .home-rounded-sm {
@@ -692,16 +861,8 @@ a {
 }
 
 .home-welcome-card {
-  background:
-    linear-gradient(135deg, rgba(20, 71, 230, 0.16) 0%, rgba(23, 23, 23, 0.95) 48%, rgba(10, 10, 10, 0.98) 100%);
+  background: var(--gs-bg-elevated);
   padding: 28px 24px;
-}
-
-.home-gradient-text {
-  background: linear-gradient(135deg, var(--home-accent) 0%, var(--gs-accent-go) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
 }
 
 .home-stat-card {
@@ -841,7 +1002,23 @@ a {
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
-  margin-bottom: 24px;
+  margin: 0 -24px 24px;
+  padding: 0 24px 24px;
+  border-bottom: 1px solid var(--gs-border);
+}
+
+@media (max-width: 1023px) {
+  .page-header {
+    margin-inline: -16px;
+    padding-inline: 16px;
+  }
+}
+
+@media (max-width: 639px) {
+  .page-header {
+    margin-inline: -12px;
+    padding-inline: 12px;
+  }
 }
 
 .page-title {

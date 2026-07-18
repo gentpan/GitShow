@@ -46,13 +46,15 @@ export function formatBytes(bytes: number): string {
   return `${bytes} bytes`
 }
 
-/** Empty cell + 4 intensity levels from theme primary RGB (CSS var). */
-export function contributionColor(count: number, rgb = '20, 71, 230'): string {
-  if (!count) return '#161616'
-  if (count <= 2) return `rgba(${rgb}, 0.28)`
-  if (count <= 5) return `rgba(${rgb}, 0.48)`
-  if (count <= 10) return `rgba(${rgb}, 0.72)`
-  return `rgba(${rgb}, 1)`
+/** GitHub contribution green scale (classic contribution graph). */
+const GITHUB_GREEN = ['#161b22', '#0e4429', '#006d32', '#26a641', '#39d353'] as const
+
+export function contributionColor(count: number): string {
+  if (!count) return GITHUB_GREEN[0]
+  if (count <= 2) return GITHUB_GREEN[1]
+  if (count <= 5) return GITHUB_GREEN[2]
+  if (count <= 10) return GITHUB_GREEN[3]
+  return GITHUB_GREEN[4]
 }
 
 export interface HeatmapWeek {

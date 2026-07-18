@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getSettings, getMe, adminLogin } from '@/server/api'
 import { adminAuth, passkey } from '@/lib/auth'
 import { darkenColor, themeMap } from '@/lib/utils'
+import { LatticeCross } from '@/components/LatticeCross'
 
 const baseNavLinks = [
   { path: '/', label: '主页', icon: 'fas fa-house' },
@@ -105,181 +106,193 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="gs-shell" style={rootStyle}>
-      <header className={`nav-shell ${navHidden && !mobileOpen ? 'nav-shell-hidden' : ''}`}>
-        <div className="gs-container nav-bar">
-          <Link to="/" className="nav-brand" activeProps={{ className: 'nav-brand' }}>
-            <span className="nav-brand-mark" aria-hidden>
-              <i className="fas fa-code" />
-            </span>
-            <span>{brand}</span>
-          </Link>
+      <div className="gs-lattice">
+        <LatticeCross position="tl" />
+        <LatticeCross position="tr" />
+        <LatticeCross position="bl" />
+        <LatticeCross position="br" />
+        {/* header / content rail junctions */}
+        <span className="gs-lattice-cross gs-lattice-cross-ml gs-lattice-header-mark" aria-hidden />
+        <span className="gs-lattice-cross gs-lattice-cross-mr gs-lattice-header-mark" aria-hidden />
 
-          <nav className="nav-links hidden sm:flex" aria-label="主导航">
-            {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className={`nav-link ${isActive(link.path) ? 'nav-link-active' : ''}`}
-                activeProps={{
-                  className: `nav-link ${isActive(link.path) ? 'nav-link-active' : ''}`,
-                }}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
+        <header className={`nav-shell ${navHidden && !mobileOpen ? 'nav-shell-hidden' : ''}`}>
+          <div className="gs-container nav-bar">
+            <Link to="/" className="nav-brand" activeProps={{ className: 'nav-brand' }}>
+              <span className="nav-brand-mark" aria-hidden>
+                <i className="fas fa-code" />
+              </span>
+              <span>{brand}</span>
+            </Link>
 
-          <div className="hidden sm:flex items-center gap-3">
-            <a href={contactUrl} target="_blank" rel="noreferrer" className="contact-btn">
-              <i className="fas fa-paper-plane text-xs" />
-              {settings?.contact_label || '联系'}
-            </a>
-          </div>
-
-          <button
-            type="button"
-            className="btn-icon sm:hidden"
-            aria-label={mobileOpen ? '关闭菜单' : '打开菜单'}
-            aria-expanded={mobileOpen}
-            onClick={() => setMobileOpen(!mobileOpen)}
-          >
-            <i className={mobileOpen ? 'fas fa-xmark text-base' : 'fas fa-bars text-sm'} />
-          </button>
-        </div>
-
-        {mobileOpen && (
-          <div className="mobile-menu-panel sm:hidden">
-            <div className="gs-container py-3 space-y-1">
+            <nav className="nav-links hidden sm:flex" aria-label="主导航">
               {navLinks.map((link) => (
                 <Link
                   key={link.path}
                   to={link.path}
                   className={`nav-link ${isActive(link.path) ? 'nav-link-active' : ''}`}
-                  onClick={() => setMobileOpen(false)}
+                  activeProps={{
+                    className: `nav-link ${isActive(link.path) ? 'nav-link-active' : ''}`,
+                  }}
                 >
-                  <i className={`${link.icon} text-xs w-4 text-center`} />
                   {link.label}
                 </Link>
               ))}
-              <a
-                href={contactUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="contact-btn w-full mt-2"
-                onClick={() => setMobileOpen(false)}
-              >
+            </nav>
+
+            <div className="hidden sm:flex items-center gap-3">
+              <a href={contactUrl} target="_blank" rel="noreferrer" className="contact-btn">
                 <i className="fas fa-paper-plane text-xs" />
                 {settings?.contact_label || '联系'}
               </a>
             </div>
-          </div>
-        )}
-      </header>
 
-      <main className="gs-main">
-        <div className="gs-container">{children}</div>
-      </main>
-
-      <footer className="gs-footer">
-        <div className="gs-container py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div
-            className="gs-body-sm flex flex-wrap items-center justify-center gap-1.5"
-            style={{ color: 'var(--gs-text-secondary)' }}
-          >
-            <span>
-              © {new Date().getFullYear()} {brand}
-            </span>
-            <span>·</span>
-            <span>build with</span>
-            <a
-              href="https://github.com/gentpan/GitShow"
-              target="_blank"
-              rel="noreferrer"
-              className="footer-text-link"
+            <button
+              type="button"
+              className="btn-icon sm:hidden"
+              aria-label={mobileOpen ? '关闭菜单' : '打开菜单'}
+              aria-expanded={mobileOpen}
+              onClick={() => setMobileOpen(!mobileOpen)}
             >
-              GitShow
-            </a>
+              <i className={mobileOpen ? 'fas fa-xmark text-base' : 'fas fa-bars text-sm'} />
+            </button>
           </div>
-          <div className="flex items-center gap-2">
-            {(settings?.social_links || []).map((link: any, i: number) => (
+
+          {mobileOpen && (
+            <div className="mobile-menu-panel sm:hidden">
+              <div className="gs-container py-3 space-y-1">
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.path}
+                    to={link.path}
+                    className={`nav-link ${isActive(link.path) ? 'nav-link-active' : ''}`}
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    <i className={`${link.icon} text-xs w-4 text-center`} />
+                    {link.label}
+                  </Link>
+                ))}
+                <a
+                  href={contactUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="contact-btn w-full mt-2"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <i className="fas fa-paper-plane text-xs" />
+                  {settings?.contact_label || '联系'}
+                </a>
+              </div>
+            </div>
+          )}
+        </header>
+
+        <main className="gs-main">
+          <div className="gs-container">{children}</div>
+        </main>
+
+        <footer className="gs-footer">
+          <span className="gs-lattice-cross gs-lattice-cross-ml" style={{ top: 0 }} aria-hidden />
+          <span className="gs-lattice-cross gs-lattice-cross-mr" style={{ top: 0 }} aria-hidden />
+          <div className="gs-container py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div
+              className="gs-body-sm flex flex-wrap items-center justify-center gap-1.5"
+              style={{ color: 'var(--gs-text-secondary)' }}
+            >
+              <span>
+                © {new Date().getFullYear()} {brand}
+              </span>
+              <span>·</span>
+              <span>build with</span>
               <a
-                key={i}
-                href={link.url}
+                href="https://github.com/gentpan/GitShow"
                 target="_blank"
                 rel="noreferrer"
-                className="btn-icon footer-icon-link"
-                title={link.url}
+                className="footer-text-link"
               >
-                <i className={link.icon} />
+                GitShow
               </a>
-            ))}
-            {loggedIn ? (
-              <button
-                type="button"
-                className="btn-icon footer-logout-button"
-                title="退出登录"
-                onClick={() => {
-                  adminAuth.logout()
-                  setLoggedIn(false)
-                  if (pathname === '/admin') window.location.href = '/'
-                }}
-              >
-                <i className="fas fa-right-from-bracket" />
-              </button>
-            ) : (
-              <div className="relative">
-                {showLogin && (
-                  <div className="footer-login-popover absolute bottom-full right-0 mb-2 w-64 p-4 space-y-3">
-                    <div className="gs-caption">登录管理</div>
-                    {loginError && (
-                      <div className="gs-caption" style={{ color: 'var(--gs-error)' }}>
-                        {loginError}
-                      </div>
-                    )}
-                    {settings?.has_passkey && passkey.isSupported() && (
-                      <button
-                        type="button"
-                        className="btn-secondary w-full text-xs"
-                        disabled={passkeyLoading}
-                        onClick={loginPasskey}
-                      >
-                        <i className="fas fa-fingerprint" />
-                        {passkeyLoading ? '验证中...' : '使用 Passkey'}
-                      </button>
-                    )}
-                    <input
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && login()}
-                      className="input-field w-full px-4 py-2 text-sm"
-                      placeholder={
-                        settings?.has_admin_password ? '输入管理密码' : '无需密码，回车进入'
-                      }
-                    />
-                    <div className="flex items-center gap-2">
-                      <button type="button" className="btn-primary flex-1" onClick={login}>
-                        登录
-                      </button>
-                      <button type="button" className="btn-ghost" onClick={() => setShowLogin(false)}>
-                        取消
-                      </button>
-                    </div>
-                  </div>
-                )}
+            </div>
+            <div className="flex items-center gap-2">
+              {(settings?.social_links || []).map((link: any, i: number) => (
+                <a
+                  key={i}
+                  href={link.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn-icon footer-icon-link"
+                  title={link.url}
+                >
+                  <i className={link.icon} />
+                </a>
+              ))}
+              {loggedIn ? (
                 <button
                   type="button"
-                  className="btn-icon footer-icon-link"
-                  title="登录"
-                  onClick={() => setShowLogin(!showLogin)}
+                  className="btn-icon footer-logout-button"
+                  title="退出登录"
+                  onClick={() => {
+                    adminAuth.logout()
+                    setLoggedIn(false)
+                    if (pathname === '/admin') window.location.href = '/'
+                  }}
                 >
-                  <i className="fas fa-lock" />
+                  <i className="fas fa-right-from-bracket" />
                 </button>
-              </div>
-            )}
+              ) : (
+                <div className="relative">
+                  {showLogin && (
+                    <div className="footer-login-popover absolute bottom-full right-0 mb-2 w-64 p-4 space-y-3">
+                      <div className="gs-caption">登录管理</div>
+                      {loginError && (
+                        <div className="gs-caption" style={{ color: 'var(--gs-error)' }}>
+                          {loginError}
+                        </div>
+                      )}
+                      {settings?.has_passkey && passkey.isSupported() && (
+                        <button
+                          type="button"
+                          className="btn-secondary w-full text-xs"
+                          disabled={passkeyLoading}
+                          onClick={loginPasskey}
+                        >
+                          <i className="fas fa-fingerprint" />
+                          {passkeyLoading ? '验证中...' : '使用 Passkey'}
+                        </button>
+                      )}
+                      <input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && login()}
+                        className="input-field w-full px-4 py-2 text-sm"
+                        placeholder={
+                          settings?.has_admin_password ? '输入管理密码' : '无需密码，回车进入'
+                        }
+                      />
+                      <div className="flex items-center gap-2">
+                        <button type="button" className="btn-primary flex-1" onClick={login}>
+                          登录
+                        </button>
+                        <button type="button" className="btn-ghost" onClick={() => setShowLogin(false)}>
+                          取消
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    className="btn-icon footer-icon-link"
+                    title="登录"
+                    onClick={() => setShowLogin(!showLogin)}
+                  >
+                    <i className="fas fa-lock" />
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      </footer>
+        </footer>
+      </div>
     </div>
   )
 }

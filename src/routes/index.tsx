@@ -85,30 +85,32 @@ function HomePage() {
 
   return (
     <div className="home-page animate-fade-in">
-      <div className="grid lg:grid-cols-[300px_1fr] gap-8 lg:gap-10">
-        <Sidebar me={me} settings={settings} />
+      <div className="home-lattice">
+        <aside className="home-lattice-sidebar">
+          <Sidebar me={me} settings={settings} />
+        </aside>
 
-        <div className="space-y-8 min-w-0">
-          <Card padding="none" className="home-welcome-card overflow-hidden">
-            <h1 className="gs-h3 home-gradient-text mb-2">
-              Welcome to {displayName}&apos;s Hub
-            </h1>
-            <p className="gs-body-sm" style={{ color: 'var(--home-text-secondary)', maxWidth: 560 }}>
-              Open source contributions, tech stack, and notable projects.
-            </p>
-          </Card>
+        <div className="home-lattice-main">
+          <section className="home-lattice-block">
+            <Card padding="none" className="home-welcome-card overflow-hidden">
+              <h1 className="gs-h3 mb-2">Welcome to {displayName}&apos;s Hub</h1>
+              <p className="gs-body-sm" style={{ color: 'var(--home-text-secondary)', maxWidth: 560 }}>
+                Open source contributions, tech stack, and notable projects.
+              </p>
+            </Card>
+          </section>
 
-          <section className="space-y-3">
+          <section className="home-lattice-block space-y-3">
             <h2 className="gs-h4 px-1">Overview</h2>
             <StatsGrid me={me} heatmap={heatmap || []} accent={accent} />
           </section>
 
-          <section className="space-y-3">
+          <section className="home-lattice-block space-y-3">
             <h2 className="gs-h4 px-1">Contributions</h2>
-            <ContributionGraph heatmap={heatmap || []} accent={accent} accentRgb={theme.rgb} />
+            <ContributionGraph heatmap={heatmap || []} />
           </section>
 
-          <section className="space-y-3">
+          <section className="home-lattice-block space-y-3">
             <h2 className="gs-h4 px-1">Tech Stack & Languages</h2>
             <div className="grid md:grid-cols-2 gap-4">
               <TechStack languages={languages} />
@@ -116,15 +118,19 @@ function HomePage() {
             </div>
           </section>
 
-          <ExternalContributions
-            contributions={externalContribs}
-            totalPRs={totalPRs}
-            totalCommits={totalCommits}
-            accent={accent}
-          />
+          {externalContribs.length > 0 && (
+            <section className="home-lattice-block">
+              <ExternalContributions
+                contributions={externalContribs}
+                totalPRs={totalPRs}
+                totalCommits={totalCommits}
+                accent={accent}
+              />
+            </section>
+          )}
 
           {repos.length > 0 && (
-            <section className="space-y-4">
+            <section className="home-lattice-block space-y-4">
               <div className="flex items-center justify-between gap-4 flex-wrap">
                 <h2 className="gs-h4">Notable Projects</h2>
                 <div className="flex items-center gap-2 text-xs">
