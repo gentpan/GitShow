@@ -83,12 +83,12 @@ export function getMonthLabels(
     if (!first?.date) return
     const month = new Date(first.date).getMonth()
     if (month !== lastMonth) {
-      months.push({
-        label: new Date(first.date).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
-          month: 'short',
-        }),
-        col: index,
-      })
+      // zh: keep "8月" on one line; en: "Aug"
+      const label =
+        locale === 'zh'
+          ? `${month + 1}月`
+          : new Date(first.date).toLocaleDateString('en-US', { month: 'short' })
+      months.push({ label, col: index })
       lastMonth = month
     }
   })

@@ -51,12 +51,15 @@ export function ContributionGraph({ heatmap }: ContributionGraphProps) {
 
       <div className="overflow-x-auto scrollbar-hide">
         <div className="min-w-[680px]">
-          <div className="flex text-[10px] text-[var(--home-text-tertiary)] mb-1 pl-7 relative h-4">
+          <div className="flex text-[10px] text-[var(--home-text-tertiary)] mb-1 pl-7 relative h-4 overflow-visible">
             {weeks.map((_, i) => (
-              <div key={i} className="flex-1 relative min-w-0">
+              <div key={i} className="flex-1 relative min-w-0 overflow-visible">
                 {monthLabels.map((month) =>
                   month.col === i ? (
-                    <span key={`${month.label}-${i}`} className="absolute left-0">
+                    <span
+                      key={`${month.label}-${i}`}
+                      className="absolute left-0 top-0 whitespace-nowrap leading-none pointer-events-none"
+                    >
                       {month.label}
                     </span>
                   ) : null,
