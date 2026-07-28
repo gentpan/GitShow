@@ -941,6 +941,45 @@ a {
   transform: scale(1.15);
 }
 
+/* ── Project cards ── */
+.project-card-header {
+  min-height: 24px;
+}
+
+.project-card-title {
+  line-height: 24px;
+}
+
+.project-card-title .leading-none {
+  line-height: 24px;
+}
+
+.project-card-lang.home-badge,
+.project-card-header .home-badge {
+  height: 24px;
+  padding: 0 10px;
+  line-height: 24px;
+  box-sizing: border-box;
+}
+
+.project-card-meta {
+  min-height: 20px;
+}
+
+.project-card-langbar {
+  display: flex;
+  height: 6px;
+  border-radius: 9999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.project-card-langbar-seg {
+  display: block;
+  height: 100%;
+  min-width: 2px;
+}
+
 .home-sort-btn {
   background-color: var(--home-bg-secondary);
   color: var(--home-text-secondary);
