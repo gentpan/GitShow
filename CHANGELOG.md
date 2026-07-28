@@ -1,10 +1,10 @@
 # Changelog
 
-## 1.3.0 - 2026-07-18
+## 2.0.0 - 2026-07-29
 
 ### Changed
 
-- 全栈架构：TanStack Start + React 19 + TypeScript + Bun + Tailwind CSS 4
+- **重大架构迁移**：Go + Nuxt → TanStack Start + React 19 + TypeScript + Bun + Tailwind CSS 4
 - 默认主题青绿；首页与导航视觉改版（品牌字体、像素猫 favicon、格子布局）
 - GitHub 数据缓存改为 1 小时同步；削减 releases / following 冗余 API 调用
 - `/projects` 默认展示全部公开仓库；后台开关仅控制首页精选
@@ -23,6 +23,11 @@
 - 服务端缓存刷新不再泄漏到浏览器（`readFileSync` 报错）
 - 桌面端误显示移动端菜单按钮
 - 启动时可靠预热缓存并启动定时同步
+- 贡献图月份标签不换行；项目卡片对齐与语言色条
+
+### Note
+
+- Passkey 凭证格式变更（`@simplewebauthn/server`），旧版 Go WebAuthn 凭证需重新注册
 
 ## 1.2.0 - 2026-05-02
 
